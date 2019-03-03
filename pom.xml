@@ -7,12 +7,12 @@
         <version>3.37</version>
         <relativePath />
     </parent>
-    <artifactId>github-branch-source</artifactId>
-    <version>2.4.3-beta-2-SNAPSHOT</version>
+    <artifactId>azdo-branch-source</artifactId>
+    <version>2.4.3</version>
     <packaging>hpi</packaging>
-    <name>GitHub Branch Source Plugin</name>
-    <url>https://wiki.jenkins-ci.org/display/JENKINS/GitHub+Branch+Source+Plugin</url>
-    <description>Multibranch projects and organization folders from GitHub. Maintained by CloudBees, Inc.</description>
+    <name>Azure DevOps Branch Source Plugin</name>
+    <url>https://arq.group</url>
+    <description>Multibranch projects from Azure DevOps. Maintained by ARQ Group.</description>
     <licenses>
         <license>
             <name>MIT</name>
@@ -27,9 +27,9 @@
     </properties>
 
     <scm>
-        <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
-        <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
-        <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
+        <connection>scm:git:git://github.com/melbit-lukeshan/github-branch-source-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:melbit-lukeshan/github-branch-source-plugin.git</developerConnection>
+        <url>https://github.com/melbit-lukeshan/github-branch-source-plugin.git</url>
         <tag>HEAD</tag>
     </scm>
     <dependencies>
