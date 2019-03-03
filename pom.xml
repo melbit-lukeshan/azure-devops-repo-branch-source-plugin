@@ -27,9 +27,9 @@
     </properties>
 
     <scm>
-        <connection>scm:git:git://github.com/melbit-lukeshan/github-branch-source-plugin.git</connection>
-        <developerConnection>scm:git:git@github.com:melbit-lukeshan/github-branch-source-plugin.git</developerConnection>
-        <url>https://github.com/melbit-lukeshan/github-branch-source-plugin.git</url>
+        <connection>scm:git:git://github.com/melbit-lukeshan/azure-devops-repo-branch-source-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:melbit-lukeshan/azure-devops-repo-branch-source-plugin.git</developerConnection>
+        <url>https://github.com/melbit-lukeshan/azure-devops-repo-branch-source-plugin.git</url>
         <tag>HEAD</tag>
     </scm>
     <dependencies>
