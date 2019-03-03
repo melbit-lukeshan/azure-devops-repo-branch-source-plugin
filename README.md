@@ -1,1 +1,1 @@
-# GitHub Branch Source plugin for Jenkins
+# Azure DevOps Repo Branch Source plugin for Jenkins
