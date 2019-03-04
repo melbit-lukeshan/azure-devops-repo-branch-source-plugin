@@ -39,12 +39,12 @@ import java.util.List;
  *
  * @since FIXME
  */
-public class GitHubBranchFilter extends ViewJobFilter {
+public class AzureDevOpsRepoBranchFilter extends ViewJobFilter {
     /**
      * Our constructor.
      */
     @DataBoundConstructor
-    public GitHubBranchFilter() {
+    public AzureDevOpsRepoBranchFilter() {
     }
 
     /**
