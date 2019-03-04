@@ -28,18 +28,18 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.scm.api.trait.SCMSourceBuilder;
 
 /**
- * A {@link SCMSourceBuilder} that builds {@link GitHubSCMSource} instances
+ * A {@link SCMSourceBuilder} that builds {@link AzureDevOpsRepoSCMSource} instances
  *
  * @since 2.2.0
  */
-public class GitHubSCMSourceBuilder extends SCMSourceBuilder<GitHubSCMSourceBuilder, GitHubSCMSource> {
+public class AzureDevOpsRepoSCMSourceBuilder extends SCMSourceBuilder<AzureDevOpsRepoSCMSourceBuilder, AzureDevOpsRepoSCMSource> {
     /**
-     * The {@link GitHubSCMSource#getId()}.
+     * The {@link AzureDevOpsRepoSCMSource#getId()}.
      */
     @CheckForNull
     private final String id;
     /**
-     * The {@link GitHubSCMSource#getApiUri()}.
+     * The {@link AzureDevOpsRepoSCMSource#getApiUri()}.
      */
     @CheckForNull
     private final String apiUri;
@@ -57,16 +57,16 @@ public class GitHubSCMSourceBuilder extends SCMSourceBuilder<GitHubSCMSourceBuil
     /**
      * Constructor.
      *
-     * @param id            the {@link GitHubSCMSource#getId()}
-     * @param apiUri        the {@link GitHubSCMSource#getApiUri()}
+     * @param id            the {@link AzureDevOpsRepoSCMSource#getId()}
+     * @param apiUri        the {@link AzureDevOpsRepoSCMSource#getApiUri()}
      * @param credentialsId the credentials id.
      * @param repoOwner     the repository owner.
      * @param repoName      the project name.
      */
-    public GitHubSCMSourceBuilder(@CheckForNull String id, @CheckForNull String apiUri,
-                                  @CheckForNull String credentialsId, @NonNull String repoOwner,
-                                  @NonNull String repoName) {
-        super(GitHubSCMSource.class, repoName);
+    public AzureDevOpsRepoSCMSourceBuilder(@CheckForNull String id, @CheckForNull String apiUri,
+                                           @CheckForNull String credentialsId, @NonNull String repoOwner,
+                                           @NonNull String repoName) {
+        super(AzureDevOpsRepoSCMSource.class, repoName);
         this.id = id;
         this.apiUri = apiUri;
         this.repoOwner = repoOwner;
@@ -74,18 +74,18 @@ public class GitHubSCMSourceBuilder extends SCMSourceBuilder<GitHubSCMSourceBuil
     }
 
     /**
-     * The id of the {@link GitHubSCMSource} that is being built.
+     * The id of the {@link AzureDevOpsRepoSCMSource} that is being built.
      *
-     * @return the id of the {@link GitHubSCMSource} that is being built.
+     * @return the id of the {@link AzureDevOpsRepoSCMSource} that is being built.
      */
     public final String id() {
         return id;
     }
 
     /**
-     * The endpoint of the {@link GitHubSCMSource} that is being built.
+     * The endpoint of the {@link AzureDevOpsRepoSCMSource} that is being built.
      *
-     * @return the endpoint of the {@link GitHubSCMSource} that is being built.
+     * @return the endpoint of the {@link AzureDevOpsRepoSCMSource} that is being built.
      */
     @CheckForNull
     public final String apiUri() {
@@ -93,9 +93,9 @@ public class GitHubSCMSourceBuilder extends SCMSourceBuilder<GitHubSCMSourceBuil
     }
 
     /**
-     * The credentials that the {@link GitHubSCMSource} will use.
+     * The credentials that the {@link AzureDevOpsRepoSCMSource} will use.
      *
-     * @return the credentials that the {@link GitHubSCMSource} will use.
+     * @return the credentials that the {@link AzureDevOpsRepoSCMSource} will use.
      */
     @CheckForNull
     public final String credentialsId() {
@@ -103,9 +103,9 @@ public class GitHubSCMSourceBuilder extends SCMSourceBuilder<GitHubSCMSourceBuil
     }
 
     /**
-     * The repository owner that the {@link GitHubSCMSource} will be configured to use.
+     * The repository owner that the {@link AzureDevOpsRepoSCMSource} will be configured to use.
      *
-     * @return the repository owner that the {@link GitHubSCMSource} will be configured to use.
+     * @return the repository owner that the {@link AzureDevOpsRepoSCMSource} will be configured to use.
      */
     @NonNull
     public final String repoOwner() {
@@ -117,8 +117,8 @@ public class GitHubSCMSourceBuilder extends SCMSourceBuilder<GitHubSCMSourceBuil
      */
     @NonNull
     @Override
-    public GitHubSCMSource build() {
-        GitHubSCMSource result = new GitHubSCMSource(repoOwner, projectName());
+    public AzureDevOpsRepoSCMSource build() {
+        AzureDevOpsRepoSCMSource result = new AzureDevOpsRepoSCMSource(repoOwner, projectName());
         result.setId(id());
         result.setApiUri(apiUri());
         result.setCredentialsId(credentialsId());

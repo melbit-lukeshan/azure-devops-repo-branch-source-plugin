@@ -35,6 +35,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Head corresponding to a branch.
+ *
  * @since FIXME
  */
 public class BranchSCMHead extends SCMHead {
@@ -55,18 +56,18 @@ public class BranchSCMHead extends SCMHead {
 
     @Restricted(NoExternalUse.class)
     @Extension
-    public static class MigrationImpl extends SCMHeadMigration<GitHubSCMSource, SCMHead, AbstractGitSCMSource.SCMRevisionImpl> {
+    public static class MigrationImpl extends SCMHeadMigration<AzureDevOpsRepoSCMSource, SCMHead, AbstractGitSCMSource.SCMRevisionImpl> {
         public MigrationImpl() {
-            super(GitHubSCMSource.class, SCMHead.class, AbstractGitSCMSource.SCMRevisionImpl.class);
+            super(AzureDevOpsRepoSCMSource.class, SCMHead.class, AbstractGitSCMSource.SCMRevisionImpl.class);
         }
 
         @Override
-        public SCMHead migrate(@NonNull GitHubSCMSource source, @NonNull SCMHead head) {
+        public SCMHead migrate(@NonNull AzureDevOpsRepoSCMSource source, @NonNull SCMHead head) {
             return new BranchSCMHead(head.getName());
         }
 
         @Override
-        public SCMRevision migrate(@NonNull GitHubSCMSource source,
+        public SCMRevision migrate(@NonNull AzureDevOpsRepoSCMSource source,
                                    @NonNull AbstractGitSCMSource.SCMRevisionImpl revision) {
             return new AbstractGitSCMSource.SCMRevisionImpl(migrate(source, revision.getHead()), revision.getHash());
         }

@@ -54,11 +54,11 @@ import java.util.Random;
 import java.util.Set;
 
 /**
- * Builds a {@link GitSCM} for {@link GitHubSCMSource}.
+ * Builds a {@link GitSCM} for {@link AzureDevOpsRepoSCMSource}.
  *
  * @since 2.2.0
  */
-public class GitHubSCMBuilder extends GitSCMBuilder<GitHubSCMBuilder> {
+public class AzureDevOpsRepoSCMBuilder extends GitSCMBuilder<AzureDevOpsRepoSCMBuilder> {
 
     /**
      * Singleton instance of {@link HttpsRepositoryUriResolver}.
@@ -101,17 +101,17 @@ public class GitHubSCMBuilder extends GitSCMBuilder<GitHubSCMBuilder> {
      * The repository name.
      */
     @NonNull
-    private RepositoryUriResolver uriResolver = GitHubSCMBuilder.HTTPS;
+    private RepositoryUriResolver uriResolver = AzureDevOpsRepoSCMBuilder.HTTPS;
 
     /**
      * Constructor.
      *
-     * @param source   the {@link GitHubSCMSource}.
+     * @param source   the {@link AzureDevOpsRepoSCMSource}.
      * @param head     the {@link SCMHead}
      * @param revision the (optional) {@link SCMRevision}
      */
-    public GitHubSCMBuilder(@NonNull GitHubSCMSource source,
-                            @NonNull SCMHead head, @CheckForNull SCMRevision revision) {
+    public AzureDevOpsRepoSCMBuilder(@NonNull AzureDevOpsRepoSCMSource source,
+                                     @NonNull SCMHead head, @CheckForNull SCMRevision revision) {
         super(head, revision, /*dummy value*/guessRemote(source), source.getCredentialsId());
         this.context = source.getOwner();
         apiUri = StringUtils.defaultIfBlank(source.getApiUri(), GitHubServerConfig.GITHUB_URL);
@@ -146,12 +146,12 @@ public class GitHubSCMBuilder extends GitSCMBuilder<GitHubSCMBuilder> {
      * @param source the source.
      * @return the (possibly incorrect) best guess at the Git repository URL.
      */
-    private static String guessRemote(GitHubSCMSource source) {
+    private static String guessRemote(AzureDevOpsRepoSCMSource source) {
         String apiUri = StringUtils.removeEnd(source.getApiUri(), "/");
         if (StringUtils.isBlank(apiUri) || GitHubServerConfig.GITHUB_URL.equals(apiUri)) {
             apiUri = "https://github.com";
         } else {
-            apiUri = StringUtils.removeEnd(apiUri, "/"+API_V3);
+            apiUri = StringUtils.removeEnd(apiUri, "/" + API_V3);
         }
         return apiUri + "/" + source.getRepoOwner() + "/" + source.getRepository() + ".git";
     }
@@ -175,7 +175,7 @@ public class GitHubSCMBuilder extends GitSCMBuilder<GitHubSCMBuilder> {
         if (StringUtils.isBlank(apiUri) || GitHubServerConfig.GITHUB_URL.equals(apiUri)) {
             return "https://github.com/" + owner + "/" + repo;
         }
-        if (StringUtils.endsWith(StringUtils.removeEnd(apiUri, "/"), "/"+API_V3)) {
+        if (StringUtils.endsWith(StringUtils.removeEnd(apiUri, "/"), "/" + API_V3)) {
             return StringUtils.removeEnd(StringUtils.removeEnd(apiUri, "/"), API_V3) + owner + "/" + repo;
         }
         return null;
@@ -198,13 +198,13 @@ public class GitHubSCMBuilder extends GitSCMBuilder<GitHubSCMBuilder> {
      * @param credentialsId the {@link IdCredentials#getId()} of the {@link Credentials} to use when connecting to
      *                      the {@link #remote()} or {@code null} to let the git client choose between providing its own
      *                      credentials or connecting anonymously.
-     * @param uriResolver the {@link RepositoryUriResolver} of the {@link Credentials} to use or {@code null}
-     *                 to detect the the protocol based on the credentialsId. Defaults to HTTP if credentials are
-     *                 {@code null}.  Enables support for blank SSH credentials.
+     * @param uriResolver   the {@link RepositoryUriResolver} of the {@link Credentials} to use or {@code null}
+     *                      to detect the the protocol based on the credentialsId. Defaults to HTTP if credentials are
+     *                      {@code null}.  Enables support for blank SSH credentials.
      * @return {@code this} for method chaining.
      */
     @NonNull
-    public GitHubSCMBuilder withCredentials(String credentialsId, RepositoryUriResolver uriResolver) {
+    public AzureDevOpsRepoSCMBuilder withCredentials(String credentialsId, RepositoryUriResolver uriResolver) {
         if (uriResolver == null) {
             uriResolver = uriResolver(context, apiUri, credentialsId);
         }
@@ -261,7 +261,7 @@ public class GitHubSCMBuilder extends GitSCMBuilder<GitHubSCMBuilder> {
      * @return {@code this} for method chaining.
      */
     @NonNull
-    public final GitHubSCMBuilder withGitHubRemote() {
+    public final AzureDevOpsRepoSCMBuilder withGitHubRemote() {
         withRemote(uriResolver().getRepositoryUri(apiUri, repoOwner, repository));
         final SCMHead h = head();
         String repoUrl;

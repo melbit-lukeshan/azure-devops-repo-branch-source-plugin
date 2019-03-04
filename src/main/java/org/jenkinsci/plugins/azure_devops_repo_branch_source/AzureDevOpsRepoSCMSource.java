@@ -103,24 +103,24 @@ import static hudson.Functions.isWindows;
 import static hudson.model.Items.XSTREAM2;
 import static org.jenkinsci.plugins.azure_devops_repo_branch_source.Connector.isCredentialValid;
 
-public class GitHubSCMSource extends AbstractGitSCMSource {
+public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
 
     public static final String VALID_GITHUB_REPO_NAME = "^[0-9A-Za-z._-]+$";
     public static final String VALID_GITHUB_USER_NAME = "^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$";
     public static final String VALID_GIT_SHA1 = "^[a-fA-F0-9]{40}$";
     public static final String GITHUB_URL = GitHubServerConfig.GITHUB_URL;
-    private static final Logger LOGGER = Logger.getLogger(GitHubSCMSource.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AzureDevOpsRepoSCMSource.class.getName());
     private static final String R_PULL = Constants.R_REFS + "pull/";
     /**
      * How long to delay events received from GitHub in order to allow the API caches to sync.
      */
     private static /*mostly final*/ int eventDelaySeconds =
-            Math.min(300, Math.max(0, Integer.getInteger(GitHubSCMSource.class.getName() + ".eventDelaySeconds", 5)));
+            Math.min(300, Math.max(0, Integer.getInteger(AzureDevOpsRepoSCMSource.class.getName() + ".eventDelaySeconds", 5)));
     /**
      * How big (in megabytes) an on-disk cache to keep of GitHub API responses. Cache is per repo, per credentials.
      */
     private static /*mostly final*/ int cacheSize =
-            Math.min(1024, Math.max(0, Integer.getInteger(GitHubSCMSource.class.getName() + ".cacheSize", isWindows() ? 0 : 20)));
+            Math.min(1024, Math.max(0, Integer.getInteger(AzureDevOpsRepoSCMSource.class.getName() + ".cacheSize", isWindows() ? 0 : 20)));
     /**
      * Lock to guard access to the {@link #pullRequestSourceMap} field and prevent concurrent GitHub queries during
      * a 1.x to 2.2.0+ upgrade.
@@ -141,6 +141,7 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
 
     /**
      * Credentials for GitHub API; currently only supports username/password (personal access token).
+     *
      * @since 2.2.0
      */
     @CheckForNull
@@ -160,6 +161,7 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
 
     /**
      * The behaviours to apply to this source.
+     *
      * @since 2.2.0
      */
     @NonNull
@@ -244,12 +246,12 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
      * The cache of {@link ObjectMetadataAction} instances for each open PR.
      */
     @NonNull
-    private transient /*effectively final*/ Map<Integer,ObjectMetadataAction> pullRequestMetadataCache;
+    private transient /*effectively final*/ Map<Integer, ObjectMetadataAction> pullRequestMetadataCache;
     /**
      * The cache of {@link ObjectMetadataAction} instances for each open PR.
      */
     @NonNull
-    private transient /*effectively final*/ Map<Integer,ContributorMetadataAction> pullRequestContributorCache;
+    private transient /*effectively final*/ Map<Integer, ContributorMetadataAction> pullRequestContributorCache;
 
     /**
      * Used during upgrade from 1.x to 2.2.0+ only.
@@ -260,18 +262,18 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
      * @since 2.2.0
      */
     @CheckForNull // normally null except during a migration from 1.x
-    private transient /*effectively final*/ Map<Integer,PullRequestSource> pullRequestSourceMap;
+    private transient /*effectively final*/ Map<Integer, PullRequestSource> pullRequestSourceMap;
 
     /**
      * Constructor, defaults to {@link #GITHUB_URL} as the end-point, and anonymous access, does not default any
      * {@link SCMSourceTrait} behaviours.
      *
-     * @param repoOwner the repository owner.
+     * @param repoOwner  the repository owner.
      * @param repository the repository name.
      * @since 2.2.0
      */
     @DataBoundConstructor
-    public GitHubSCMSource(@NonNull String repoOwner, @NonNull String repository) {
+    public AzureDevOpsRepoSCMSource(@NonNull String repoOwner, @NonNull String repository) {
         this.repoOwner = repoOwner;
         this.repository = repository;
         pullRequestMetadataCache = new ConcurrentHashMap<>();
@@ -281,18 +283,19 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
 
     /**
      * Legacy constructor.
-     * @param id the source id.
-     * @param apiUri the GitHub endpoint.
+     *
+     * @param id                    the source id.
+     * @param apiUri                the GitHub endpoint.
      * @param checkoutCredentialsId the checkout credentials id or {@link DescriptorImpl#SAME} or
-     * {@link DescriptorImpl#ANONYMOUS}.
-     * @param scanCredentialsId the scan credentials id or {@code null}.
-     * @param repoOwner the repository owner.
-     * @param repository the repository name.
+     *                              {@link DescriptorImpl#ANONYMOUS}.
+     * @param scanCredentialsId     the scan credentials id or {@code null}.
+     * @param repoOwner             the repository owner.
+     * @param repository            the repository name.
      */
     @Deprecated
-    public GitHubSCMSource(@CheckForNull String id, @CheckForNull String apiUri, @NonNull String checkoutCredentialsId,
-                           @CheckForNull String scanCredentialsId, @NonNull String repoOwner,
-                           @NonNull String repository) {
+    public AzureDevOpsRepoSCMSource(@CheckForNull String id, @CheckForNull String apiUri, @NonNull String checkoutCredentialsId,
+                                    @CheckForNull String scanCredentialsId, @NonNull String repoOwner,
+                                    @NonNull String repository) {
         this(repoOwner, repository);
         setId(id);
         setApiUri(apiUri);
@@ -328,14 +331,14 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
     }
 
     /**
-     * Gets the credentials used to access the GitHub REST API (also used as the default credentials for checking out
-     * sources.
-     * @return the credentials used to access the GitHub REST API or {@code null} to access anonymously
+     * Sets how long to delay events received from GitHub in order to allow the API caches to sync.
+     *
+     * @param eventDelaySeconds number of seconds to delay, will be restricted into a value within the range
+     *                          {@code [0,300]} inclusive
      */
-    @Override
-    @CheckForNull
-    public String getCredentialsId() {
-        return credentialsId;
+    @Restricted(NoExternalUse.class) // to allow configuration from system groovy console
+    public static void setEventDelaySeconds(int eventDelaySeconds) {
+        AzureDevOpsRepoSCMSource.eventDelaySeconds = Math.min(300, Math.max(0, eventDelaySeconds));
     }
 
     /**
@@ -351,7 +354,31 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
     }
 
     /**
+     * Sets how long to delay events received from GitHub in order to allow the API caches to sync.
+     *
+     * @param cacheSize how many megabytes of on-disk cache to maintain per GitHub API URL per credentials,
+     *                  will be restricted into a value within the range {@code [0,1024]} inclusive.
+     */
+    @Restricted(NoExternalUse.class) // to allow configuration from system groovy console
+    public static void setCacheSize(int cacheSize) {
+        AzureDevOpsRepoSCMSource.cacheSize = Math.min(1024, Math.max(0, cacheSize));
+    }
+
+    /**
+     * Gets the credentials used to access the GitHub REST API (also used as the default credentials for checking out
+     * sources.
+     *
+     * @return the credentials used to access the GitHub REST API or {@code null} to access anonymously
+     */
+    @Override
+    @CheckForNull
+    public String getCredentialsId() {
+        return credentialsId;
+    }
+
+    /**
      * Gets the repository owner.
+     *
      * @return the repository owner.
      */
     @Exported
@@ -362,6 +389,7 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
 
     /**
      * Gets the repository name.
+     *
      * @return the repository name.
      */
     @Exported
@@ -372,6 +400,7 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
 
     /**
      * {@inheritDoc}
+     *
      * @since 2.2.0
      */
     @Override
@@ -380,7 +409,17 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
     }
 
     /**
-     * Sets the behaviours that are applied to this {@link GitHubSCMSource}.
+     * Returns how long to delay events received from GitHub in order to allow the API caches to sync.
+     *
+     * @return how long to delay events received from GitHub in order to allow the API caches to sync.
+     */
+    public static int getEventDelaySeconds() {
+        return eventDelaySeconds;
+    }
+
+    /**
+     * Sets the behaviours that are applied to this {@link AzureDevOpsRepoSCMSource}.
+     *
      * @param traits the behaviours that are to be applied.
      */
     @DataBoundSetter
@@ -389,10 +428,19 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
     }
 
     /**
+     * Returns how many megabytes of on-disk cache to maintain per GitHub API URL per credentials.
+     *
+     * @return how many megabytes of on-disk cache to maintain per GitHub API URL per credentials.
+     */
+    public static int getCacheSize() {
+        return cacheSize;
+    }
+
+    /**
      * Use defaults for old settings.
      */
     @SuppressWarnings("ConstantConditions")
-    @SuppressFBWarnings(value="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", justification="Only non-null after we set them here!")
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", justification = "Only non-null after we set them here!")
     private Object readResolve() {
         if (scanCredentialsId != null) {
             credentialsId = scanCredentialsId;
@@ -451,52 +499,12 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
     }
 
     /**
-     * Returns how long to delay events received from GitHub in order to allow the API caches to sync.
-     *
-     * @return how long to delay events received from GitHub in order to allow the API caches to sync.
-     */
-    public static int getEventDelaySeconds() {
-        return eventDelaySeconds;
-    }
-
-    /**
-     * Sets how long to delay events received from GitHub in order to allow the API caches to sync.
-     *
-     * @param eventDelaySeconds number of seconds to delay, will be restricted into a value within the range
-     *                          {@code [0,300]} inclusive
-     */
-    @Restricted(NoExternalUse.class) // to allow configuration from system groovy console
-    public static void setEventDelaySeconds(int eventDelaySeconds) {
-        GitHubSCMSource.eventDelaySeconds = Math.min(300, Math.max(0, eventDelaySeconds));
-    }
-
-    /**
-     * Returns how many megabytes of on-disk cache to maintain per GitHub API URL per credentials.
-     *
-     * @return how many megabytes of on-disk cache to maintain per GitHub API URL per credentials.
-     */
-    public static int getCacheSize() {
-        return cacheSize;
-    }
-
-    /**
-     * Sets how long to delay events received from GitHub in order to allow the API caches to sync.
-     *
-     * @param cacheSize how many megabytes of on-disk cache to maintain per GitHub API URL per credentials,
-     * will be restricted into a value within the range {@code [0,1024]} inclusive.
-     */
-    @Restricted(NoExternalUse.class) // to allow configuration from system groovy console
-    public static void setCacheSize(int cacheSize) {
-        GitHubSCMSource.cacheSize = Math.min(1024, Math.max(0, cacheSize));
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
     public String getRemote() {
         String apiUri = StringUtils.defaultIfBlank(this.apiUri, GitHubServerConfig.GITHUB_URL);
-        return GitHubSCMBuilder.uriResolver(getOwner(), apiUri, credentialsId)
+        return AzureDevOpsRepoSCMBuilder.uriResolver(getOwner(), apiUri, credentialsId)
                 .getRepositoryUri(apiUri, repoOwner, repository);
     }
 
@@ -512,13 +520,13 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
      * Returns a {@link RepositoryUriResolver} according to credentials configuration.
      *
      * @return a {@link RepositoryUriResolver}
-     * @deprecated use {@link GitHubSCMBuilder#uriResolver()} or {@link GitHubSCMBuilder#uriResolver(Item, String, String)}.
+     * @deprecated use {@link AzureDevOpsRepoSCMBuilder#uriResolver()} or {@link AzureDevOpsRepoSCMBuilder#uriResolver(Item, String, String)}.
      */
     @Deprecated
     @Restricted(DoNotUse.class)
     @RestrictedSince("2.2.0")
     public RepositoryUriResolver getUriResolver() {
-        return GitHubSCMBuilder.uriResolver(
+        return AzureDevOpsRepoSCMBuilder.uriResolver(
                 getOwner(),
                 StringUtils.defaultIfBlank(apiUri, GitHubServerConfig.GITHUB_URL),
                 credentialsId
@@ -549,7 +557,7 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
             if (trait instanceof SSHCheckoutTrait) {
                 return StringUtils.defaultString(
                         ((SSHCheckoutTrait) trait).getCredentialsId(),
-                        GitHubSCMSource.DescriptorImpl.ANONYMOUS
+                        AzureDevOpsRepoSCMSource.DescriptorImpl.ANONYMOUS
                 );
             }
         }
@@ -823,7 +831,7 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
                                   @NonNull SCMHeadObserver observer,
                                   @CheckForNull SCMHeadEvent<?> event,
                                   @NonNull final TaskListener listener) throws IOException, InterruptedException {
-        StandardCredentials credentials = Connector.lookupScanCredentials((Item)getOwner(), apiUri, credentialsId);
+        StandardCredentials credentials = Connector.lookupScanCredentials((Item) getOwner(), apiUri, credentialsId);
         // Github client and validation
         final GitHub github = Connector.connect(apiUri, credentials);
         try {
@@ -899,7 +907,8 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
                         listener.getLogger().format("%n  Checking pull-requests...%n");
                         int count = 0;
                         Map<Boolean, Set<ChangeRequestCheckoutStrategy>> strategies = request.getPRStrategies();
-                        PRs: for (final GHPullRequest pr : request.getPullRequests()) {
+                        PRs:
+                        for (final GHPullRequest pr : request.getPullRequests()) {
                             int number = pr.getNumber();
                             boolean fork = !ghRepository.getOwner().equals(pr.getHead().getUser());
                             listener.getLogger().format("%n    Checking pull request %s%n",
@@ -1034,7 +1043,7 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
             } catch (WrappedException e) {
                 try {
                     e.unwrap();
-            } catch (RateLimitExceededException rle) {
+                } catch (RateLimitExceededException rle) {
                     throw new AbortException(rle.getMessage());
                 }
             }
@@ -1079,7 +1088,7 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
                 Set<ChangeRequestCheckoutStrategy> strategies = new TreeSet<>();
                 strategies.addAll(context.forkPRStrategies());
                 strategies.addAll(context.originPRStrategies());
-                for (GHRef ref: ghRepository.listRefs()) {
+                for (GHRef ref : ghRepository.listRefs()) {
                     String name = ref.getRef();
                     if (name.startsWith(Constants.R_HEADS) && wantBranches) {
                         String branchName = name.substring(Constants.R_HEADS.length());
@@ -1107,7 +1116,7 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
                                 result.add("PR-" + number);
                             }
                             if (wantMultiPRs) {
-                                for (ChangeRequestCheckoutStrategy strategy: strategies) {
+                                for (ChangeRequestCheckoutStrategy strategy : strategies) {
                                     result.add("PR-" + number + "-" + strategy.name().toLowerCase(Locale.ENGLISH));
                                 }
                             }
@@ -1169,8 +1178,8 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
                         Set<ChangeRequestCheckoutStrategy> strategies;
                         if (context.wantPRs()) {
                             strategies = fork
-                                            ? context.forkPRStrategies()
-                                            : context.originPRStrategies();
+                                    ? context.forkPRStrategies()
+                                    : context.originPRStrategies();
                         } else {
                             // if not configured, we go with merge
                             strategies = EnumSet.of(ChangeRequestCheckoutStrategy.MERGE);
@@ -1193,7 +1202,7 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
                             }
                         } else {
                             strategy = null;
-                            for (ChangeRequestCheckoutStrategy s: strategies) {
+                            for (ChangeRequestCheckoutStrategy s : strategies) {
                                 if (s.name().toLowerCase(Locale.ENGLISH).equals(prMatcher.group(2))) {
                                     strategy = s;
                                     break;
@@ -1234,11 +1243,11 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
                                         pr.getHead().getSha());
                             default:
                                 listener.getLogger().format(
-                                                "Resolved %s as pull request %d at revision %s%n",
-                                                headName,
-                                                number,
-                                                pr.getHead().getSha()
-                                        );
+                                        "Resolved %s as pull request %d at revision %s%n",
+                                        headName,
+                                        number,
+                                        pr.getHead().getSha()
+                                );
                                 return new PullRequestSCMRevision(head, pr.getBase().getSha(),
                                         pr.getHead().getSha());
                         }
@@ -1440,15 +1449,16 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
 
     @Override
     public SCM build(SCMHead head, SCMRevision revision) {
-        return new GitHubSCMBuilder(this, head, revision).withTraits(traits).build();
+        return new AzureDevOpsRepoSCMBuilder(this, head, revision).withTraits(traits).build();
     }
 
     @CheckForNull
-    /*package*/ URL getRepositoryUrl() {
+        /*package*/ URL getRepositoryUrl() {
         return repositoryUrl;
     }
 
-    @Deprecated // TODO remove once migration from 1.x is no longer supported
+    @Deprecated
+        // TODO remove once migration from 1.x is no longer supported
     PullRequestSource retrievePullRequestSource(int number) {
         // we use a big honking great lock to prevent concurrent requests to github during job loading
         Map<Integer, PullRequestSource> pullRequestSourceMap;
@@ -1470,7 +1480,7 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
                             ghRepository = github.getRepository(fullName);
                             LOGGER.log(Level.INFO, "Got remote pull requests from {0}", fullName);
                             int n = 0;
-                            for (GHPullRequest pr: ghRepository.queryPullRequests().state(GHIssueState.OPEN).list()) {
+                            for (GHPullRequest pr : ghRepository.queryPullRequests().state(GHIssueState.OPEN).list()) {
                                 GHRepository repository = pr.getHead().getRepository();
                                 // JENKINS-41246 repository may be null for deleted forks
                                 pullRequestSourceMap.put(pr.getNumber(), new PullRequestSource(
@@ -1478,7 +1488,7 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
                                         repository == null ? null : repository.getName(),
                                         pr.getHead().getRef()));
                                 n++;
-                                if (n % 30  == 0) { // default page size is 30
+                                if (n % 30 == 0) { // default page size is 30
                                     Connector.checkApiRateLimit(listener, github);
                                 }
                             }
@@ -1497,6 +1507,7 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
 
     /**
      * Retained to migrate legacy configuration.
+     *
      * @deprecated use {@link MergeWithGitSCMExtension}.
      */
     @Restricted(NoExternalUse.class)
@@ -1512,9 +1523,10 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
         }
 
         private Object readResolve() throws ObjectStreamException {
-            return new MergeWithGitSCMExtension("remotes/origin/"+baseName, baseHash);
+            return new MergeWithGitSCMExtension("remotes/origin/" + baseName, baseHash);
         }
     }
+
     @Override
     public SCMRevision getTrustedRevision(SCMRevision revision, final TaskListener listener)
             throws IOException, InterruptedException {
@@ -1700,12 +1712,20 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
 
         @Initializer(before = InitMilestone.PLUGINS_STARTED)
         public static void addAliases() {
-            XSTREAM2.addCompatibilityAlias("org.jenkinsci.plugins.azure_devops_repo_branch_source.OriginGitHubSCMSource", GitHubSCMSource.class);
+            XSTREAM2.addCompatibilityAlias("org.jenkinsci.plugins.azure_devops_repo_branch_source.OriginGitHubSCMSource", AzureDevOpsRepoSCMSource.class);
         }
 
-        @Override
-        public String getDisplayName() {
-            return Messages.GitHubSCMSource_DisplayName();
+        /**
+         * Creates a list box model from a list of values.
+         * ({@link ListBoxModel#ListBoxModel(Collection)} takes {@link ListBoxModel.Option}s,
+         * not {@link String}s, and those are not {@link Comparable}.)
+         */
+        private static ListBoxModel nameAndValueModel(Collection<String> items) {
+            ListBoxModel model = new ListBoxModel();
+            for (String item : items) {
+                model.add(item);
+            }
+            return model;
         }
 
         public ListBoxModel doFillCredentialsIdItems(@CheckForNull @AncestorInPath Item context,
@@ -1719,12 +1739,9 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
             return Connector.listScanCredentials(context, apiUri);
         }
 
-        @RequirePOST
-        @Restricted(NoExternalUse.class)
-        public FormValidation doCheckCredentialsId(@CheckForNull @AncestorInPath Item context,
-                                                       @QueryParameter String apiUri,
-                                                       @QueryParameter String value) {
-            return Connector.checkScanCredentials(context, apiUri, value);
+        @Override
+        public String getDisplayName() {
+            return Messages.AzureDevOpsRepoSCMSource_DisplayName();
         }
 
         @Restricted(NoExternalUse.class)
@@ -1743,20 +1760,12 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
             return doCheckCredentialsId(context, apiUri, scanCredentialsId);
         }
 
+        @RequirePOST
         @Restricted(NoExternalUse.class)
-        public FormValidation doCheckBuildOriginBranchWithPR(
-            @QueryParameter boolean buildOriginBranch,
-            @QueryParameter boolean buildOriginBranchWithPR,
-            @QueryParameter boolean buildOriginPRMerge,
-            @QueryParameter boolean buildOriginPRHead,
-            @QueryParameter boolean buildForkPRMerge,
-            @QueryParameter boolean buildForkPRHead
-        ) {
-            if (buildOriginBranch && !buildOriginBranchWithPR && !buildOriginPRMerge && !buildOriginPRHead && !buildForkPRMerge && !buildForkPRHead) {
-                // TODO in principle we could make doRetrieve populate originBranchesWithPR without actually including any PRs, but it would be more work and probably never wanted anyway.
-                return FormValidation.warning("If you are not building any PRs, all origin branches will be built.");
-            }
-            return FormValidation.ok();
+        public FormValidation doCheckCredentialsId(@CheckForNull @AncestorInPath Item context,
+                                                   @QueryParameter String apiUri,
+                                                   @QueryParameter String value) {
+            return Connector.checkScanCredentials(context, apiUri, value);
         }
 
         @Restricted(NoExternalUse.class)
@@ -1771,19 +1780,17 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
         }
 
         @Restricted(NoExternalUse.class)
-        public FormValidation doCheckBuildForkPRHead/* web method name controls UI position of message; we want this at the bottom */(
-            @QueryParameter boolean buildOriginBranch,
-            @QueryParameter boolean buildOriginBranchWithPR,
-            @QueryParameter boolean buildOriginPRMerge,
-            @QueryParameter boolean buildOriginPRHead,
-            @QueryParameter boolean buildForkPRMerge,
-            @QueryParameter boolean buildForkPRHead
+        public FormValidation doCheckBuildOriginBranchWithPR(
+                @QueryParameter boolean buildOriginBranch,
+                @QueryParameter boolean buildOriginBranchWithPR,
+                @QueryParameter boolean buildOriginPRMerge,
+                @QueryParameter boolean buildOriginPRHead,
+                @QueryParameter boolean buildForkPRMerge,
+                @QueryParameter boolean buildForkPRHead
         ) {
-            if (!buildOriginBranch && !buildOriginBranchWithPR && !buildOriginPRMerge && !buildOriginPRHead && !buildForkPRMerge && !buildForkPRHead) {
-                return FormValidation.warning("You need to build something!");
-            }
-            if (buildForkPRMerge && buildForkPRHead) {
-                return FormValidation.ok("Merged vs. unmerged PRs will be distinguished in the job name (*-merge vs. *-head).");
+            if (buildOriginBranch && !buildOriginBranchWithPR && !buildOriginPRMerge && !buildOriginPRHead && !buildForkPRMerge && !buildForkPRHead) {
+                // TODO in principle we could make doRetrieve populate originBranchesWithPR without actually including any PRs, but it would be more work and probably never wanted anyway.
+                return FormValidation.warning("If you are not building any PRs, all origin branches will be built.");
             }
             return FormValidation.ok();
         }
@@ -1802,6 +1809,23 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
             return !GitHubConfiguration.get().getEndpoints().isEmpty();
         }
 
+        @Restricted(NoExternalUse.class)
+        public FormValidation doCheckBuildForkPRHead/* web method name controls UI position of message; we want this at the bottom */(
+                @QueryParameter boolean buildOriginBranch,
+                @QueryParameter boolean buildOriginBranchWithPR,
+                @QueryParameter boolean buildOriginPRMerge,
+                @QueryParameter boolean buildOriginPRHead,
+                @QueryParameter boolean buildForkPRMerge,
+                @QueryParameter boolean buildForkPRHead
+        ) {
+            if (!buildOriginBranch && !buildOriginBranchWithPR && !buildOriginPRMerge && !buildOriginPRHead && !buildForkPRMerge && !buildForkPRHead) {
+                return FormValidation.warning("You need to build something!");
+            }
+            if (buildForkPRMerge && buildForkPRHead) {
+                return FormValidation.ok("Merged vs. unmerged PRs will be distinguished in the job name (*-merge vs. *-head).");
+            }
+            return FormValidation.ok();
+        }
 
         @RequirePOST
         public ListBoxModel doFillOrganizationItems(@CheckForNull @AncestorInPath Item context, @QueryParameter String apiUri,
@@ -1821,30 +1845,30 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
                 GitHub github = Connector.connect(apiUri, credentials);
                 if (!github.isAnonymous()) {
                     ListBoxModel model = new ListBoxModel();
-                    for (Map.Entry<String,GHOrganization> entry : github.getMyOrganizations().entrySet()) {
+                    for (Map.Entry<String, GHOrganization> entry : github.getMyOrganizations().entrySet()) {
                         model.add(entry.getKey(), entry.getValue().getAvatarUrl());
                     }
                     return model;
                 }
-            }
-             catch (FillErrorResponse e) {
+            } catch (FillErrorResponse e) {
                 throw e;
             } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, e.getMessage(), e);
                 throw new FillErrorResponse(e.getMessage(), false);
             }
-            throw new FillErrorResponse(Messages.GitHubSCMSource_CouldNotConnectionGithub(credentialsId),true);
+            throw new FillErrorResponse(Messages.GitHubSCMSource_CouldNotConnectionGithub(credentialsId), true);
         }
+
         @RequirePOST
         public ListBoxModel doFillRepositoryItems(@CheckForNull @AncestorInPath Item context, @QueryParameter String apiUri,
-                @QueryParameter String credentialsId, @QueryParameter String repoOwner) throws IOException {
+                                                  @QueryParameter String credentialsId, @QueryParameter String repoOwner) throws IOException {
 
             repoOwner = Util.fixEmptyAndTrim(repoOwner);
             if (repoOwner == null) {
                 return new ListBoxModel();
             }
             if (context == null && !Jenkins.getActiveInstance().hasPermission(Jenkins.ADMINISTER) ||
-                context != null && !context.hasPermission(Item.EXTENDED_READ)) {
+                    context != null && !context.hasPermission(Item.EXTENDED_READ)) {
                 return new ListBoxModel(); // not supposed to be seeing this form
             }
             if (context != null && !context.hasPermission(CredentialsProvider.USE_ITEM)) {
@@ -1952,23 +1976,11 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
             }
             throw new FillErrorResponse(Messages.GitHubSCMSource_NoMatchingOwner(repoOwner), true);
         }
-        /**
-         * Creates a list box model from a list of values.
-         * ({@link ListBoxModel#ListBoxModel(Collection)} takes {@link hudson.util.ListBoxModel.Option}s,
-         * not {@link String}s, and those are not {@link Comparable}.)
-         */
-        private static ListBoxModel nameAndValueModel(Collection<String> items) {
-            ListBoxModel model = new ListBoxModel();
-            for (String item : items) {
-                model.add(item);
-            }
-            return model;
-        }
 
         public List<NamedArrayList<? extends SCMTraitDescriptor<?>>> getTraitsDescriptorLists() {
             List<SCMTraitDescriptor<?>> all = new ArrayList<>();
             all.addAll(SCMSourceTrait._for(this, GitHubSCMSourceContext.class, null));
-            all.addAll(SCMSourceTrait._for(this, null, GitHubSCMBuilder.class));
+            all.addAll(SCMSourceTrait._for(this, null, AzureDevOpsRepoSCMBuilder.class));
             Set<SCMTraitDescriptor<?>> dedup = new HashSet<>();
             for (Iterator<SCMTraitDescriptor<?>> iterator = all.iterator(); iterator.hasNext(); ) {
                 SCMTraitDescriptor<?> d = iterator.next();
@@ -2007,121 +2019,6 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
             };
         }
 
-    }
-
-    private class LazyPullRequests extends LazyIterable<GHPullRequest> implements Closeable {
-        private final GitHubSCMSourceRequest request;
-        private final GHRepository repo;
-        private Set<Integer> pullRequestMetadataKeys = new HashSet<>();
-        private boolean fullScanRequested = false;
-        private boolean iterationCompleted = false;
-
-        public LazyPullRequests(GitHubSCMSourceRequest request, GHRepository repo) {
-            this.request = request;
-            this.repo = repo;
-        }
-
-        @Override
-        protected Iterable<GHPullRequest> create() {
-            try {
-                request.checkApiRateLimit();
-                Set<Integer> prs = request.getRequestedPullRequestNumbers();
-                if (prs != null && prs.size() == 1) {
-                    Integer number = prs.iterator().next();
-                    request.listener().getLogger().format("%n  Getting remote pull request #%d...%n", number);
-                    GHPullRequest pullRequest = repo.getPullRequest(number);
-                    if (pullRequest.getState() != GHIssueState.OPEN) {
-                        return Collections.emptyList();
-                    }
-                    return new CacheUdatingIterable(Collections.singletonList(pullRequest));
-                }
-                Set<String> branchNames = request.getRequestedOriginBranchNames();
-                if (branchNames != null && branchNames.size() == 1) { // TODO flag to check PRs are all origin PRs
-                    // if we were including multiple PRs and they are not all from the same origin branch
-                    // then branchNames would have a size > 1 therefore if the size is 1 we must only
-                    // be after PRs that come from this named branch
-                    String branchName = branchNames.iterator().next();
-                    request.listener().getLogger().format(
-                            "%n  Getting remote pull requests from branch %s...%n", branchName
-                    );
-                    return new CacheUdatingIterable(repo.queryPullRequests()
-                            .state(GHIssueState.OPEN)
-                            .head(repo.getOwnerName() + ":" + branchName)
-                            .list());
-                }
-                request.listener().getLogger().format("%n  Getting remote pull requests...%n");
-                fullScanRequested = true;
-                return new CacheUdatingIterable(LazyPullRequests.this.repo.queryPullRequests()
-                        .state(GHIssueState.OPEN)
-                        .list());
-            } catch (IOException | InterruptedException e) {
-                throw new GitHubSCMSource.WrappedException(e);
-            }
-        }
-
-        @Override
-        public void close() throws IOException {
-            if (fullScanRequested && iterationCompleted) {
-                // we needed a full scan and the scan was completed, so trim the cache entries
-                pullRequestMetadataCache.keySet().retainAll(pullRequestMetadataKeys);
-                pullRequestContributorCache.keySet().retainAll(pullRequestMetadataKeys);
-                if (Jenkins.getActiveInstance().getInitLevel().compareTo(InitMilestone.JOB_LOADED) > 0) {
-                    // synchronization should be cheap as only writers would be looking for this just to
-                    // write null
-                    synchronized (pullRequestSourceMapLock) {
-                        pullRequestSourceMap = null; // all data has to have been migrated
-                    }
-                }
-            }
-        }
-
-        private class CacheUdatingIterable extends SinglePassIterable<GHPullRequest> {
-            /**
-             * A map of all fully populated {@link GHUser} entries we have fetched, keyed by {@link GHUser#getLogin()}.
-             */
-            private Map<String, GHUser> users = new HashMap<>();
-            CacheUdatingIterable(Iterable<GHPullRequest> delegate) {
-                super(delegate);
-            }
-
-            @Override
-            public void observe(GHPullRequest pr) {
-                int number = pr.getNumber();
-                pullRequestMetadataCache.put(number,
-                        new ObjectMetadataAction(
-                                pr.getTitle(),
-                                pr.getBody(),
-                                pr.getHtmlUrl().toExternalForm()
-                        )
-                );
-                try {
-                    GHUser user = pr.getUser();
-                    if (users.containsKey(user.getLogin())) {
-                        // looked up this user already
-                        user = users.get(user.getLogin());
-                    } else {
-                        // going to be making a request to populate the user record
-                        request.checkApiRateLimit();
-                    }
-                    pullRequestContributorCache.put(number, new ContributorMetadataAction(
-                            user.getLogin(),
-                            user.getName(),
-                            user.getEmail()
-                    ));
-                    // store the populated user record now that we have it
-                    users.put(user.getLogin(), user);
-                } catch (IOException | InterruptedException e) {
-                    throw new WrappedException(e);
-                }
-                pullRequestMetadataKeys.add(number);
-            }
-
-            @Override
-            public void completed() {
-                // we have completed a full iteration of the PRs from the delegate
-                iterationCompleted = true;
-            }
-        }
     }
 
     private static class LazyBranches extends LazyIterable<GHBranch> {
@@ -2167,7 +2064,7 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
                 });
                 return values;
             } catch (IOException | InterruptedException e) {
-                throw new GitHubSCMSource.WrappedException(e);
+                throw new AzureDevOpsRepoSCMSource.WrappedException(e);
             }
         }
     }
@@ -2268,24 +2165,7 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
                     }
                 };
             } catch (IOException | InterruptedException e) {
-                throw new GitHubSCMSource.WrappedException(e);
-            }
-        }
-    }
-
-    private static class CriteriaWitness implements SCMSourceRequest.Witness {
-        private final TaskListener listener;
-
-        public CriteriaWitness(TaskListener listener) {
-            this.listener = listener;
-        }
-
-        @Override
-        public void record(@NonNull SCMHead head, SCMRevision revision, boolean isMatch) {
-            if (isMatch) {
-                listener.getLogger().format("    Met criteria%n");
-            } else {
-                listener.getLogger().format("    Does not meet criteria%n");
+                throw new AzureDevOpsRepoSCMSource.WrappedException(e);
             }
         }
     }
@@ -2310,7 +2190,7 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
                 try {
                     mergeable = pr.getMergeable();
                 } catch (IOException e) {
-                    throw new GitHubSCMSource.WrappedException(e);
+                    throw new AzureDevOpsRepoSCMSource.WrappedException(e);
                 }
                 if (Boolean.FALSE.equals(mergeable)) {
                     switch (strategy) {
@@ -2322,6 +2202,139 @@ public class GitHubSCMSource extends AbstractGitSCMSource {
                             break;
                     }
                 }
+            }
+        }
+    }
+
+    private static class CriteriaWitness implements SCMSourceRequest.Witness {
+        private final TaskListener listener;
+
+        public CriteriaWitness(TaskListener listener) {
+            this.listener = listener;
+        }
+
+        @Override
+        public void record(@NonNull SCMHead head, SCMRevision revision, boolean isMatch) {
+            if (isMatch) {
+                listener.getLogger().format("    Met criteria%n");
+            } else {
+                listener.getLogger().format("    Does not meet criteria%n");
+            }
+        }
+    }
+
+    private class LazyPullRequests extends LazyIterable<GHPullRequest> implements Closeable {
+        private final GitHubSCMSourceRequest request;
+        private final GHRepository repo;
+        private Set<Integer> pullRequestMetadataKeys = new HashSet<>();
+        private boolean fullScanRequested = false;
+        private boolean iterationCompleted = false;
+
+        public LazyPullRequests(GitHubSCMSourceRequest request, GHRepository repo) {
+            this.request = request;
+            this.repo = repo;
+        }
+
+        @Override
+        protected Iterable<GHPullRequest> create() {
+            try {
+                request.checkApiRateLimit();
+                Set<Integer> prs = request.getRequestedPullRequestNumbers();
+                if (prs != null && prs.size() == 1) {
+                    Integer number = prs.iterator().next();
+                    request.listener().getLogger().format("%n  Getting remote pull request #%d...%n", number);
+                    GHPullRequest pullRequest = repo.getPullRequest(number);
+                    if (pullRequest.getState() != GHIssueState.OPEN) {
+                        return Collections.emptyList();
+                    }
+                    return new CacheUdatingIterable(Collections.singletonList(pullRequest));
+                }
+                Set<String> branchNames = request.getRequestedOriginBranchNames();
+                if (branchNames != null && branchNames.size() == 1) { // TODO flag to check PRs are all origin PRs
+                    // if we were including multiple PRs and they are not all from the same origin branch
+                    // then branchNames would have a size > 1 therefore if the size is 1 we must only
+                    // be after PRs that come from this named branch
+                    String branchName = branchNames.iterator().next();
+                    request.listener().getLogger().format(
+                            "%n  Getting remote pull requests from branch %s...%n", branchName
+                    );
+                    return new CacheUdatingIterable(repo.queryPullRequests()
+                            .state(GHIssueState.OPEN)
+                            .head(repo.getOwnerName() + ":" + branchName)
+                            .list());
+                }
+                request.listener().getLogger().format("%n  Getting remote pull requests...%n");
+                fullScanRequested = true;
+                return new CacheUdatingIterable(LazyPullRequests.this.repo.queryPullRequests()
+                        .state(GHIssueState.OPEN)
+                        .list());
+            } catch (IOException | InterruptedException e) {
+                throw new AzureDevOpsRepoSCMSource.WrappedException(e);
+            }
+        }
+
+        @Override
+        public void close() throws IOException {
+            if (fullScanRequested && iterationCompleted) {
+                // we needed a full scan and the scan was completed, so trim the cache entries
+                pullRequestMetadataCache.keySet().retainAll(pullRequestMetadataKeys);
+                pullRequestContributorCache.keySet().retainAll(pullRequestMetadataKeys);
+                if (Jenkins.getActiveInstance().getInitLevel().compareTo(InitMilestone.JOB_LOADED) > 0) {
+                    // synchronization should be cheap as only writers would be looking for this just to
+                    // write null
+                    synchronized (pullRequestSourceMapLock) {
+                        pullRequestSourceMap = null; // all data has to have been migrated
+                    }
+                }
+            }
+        }
+
+        private class CacheUdatingIterable extends SinglePassIterable<GHPullRequest> {
+            /**
+             * A map of all fully populated {@link GHUser} entries we have fetched, keyed by {@link GHUser#getLogin()}.
+             */
+            private Map<String, GHUser> users = new HashMap<>();
+
+            CacheUdatingIterable(Iterable<GHPullRequest> delegate) {
+                super(delegate);
+            }
+
+            @Override
+            public void observe(GHPullRequest pr) {
+                int number = pr.getNumber();
+                pullRequestMetadataCache.put(number,
+                        new ObjectMetadataAction(
+                                pr.getTitle(),
+                                pr.getBody(),
+                                pr.getHtmlUrl().toExternalForm()
+                        )
+                );
+                try {
+                    GHUser user = pr.getUser();
+                    if (users.containsKey(user.getLogin())) {
+                        // looked up this user already
+                        user = users.get(user.getLogin());
+                    } else {
+                        // going to be making a request to populate the user record
+                        request.checkApiRateLimit();
+                    }
+                    pullRequestContributorCache.put(number, new ContributorMetadataAction(
+                            user.getLogin(),
+                            user.getName(),
+                            user.getEmail()
+                    ));
+                    // store the populated user record now that we have it
+                    users.put(user.getLogin(), user);
+                } catch (IOException | InterruptedException e) {
+                    throw new WrappedException(e);
+                }
+                pullRequestMetadataKeys.add(number);
+            }
+
+            @Override
+            public void completed() {
+                // we have completed a full iteration of the PRs from the delegate
+                iterationCompleted = true;
             }
         }
     }
