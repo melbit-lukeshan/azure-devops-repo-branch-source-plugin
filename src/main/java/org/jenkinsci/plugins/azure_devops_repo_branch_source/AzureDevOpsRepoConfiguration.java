@@ -36,16 +36,17 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 
-@Extension public class GitHubConfiguration extends GlobalConfiguration {
+@Extension
+public class AzureDevOpsRepoConfiguration extends GlobalConfiguration {
 
-    public static GitHubConfiguration get() {
-        return GlobalConfiguration.all().get(GitHubConfiguration.class);
+    public AzureDevOpsRepoConfiguration() {
+        load();
     }
 
     private List<Endpoint> endpoints;
 
-    public GitHubConfiguration() {
-        load();
+    public static AzureDevOpsRepoConfiguration get() {
+        return GlobalConfiguration.all().get(AzureDevOpsRepoConfiguration.class);
     }
 
     @Override public boolean configure(StaplerRequest req, JSONObject json) throws FormException {

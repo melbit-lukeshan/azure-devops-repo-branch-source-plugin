@@ -366,7 +366,7 @@ public class Connector {
             int cacheSize = GitHubSCMSource.getCacheSize();
             if (cacheSize > 0) {
                 File cacheBase = new File(jenkins.getRootDir(),
-                        GitHubSCMProbe.class.getName() + ".cache");
+                        AzureDevOpsRepoSCMProbe.class.getName() + ".cache");
                 File cacheDir = null;
                 try {
                     MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
@@ -545,14 +545,14 @@ public class Connector {
         }
         if (!github.isAnonymous()) {
             assert credentials != null;
-            listener.getLogger().println(GitHubConsoleNote.create(
+            listener.getLogger().println(AzureDevOpsRepoConsoleNote.create(
                     System.currentTimeMillis(),
                     String.format("Connecting to %s using %s",
                     apiUri == null ? GitHubSCMSource.GITHUB_URL : apiUri,
                     CredentialsNameProvider.name(credentials))
             ));
         } else {
-            listener.getLogger().println(GitHubConsoleNote.create(System.currentTimeMillis(), String.format(
+            listener.getLogger().println(AzureDevOpsRepoConsoleNote.create(System.currentTimeMillis(), String.format(
                     "Connecting to %s with no credentials, anonymous access",
                     apiUri == null ? GitHubSCMSource.GITHUB_URL : apiUri
             )));
@@ -576,7 +576,7 @@ public class Connector {
             // the ideal is how much remaining we should have (after a burst)
             int ideal = (int) ((rateLimit.limit - buffer - burst) * resetProgress) + buffer;
             if (rateLimit.remaining >= ideal && rateLimit.remaining < ideal + buffer) {
-                listener.getLogger().println(GitHubConsoleNote.create(start, String.format(
+                listener.getLogger().println(AzureDevOpsRepoConsoleNote.create(start, String.format(
                         "GitHub API Usage: Current quota has %d remaining (%d under budget). Next quota of %d in %s",
                         rateLimit.remaining, rateLimit.remaining - ideal, rateLimit.limit,
                         Util.getTimeSpanString(rateLimitResetMillis)
@@ -590,14 +590,14 @@ public class Connector {
                     // hasn't actually reset yet (clock synchronization is a hard problem)
                     if (rateLimitResetMillis < 0) {
                         expiration = System.currentTimeMillis() + ENTROPY.nextInt(65536); // approx 1 min
-                        listener.getLogger().println(GitHubConsoleNote.create(System.currentTimeMillis(), String.format(
+                        listener.getLogger().println(AzureDevOpsRepoConsoleNote.create(System.currentTimeMillis(), String.format(
                                 "GitHub API Usage: Current quota has %d remaining (%d over budget). Next quota of %d due now. Sleeping for %s.",
                                 rateLimit.remaining, ideal - rateLimit.remaining, rateLimit.limit,
                                 Util.getTimeSpanString(expiration - System.currentTimeMillis())
                         )));
                     } else {
                         expiration = rateLimit.getResetDate().getTime() + ENTROPY.nextInt(65536); // approx 1 min
-                        listener.getLogger().println(GitHubConsoleNote.create(System.currentTimeMillis(), String.format(
+                        listener.getLogger().println(AzureDevOpsRepoConsoleNote.create(System.currentTimeMillis(), String.format(
                                 "GitHub API Usage: Current quota has %d remaining (%d over budget). Next quota of %d in %s. Sleeping until reset.",
                                 rateLimit.remaining, ideal - rateLimit.remaining, rateLimit.limit,
                                 Util.getTimeSpanString(rateLimitResetMillis)
@@ -609,7 +609,7 @@ public class Connector {
                     expiration = rateLimit.getResetDate().getTime()
                             - Math.max(0, (long) (targetFraction * MILLIS_PER_HOUR))
                             + ENTROPY.nextInt(1000);
-                    listener.getLogger().println(GitHubConsoleNote.create(System.currentTimeMillis(), String.format(
+                    listener.getLogger().println(AzureDevOpsRepoConsoleNote.create(System.currentTimeMillis(), String.format(
                             "GitHub API Usage: Current quota has %d remaining (%d over budget). Next quota of %d in %s. Sleeping for %s.",
                             rateLimit.remaining, ideal - rateLimit.remaining, rateLimit.limit,
                             Util.getTimeSpanString(rateLimitResetMillis),
@@ -633,12 +633,12 @@ public class Connector {
                         GHRateLimit current = github.getRateLimit();
                         if (current.remaining > rateLimit.remaining
                                 || current.getResetDate().getTime() > rateLimit.getResetDate().getTime()) {
-                            listener.getLogger().println(GitHubConsoleNote.create(now,
+                            listener.getLogger().println(AzureDevOpsRepoConsoleNote.create(now,
                                     "GitHub API Usage: The quota may have been refreshed earlier than expected, rechecking..."
                             ));
                             break;
                         }
-                        listener.getLogger().println(GitHubConsoleNote.create(now, String.format(
+                        listener.getLogger().println(AzureDevOpsRepoConsoleNote.create(now, String.format(
                                 "GitHub API Usage: Still sleeping, now only %s remaining.",
                                 Util.getTimeSpanString(expiration - now)
                         )));

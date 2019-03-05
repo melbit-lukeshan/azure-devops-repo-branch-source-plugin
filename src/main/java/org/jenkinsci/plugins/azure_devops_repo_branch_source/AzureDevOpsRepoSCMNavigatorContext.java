@@ -33,13 +33,13 @@ import jenkins.scm.api.trait.SCMNavigatorContext;
  *
  * @since 2.2.0
  */
-public class GitHubSCMNavigatorContext extends SCMNavigatorContext<GitHubSCMNavigatorContext, GitHubSCMNavigatorRequest> {
+public class AzureDevOpsRepoSCMNavigatorContext extends SCMNavigatorContext<AzureDevOpsRepoSCMNavigatorContext, AzureDevOpsRepoSCMNavigatorRequest> {
     /**
      * {@inheritDoc}
      */
     @NonNull
     @Override
-    public GitHubSCMNavigatorRequest newRequest(@NonNull SCMNavigator navigator, @NonNull SCMSourceObserver observer) {
-        return new GitHubSCMNavigatorRequest(navigator, this, observer);
+    public AzureDevOpsRepoSCMNavigatorRequest newRequest(@NonNull SCMNavigator navigator, @NonNull SCMSourceObserver observer) {
+        return new AzureDevOpsRepoSCMNavigatorRequest(navigator, this, observer);
     }
 }

@@ -39,8 +39,8 @@ import java.util.*;
  *
  * @since 2.2.0
  */
-public class GitHubSCMSourceContext
-        extends SCMSourceContext<GitHubSCMSourceContext, GitHubSCMSourceRequest> {
+public class AzureDevOpsRepoSCMSourceContext
+        extends SCMSourceContext<AzureDevOpsRepoSCMSourceContext, GitHubSCMSourceRequest> {
     /**
      * {@code true} if the {@link GitHubSCMSourceRequest} will need information about branches.
      */
@@ -84,7 +84,7 @@ public class GitHubSCMSourceContext
      * @param criteria (optional) criteria.
      * @param observer the {@link SCMHeadObserver}.
      */
-    public GitHubSCMSourceContext(@CheckForNull SCMSourceCriteria criteria, @NonNull SCMHeadObserver observer) {
+    public AzureDevOpsRepoSCMSourceContext(@CheckForNull SCMSourceCriteria criteria, @NonNull SCMHeadObserver observer) {
         super(criteria, observer);
     }
 
@@ -181,7 +181,7 @@ public class GitHubSCMSourceContext
      * @return {@code this} for method chaining.
      */
     @NonNull
-    public GitHubSCMSourceContext wantBranches(boolean include) {
+    public AzureDevOpsRepoSCMSourceContext wantBranches(boolean include) {
         wantBranches = wantBranches || include;
         return this;
     }
@@ -194,7 +194,7 @@ public class GitHubSCMSourceContext
      * @return {@code this} for method chaining.
      */
     @NonNull
-    public GitHubSCMSourceContext wantTags(boolean include) {
+    public AzureDevOpsRepoSCMSourceContext wantTags(boolean include) {
         wantTags = wantTags || include;
         return this;
     }
@@ -207,7 +207,7 @@ public class GitHubSCMSourceContext
      * @return {@code this} for method chaining.
      */
     @NonNull
-    public GitHubSCMSourceContext wantOriginPRs(boolean include) {
+    public AzureDevOpsRepoSCMSourceContext wantOriginPRs(boolean include) {
         wantOriginPRs = wantOriginPRs || include;
         return this;
     }
@@ -220,7 +220,7 @@ public class GitHubSCMSourceContext
      * @return {@code this} for method chaining.
      */
     @NonNull
-    public GitHubSCMSourceContext wantForkPRs(boolean include) {
+    public AzureDevOpsRepoSCMSourceContext wantForkPRs(boolean include) {
         wantForkPRs = wantForkPRs || include;
         return this;
     }
@@ -232,7 +232,7 @@ public class GitHubSCMSourceContext
      * @return {@code this} for method chaining.
      */
     @NonNull
-    public GitHubSCMSourceContext withOriginPRStrategies(Set<ChangeRequestCheckoutStrategy> strategies) {
+    public AzureDevOpsRepoSCMSourceContext withOriginPRStrategies(Set<ChangeRequestCheckoutStrategy> strategies) {
         originPRStrategies.addAll(strategies);
         return this;
     }
@@ -244,7 +244,7 @@ public class GitHubSCMSourceContext
      * @return {@code this} for method chaining.
      */
     @NonNull
-    public GitHubSCMSourceContext withForkPRStrategies(Set<ChangeRequestCheckoutStrategy> strategies) {
+    public AzureDevOpsRepoSCMSourceContext withForkPRStrategies(Set<ChangeRequestCheckoutStrategy> strategies) {
         forkPRStrategies.addAll(strategies);
         return this;
     }
@@ -256,7 +256,7 @@ public class GitHubSCMSourceContext
      * @since TODO
      */
     @NonNull
-    public final GitHubSCMSourceContext withNotificationStrategies(List<AbstractGitHubNotificationStrategy> strategies) {
+    public final AzureDevOpsRepoSCMSourceContext withNotificationStrategies(List<AbstractGitHubNotificationStrategy> strategies) {
         notificationStrategies.clear();
         for (AbstractGitHubNotificationStrategy strategy : strategies) {
             if (!notificationStrategies.contains(strategy)) {
@@ -273,7 +273,7 @@ public class GitHubSCMSourceContext
      * @since TODO
      */
     @NonNull
-    public final GitHubSCMSourceContext withNotificationStrategy(AbstractGitHubNotificationStrategy strategy) {
+    public final AzureDevOpsRepoSCMSourceContext withNotificationStrategy(AbstractGitHubNotificationStrategy strategy) {
         if (!notificationStrategies.contains(strategy)) {
             notificationStrategies.add(strategy);
         }
@@ -287,7 +287,7 @@ public class GitHubSCMSourceContext
      * @return {@code this} for method chaining.
      */
     @NonNull
-    public final GitHubSCMSourceContext withNotificationsDisabled(boolean disabled) {
+    public final AzureDevOpsRepoSCMSourceContext withNotificationsDisabled(boolean disabled) {
         notificationsDisabled = disabled;
         return this;
     }

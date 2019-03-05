@@ -38,16 +38,16 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-class GitHubSCMFile extends SCMFile {
+class AzureDevOpsRepoSCMFile extends SCMFile {
 
     private TypeInfo info;
-    private final GitHubClosable closable;
+    private final AzureDevOpsRepoClosable closable;
     private final GHRepository repo;
     private final String ref;
     private transient Object metadata;
     private transient boolean resolved;
 
-    GitHubSCMFile(GitHubClosable closable, GHRepository repo, String ref) {
+    AzureDevOpsRepoSCMFile(AzureDevOpsRepoClosable closable, GHRepository repo, String ref) {
         super();
         this.closable = closable;
         type(Type.DIRECTORY);
@@ -56,7 +56,7 @@ class GitHubSCMFile extends SCMFile {
         this.ref = ref;
     }
 
-    private GitHubSCMFile(@NonNull GitHubSCMFile parent, String name, TypeInfo info) {
+    private AzureDevOpsRepoSCMFile(@NonNull AzureDevOpsRepoSCMFile parent, String name, TypeInfo info) {
         super(parent, name);
         this.closable = parent.closable;
         this.info = info;
@@ -64,7 +64,7 @@ class GitHubSCMFile extends SCMFile {
         this.ref = parent.ref;
     }
 
-    private GitHubSCMFile(@NonNull GitHubSCMFile parent, String name, GHContent metadata) {
+    private AzureDevOpsRepoSCMFile(@NonNull AzureDevOpsRepoSCMFile parent, String name, GHContent metadata) {
         super(parent, name);
         this.closable = parent.closable;
         this.repo = parent.repo;
@@ -132,7 +132,7 @@ class GitHubSCMFile extends SCMFile {
     @NonNull
     @Override
     protected SCMFile newChild(String name, boolean assumeIsDirectory) {
-        return new GitHubSCMFile(this, name, assumeIsDirectory ? TypeInfo.DIRECTORY_ASSUMED: TypeInfo.UNRESOLVED);
+        return new AzureDevOpsRepoSCMFile(this, name, assumeIsDirectory ? TypeInfo.DIRECTORY_ASSUMED : TypeInfo.UNRESOLVED);
     }
 
     @NonNull
@@ -142,7 +142,7 @@ class GitHubSCMFile extends SCMFile {
         List<GHContent> content = repo.getDirectoryContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
         List<SCMFile> result = new ArrayList<>(content.size());
         for (GHContent c : content) {
-            result.add(new GitHubSCMFile(this, c.getName(), c));
+            result.add(new AzureDevOpsRepoSCMFile(this, c.getName(), c));
         }
         return result;
     }

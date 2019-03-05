@@ -39,7 +39,7 @@ import java.util.Collection;
  * @see org.jenkinsci.plugins.github.webhook.WebhookManager#registerFor(Item)
  */
 @Extension
-public class GitHubSCMSourceRepositoryNameContributor extends GitHubRepositoryNameContributor {
+public class AzureDevOpsRepoSCMSourceRepositoryNameContributor extends GitHubRepositoryNameContributor {
 
     @Override
     public void parseAssociatedNames(Item item, Collection<GitHubRepositoryName> result) {

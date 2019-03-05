@@ -40,7 +40,7 @@ import java.net.URL;
  *
  * @author Kohsuke Kawaguchi
  */
-public class GitHubLink implements Action, IconSpec {
+public class AzureDevOpsRepoLink implements Action, IconSpec {
     /**
      * The icon class name to use.
      */
@@ -53,12 +53,12 @@ public class GitHubLink implements Action, IconSpec {
     @NonNull
     private final String url;
 
-    public GitHubLink(@NonNull String iconClassName, @NonNull String url) {
+    public AzureDevOpsRepoLink(@NonNull String iconClassName, @NonNull String url) {
         this.iconClassName = iconClassName;
         this.url = url;
     }
 
-    public GitHubLink(String iconClassName, URL url) {
+    public AzureDevOpsRepoLink(String iconClassName, URL url) {
         this(iconClassName, url.toExternalForm());
     }
 
@@ -105,7 +105,7 @@ public class GitHubLink implements Action, IconSpec {
             return false;
         }
 
-        GitHubLink that = (GitHubLink) o;
+        AzureDevOpsRepoLink that = (AzureDevOpsRepoLink) o;
 
         if (!iconClassName.equals(that.iconClassName)) {
             return false;
@@ -122,7 +122,7 @@ public class GitHubLink implements Action, IconSpec {
 
     @Override
     public String toString() {
-        return "GitHubLink{" +
+        return "AzureDevOpsRepoLink{" +
                 "iconClassName='" + iconClassName + '\'' +
                 ", url='" + url + '\'' +
                 '}';

@@ -124,7 +124,7 @@ public class SSHCheckoutTrait extends SCMSourceTrait {
          */
         @Override
         public Class<? extends SCMSourceContext> getContextClass() {
-            return GitHubSCMSourceContext.class;
+            return AzureDevOpsRepoSCMSourceContext.class;
         }
 
         /**

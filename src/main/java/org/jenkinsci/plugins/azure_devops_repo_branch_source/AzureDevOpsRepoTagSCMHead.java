@@ -4,7 +4,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.plugins.git.GitTagSCMHead;
 import jenkins.scm.api.mixin.TagSCMHead;
 
-public class GitHubTagSCMHead extends GitTagSCMHead implements TagSCMHead {
+public class AzureDevOpsRepoTagSCMHead extends GitTagSCMHead implements TagSCMHead {
 
     /**
      * Constructor.
@@ -12,7 +12,7 @@ public class GitHubTagSCMHead extends GitTagSCMHead implements TagSCMHead {
      * @param name      the name.
      * @param timestamp the tag timestamp;
      */
-    public GitHubTagSCMHead(@NonNull String name, long timestamp) {
+    public AzureDevOpsRepoTagSCMHead(@NonNull String name, long timestamp) {
         super(name, timestamp);
     }
 

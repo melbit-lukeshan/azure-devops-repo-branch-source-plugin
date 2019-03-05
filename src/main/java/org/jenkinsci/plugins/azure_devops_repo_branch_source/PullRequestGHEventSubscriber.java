@@ -276,7 +276,7 @@ public class PullRequestGHEventSubscriber extends GHEventsSubscriber {
             boolean fork = !src.getRepoOwner().equalsIgnoreCase(prOwnerName);
 
             Map<SCMHead, SCMRevision> result = new HashMap<>();
-            GitHubSCMSourceContext context = new GitHubSCMSourceContext(null, SCMHeadObserver.none())
+            AzureDevOpsRepoSCMSourceContext context = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none())
                             .withTraits(src.getTraits());
             if (!fork && context.wantBranches()) {
                 final String branchName = ghPullRequest.getHead().getRef();

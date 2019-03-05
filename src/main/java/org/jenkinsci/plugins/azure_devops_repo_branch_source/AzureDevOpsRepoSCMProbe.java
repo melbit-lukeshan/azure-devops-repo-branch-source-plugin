@@ -41,11 +41,11 @@ import java.util.logging.Logger;
 
 
 @SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
-class GitHubSCMProbe extends SCMProbe implements GitHubClosable {
+class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosable {
     private static final long serialVersionUID = 1L;
-    private static final Logger LOG = Logger.getLogger(GitHubSCMProbe.class.getName());
-    static /*mostly final*/ boolean JENKINS_54126_WORKAROUND = Boolean.parseBoolean(System.getProperty(GitHubSCMProbe.class.getName() + ".JENKINS_54126_WORKAROUND", Boolean.FALSE.toString()));
-    static /*mostly final*/ boolean STAT_RETHROW_API_FNF = Boolean.parseBoolean(System.getProperty(GitHubSCMProbe.class.getName() + ".STAT_RETHROW_API_FNF", Boolean.TRUE.toString()));
+    private static final Logger LOG = Logger.getLogger(AzureDevOpsRepoSCMProbe.class.getName());
+    static /*mostly final*/ boolean JENKINS_54126_WORKAROUND = Boolean.parseBoolean(System.getProperty(AzureDevOpsRepoSCMProbe.class.getName() + ".JENKINS_54126_WORKAROUND", Boolean.FALSE.toString()));
+    static /*mostly final*/ boolean STAT_RETHROW_API_FNF = Boolean.parseBoolean(System.getProperty(AzureDevOpsRepoSCMProbe.class.getName() + ".STAT_RETHROW_API_FNF", Boolean.TRUE.toString()));
     private final SCMRevision revision;
     private final transient GitHub gitHub;
     private final transient GHRepository repo;
@@ -53,7 +53,7 @@ class GitHubSCMProbe extends SCMProbe implements GitHubClosable {
     private final String name;
     private transient boolean open = true;
 
-    public GitHubSCMProbe(GitHub github, GHRepository repo, SCMHead head, SCMRevision revision) {
+    public AzureDevOpsRepoSCMProbe(GitHub github, GHRepository repo, SCMHead head, SCMRevision revision) {
         this.gitHub = github;
         this.revision = revision;
         this.repo = repo;
@@ -220,7 +220,7 @@ class GitHubSCMProbe extends SCMProbe implements GitHubClosable {
         } else {
             ref = this.ref;
         }
-        return new GitHubSCMFile(this, repo, ref);
+        return new AzureDevOpsRepoSCMFile(this, repo, ref);
     }
 
     @Override

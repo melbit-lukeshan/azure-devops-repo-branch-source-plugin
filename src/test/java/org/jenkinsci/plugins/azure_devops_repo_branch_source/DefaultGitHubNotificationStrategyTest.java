@@ -51,8 +51,8 @@ public class DefaultGitHubNotificationStrategyTest {
         GitHubSCMSource src = new GitHubSCMSource("exmaple", "test");
         FreeStyleBuild run = j.buildAndAssertSuccess(job);
         DefaultGitHubNotificationStrategy instance = new DefaultGitHubNotificationStrategy();
-        List<GitHubNotificationRequest> notifications =
-                instance.notifications(GitHubNotificationContext.build(job, run, src, new BranchSCMHead("master")),
+        List<AzureDevOpsRepoNotificationRequest> notifications =
+                instance.notifications(AzureDevOpsRepoNotificationContext.build(job, run, src, new BranchSCMHead("master")),
                         new LogTaskListener(
                                 Logger.getLogger(getClass().getName()), Level.INFO));
         assertThat(notifications, hasSize(1));
@@ -65,16 +65,16 @@ public class DefaultGitHubNotificationStrategyTest {
         FreeStyleBuild run = j.buildAndAssertSuccess(job);
         DefaultGitHubNotificationStrategy instance = new DefaultGitHubNotificationStrategy();
         BranchSCMHead testBranch = new BranchSCMHead("master");
-        List<GitHubNotificationRequest> notificationsA =
-                instance.notifications(GitHubNotificationContext.build(job, run, src, testBranch),
+        List<AzureDevOpsRepoNotificationRequest> notificationsA =
+                instance.notifications(AzureDevOpsRepoNotificationContext.build(job, run, src, testBranch),
                         new LogTaskListener(Logger.getLogger(getClass().getName()), Level.INFO));
-        List<GitHubNotificationRequest> notificationsB =
-                instance.notifications(GitHubNotificationContext.build(job, run, src,
+        List<AzureDevOpsRepoNotificationRequest> notificationsB =
+                instance.notifications(AzureDevOpsRepoNotificationContext.build(job, run, src,
                         new PullRequestSCMHead("test-pr", "owner", "repo", "branch",
                                 1, testBranch, SCMHeadOrigin.DEFAULT, ChangeRequestCheckoutStrategy.MERGE)),
                         new LogTaskListener(Logger.getLogger(getClass().getName()), Level.INFO));
-        List<GitHubNotificationRequest> notificationsC =
-                instance.notifications(GitHubNotificationContext.build(job, run, src,
+        List<AzureDevOpsRepoNotificationRequest> notificationsC =
+                instance.notifications(AzureDevOpsRepoNotificationContext.build(job, run, src,
                         new PullRequestSCMHead("test-pr", "owner", "repo", "branch",
                                 1, testBranch, SCMHeadOrigin.DEFAULT, ChangeRequestCheckoutStrategy.HEAD)),
                         new LogTaskListener(Logger.getLogger(getClass().getName()), Level.INFO));
@@ -89,9 +89,9 @@ public class DefaultGitHubNotificationStrategyTest {
         GitHubSCMSource src = new GitHubSCMSource("example", "test");
         FreeStyleBuild run = j.buildAndAssertSuccess(job);
         DefaultGitHubNotificationStrategy instance = new DefaultGitHubNotificationStrategy();
-        String urlA = instance.notifications(GitHubNotificationContext.build(null, run, src, new BranchSCMHead("master")),
+        String urlA = instance.notifications(AzureDevOpsRepoNotificationContext.build(null, run, src, new BranchSCMHead("master")),
                         new LogTaskListener(Logger.getLogger(getClass().getName()), Level.INFO)).get(0).getUrl();
-        String urlB = instance.notifications(GitHubNotificationContext.build(job, null, src, new BranchSCMHead("master")),
+        String urlB = instance.notifications(AzureDevOpsRepoNotificationContext.build(job, null, src, new BranchSCMHead("master")),
                 new LogTaskListener(Logger.getLogger(getClass().getName()), Level.INFO)).get(0).getUrl();
         assertNotEquals(urlA, urlB);
     }

@@ -24,58 +24,59 @@
 
 package org.jenkinsci.plugins.azure_devops_repo_branch_source;
 
-import hudson.Extension;
-import hudson.model.Descriptor;
-import hudson.model.TopLevelItem;
-import hudson.model.View;
-import hudson.views.ViewJobFilter;
-import jenkins.scm.api.SCMHead;
-import org.kohsuke.stapler.DataBoundConstructor;
-
-import java.util.List;
+import jenkins.scm.api.metadata.AvatarMetadataAction;
 
 /**
- * A {@link ViewJobFilter} that matches {@link PullRequestSCMHead} based branches.
+ * Invisible property that retains information about GitHub repository.
  *
- * @since FIXME
+ * @author Kohsuke Kawaguchi
  */
-public class GitHubPullRequestFilter extends ViewJobFilter {
+public class AzureDevOpsRepoRepoMetadataAction extends AvatarMetadataAction {
+
     /**
-     * Our constructor.
+     * {@inheritDoc}
      */
-    @DataBoundConstructor
-    public GitHubPullRequestFilter() {
+    @Override
+    public String getAvatarIconClassName() {
+        return "icon-github-repo";
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public List<TopLevelItem> filter(List<TopLevelItem> added, List<TopLevelItem> all, View filteringView) {
-        for (TopLevelItem item:all) {
-            if (added.contains(item)) {
-                continue;
-            }
-            if (SCMHead.HeadByItem.findHead(item) instanceof PullRequestSCMHead) {
-                added.add(item);
-            }
-        }
-        return added;
+    public String getAvatarDescription() {
+        return Messages.GitHubRepoMetadataAction_IconDescription();
     }
 
     /**
-     * Our descriptor.
+     * {@inheritDoc}
      */
-    @Extension(optional = true)
-    public static class DescriptorImpl extends Descriptor<ViewJobFilter> {
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public String getDisplayName() {
-            return Messages.GitHubPullRequestFilter_DisplayName();
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
         }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        return true;
+
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        return 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString() {
+        return "AzureDevOpsRepoRepoMetadataAction{}";
+    }
 }

@@ -21,7 +21,7 @@ public class BranchDiscoveryTraitTest {
 
     @Test
     public void given__disoverAll__when__appliedToContext__then__noFilter() throws Exception {
-        GitHubSCMSourceContext ctx = new GitHubSCMSourceContext(null, SCMHeadObserver.none());
+        AzureDevOpsRepoSCMSourceContext ctx = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none());
         assumeThat(ctx.wantBranches(), is(false));
         assumeThat(ctx.wantPRs(), is(false));
         assumeThat(ctx.prefilters(), is(Collections.<SCMHeadPrefilter>emptyList()));
@@ -42,7 +42,7 @@ public class BranchDiscoveryTraitTest {
 
     @Test
     public void given__excludingPRs__when__appliedToContext__then__filter() throws Exception {
-        GitHubSCMSourceContext ctx = new GitHubSCMSourceContext(null, SCMHeadObserver.none());
+        AzureDevOpsRepoSCMSourceContext ctx = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none());
         assumeThat(ctx.wantBranches(), is(false));
         assumeThat(ctx.wantPRs(), is(false));
         assumeThat(ctx.prefilters(), is(Collections.<SCMHeadPrefilter>emptyList()));
@@ -64,7 +64,7 @@ public class BranchDiscoveryTraitTest {
 
     @Test
     public void given__onlyPRs__when__appliedToContext__then__filter() throws Exception {
-        GitHubSCMSourceContext ctx = new GitHubSCMSourceContext(null, SCMHeadObserver.none());
+        AzureDevOpsRepoSCMSourceContext ctx = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none());
         assumeThat(ctx.wantBranches(), is(false));
         assumeThat(ctx.wantPRs(), is(false));
         assumeThat(ctx.prefilters(), is(Collections.<SCMHeadPrefilter>emptyList()));

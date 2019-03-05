@@ -149,7 +149,7 @@ public class GitHubSCMSourceTest {
         )));
         //And specifically...
         names = new ArrayList<>();
-        ExtensionList.lookup(GitHubRepositoryNameContributor.class).get(GitHubSCMSourceRepositoryNameContributor.class).parseAssociatedNames(job, names);
+        ExtensionList.lookup(GitHubRepositoryNameContributor.class).get(AzureDevOpsRepoSCMSourceRepositoryNameContributor.class).parseAssociatedNames(job, names);
         assertThat(names, contains(allOf(
                 hasProperty("userName", equalTo("cloudbeers")),
                 hasProperty("repositoryName", equalTo("yolo"))
@@ -165,7 +165,7 @@ public class GitHubSCMSourceTest {
         assertThat(names, Matchers.<GitHubRepositoryName>empty());
         //And specifically...
         names = new ArrayList<>();
-        ExtensionList.lookup(GitHubRepositoryNameContributor.class).get(GitHubSCMSourceRepositoryNameContributor.class).parseAssociatedNames(job, names);
+        ExtensionList.lookup(GitHubRepositoryNameContributor.class).get(AzureDevOpsRepoSCMSourceRepositoryNameContributor.class).parseAssociatedNames(job, names);
         assertThat(names, Matchers.<GitHubRepositoryName>empty());
     }
 
@@ -177,7 +177,7 @@ public class GitHubSCMSourceTest {
         assertThat(names, Matchers.<GitHubRepositoryName>empty());
         //And specifically...
         names = new ArrayList<>();
-        ExtensionList.lookup(GitHubRepositoryNameContributor.class).get(GitHubSCMSourceRepositoryNameContributor.class).parseAssociatedNames((Item) job, names);
+        ExtensionList.lookup(GitHubRepositoryNameContributor.class).get(AzureDevOpsRepoSCMSourceRepositoryNameContributor.class).parseAssociatedNames((Item) job, names);
         assertThat(names, Matchers.<GitHubRepositoryName>empty());
     }
 
@@ -256,10 +256,10 @@ public class GitHubSCMSourceTest {
                         new ObjectMetadataAction(null, "You only live once", "http://yolo.example.com")
                 ),
                 Matchers.<Action>is(
-                        new GitHubDefaultBranch("cloudbeers", "yolo", "master")
+                        new AzureDevOpsRepoDefaultBranch("cloudbeers", "yolo", "master")
                 ),
-                instanceOf(GitHubRepoMetadataAction.class),
-                Matchers.<Action>is(new GitHubLink("icon-github-repo", "https://github.com/cloudbeers/yolo"))));
+                instanceOf(AzureDevOpsRepoRepoMetadataAction.class),
+                Matchers.<Action>is(new AzureDevOpsRepoLink("icon-github-repo", "https://github.com/cloudbeers/yolo"))));
     }
 
     @Test

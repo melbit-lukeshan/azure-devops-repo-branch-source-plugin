@@ -19,7 +19,7 @@ import static org.junit.Assume.assumeThat;
 public class OriginPullRequestDiscoveryTraitTest {
     @Test
     public void given__disoverHeadMerge__when__appliedToContext__then__strategiesCorrect() throws Exception {
-        GitHubSCMSourceContext ctx = new GitHubSCMSourceContext(null, SCMHeadObserver.none());
+        AzureDevOpsRepoSCMSourceContext ctx = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none());
         assumeThat(ctx.wantBranches(), is(false));
         assumeThat(ctx.wantPRs(), is(false));
         assumeThat(ctx.prefilters(), is(Collections.<SCMHeadPrefilter>emptyList()));
@@ -44,7 +44,7 @@ public class OriginPullRequestDiscoveryTraitTest {
 
     @Test
     public void given__disoverHeadOnly__when__appliedToContext__then__strategiesCorrect() throws Exception {
-        GitHubSCMSourceContext ctx = new GitHubSCMSourceContext(null, SCMHeadObserver.none());
+        AzureDevOpsRepoSCMSourceContext ctx = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none());
         assumeThat(ctx.wantBranches(), is(false));
         assumeThat(ctx.wantPRs(), is(false));
         assumeThat(ctx.prefilters(), is(Collections.<SCMHeadPrefilter>emptyList()));
@@ -69,7 +69,7 @@ public class OriginPullRequestDiscoveryTraitTest {
 
     @Test
     public void given__disoverMergeOnly__when__appliedToContext__then__strategiesCorrect() throws Exception {
-        GitHubSCMSourceContext ctx = new GitHubSCMSourceContext(null, SCMHeadObserver.none());
+        AzureDevOpsRepoSCMSourceContext ctx = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none());
         assumeThat(ctx.wantBranches(), is(false));
         assumeThat(ctx.wantPRs(), is(false));
         assumeThat(ctx.prefilters(), is(Collections.<SCMHeadPrefilter>emptyList()));
@@ -94,7 +94,7 @@ public class OriginPullRequestDiscoveryTraitTest {
 
     @Test
     public void given__programmaticConstructor__when__appliedToContext__then__strategiesCorrect() throws Exception {
-        GitHubSCMSourceContext ctx = new GitHubSCMSourceContext(null, SCMHeadObserver.none());
+        AzureDevOpsRepoSCMSourceContext ctx = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none());
         assumeThat(ctx.wantBranches(), is(false));
         assumeThat(ctx.wantPRs(), is(false));
         assumeThat(ctx.prefilters(), is(Collections.<SCMHeadPrefilter>emptyList()));

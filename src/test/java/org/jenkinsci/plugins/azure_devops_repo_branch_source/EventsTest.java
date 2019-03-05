@@ -135,7 +135,7 @@ public class EventsTest {
 
     @Test
     public void given_ghRepositoryEventCreatedFromFork_then_createdSourceEventFired() throws Exception {
-        GitHubRepositoryEventSubscriber subscriber = new GitHubRepositoryEventSubscriber();
+        AzureDevOpsRepoRepositoryEventSubscriber subscriber = new AzureDevOpsRepoRepositoryEventSubscriber();
 
         firedEventType = SCMEvent.Type.CREATED;
         ghEvent = callOnEvent(subscriber, "EventsTest/repositoryEventCreated.json");
@@ -144,7 +144,7 @@ public class EventsTest {
 
     @Test
     public void given_ghRepositoryEventCreatedNotFork_then_noSourceEventFired() throws Exception {
-        GitHubRepositoryEventSubscriber subscriber = new GitHubRepositoryEventSubscriber();
+        AzureDevOpsRepoRepositoryEventSubscriber subscriber = new AzureDevOpsRepoRepositoryEventSubscriber();
 
         ghEvent = callOnEvent(subscriber, "EventsTest/repositoryEventNotFiredNotFork.json");
         waitAndAssertReceived(false);
@@ -152,7 +152,7 @@ public class EventsTest {
 
     @Test
     public void given_ghRepositoryEventWrongAction_then_noSourceEventFired() throws Exception {
-        GitHubRepositoryEventSubscriber subscriber = new GitHubRepositoryEventSubscriber();
+        AzureDevOpsRepoRepositoryEventSubscriber subscriber = new AzureDevOpsRepoRepositoryEventSubscriber();
 
         ghEvent = callOnEvent(subscriber, "EventsTest/repositoryEventNotFiredWrongAction.json");
         waitAndAssertReceived(false);
@@ -170,7 +170,7 @@ public class EventsTest {
         return event;
     }
 
-    private GHSubscriberEvent callOnEvent(GitHubRepositoryEventSubscriber subscriber, String eventPayloadFile) throws IOException {
+    private GHSubscriberEvent callOnEvent(AzureDevOpsRepoRepositoryEventSubscriber subscriber, String eventPayloadFile) throws IOException {
         GHSubscriberEvent event = createEvent(eventPayloadFile);
         subscriber.onEvent(event);
         return event;

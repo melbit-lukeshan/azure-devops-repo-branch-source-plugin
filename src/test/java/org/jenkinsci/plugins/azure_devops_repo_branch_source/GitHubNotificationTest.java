@@ -40,7 +40,7 @@ public class GitHubNotificationTest {
 
     @Test
     public void given__notificationsDisabled__when__appliedToContext__then__notificationsDisabled() throws Exception {
-        GitHubSCMSourceContext ctx = new GitHubSCMSourceContext(null, SCMHeadObserver.none());
+        AzureDevOpsRepoSCMSourceContext ctx = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none());
         assumeThat(ctx.notificationsDisabled(), is(false));
         ctx.withNotificationsDisabled(true);
         assertThat(ctx.notificationsDisabled(), is(true));
@@ -50,7 +50,7 @@ public class GitHubNotificationTest {
 
     @Test
     public void given__defaultNotificationStrategy__when__appliedToContext__then__duplicatesRemoved() throws Exception {
-        GitHubSCMSourceContext ctx = new GitHubSCMSourceContext(null, SCMHeadObserver.none());
+        AzureDevOpsRepoSCMSourceContext ctx = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none());
         assumeThat(ctx.notificationStrategies().size(), is(1));
         ctx.withNotificationStrategy(new DefaultGitHubNotificationStrategy());
         assertThat(ctx.notificationStrategies().size(), is(1));
@@ -58,7 +58,7 @@ public class GitHubNotificationTest {
 
     @Test
     public void given__emptyStrategiesList__when__appliedToContext__then__defaultApplied() throws Exception {
-        GitHubSCMSourceContext ctx = new GitHubSCMSourceContext(null, SCMHeadObserver.none());
+        AzureDevOpsRepoSCMSourceContext ctx = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none());
         assumeThat(ctx.notificationStrategies().size(), is(1));
         ctx.withNotificationStrategies(Collections.<AbstractGitHubNotificationStrategy>emptyList());
         assertThat(ctx.notificationStrategies().size(), is(1));
@@ -66,7 +66,7 @@ public class GitHubNotificationTest {
 
     @Test
     public void given__defaultStrategy__when__emptyStrategyList__then__strategyAdded() throws Exception {
-        GitHubSCMSourceContext ctx = new GitHubSCMSourceContext(null, SCMHeadObserver.none());
+        AzureDevOpsRepoSCMSourceContext ctx = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none());
         assumeThat(ctx.notificationStrategies().size(), is(1));
         ctx.withNotificationStrategies(Collections.<AbstractGitHubNotificationStrategy>emptyList());
         assertThat(ctx.notificationStrategies().size(), is(1));
@@ -76,7 +76,7 @@ public class GitHubNotificationTest {
 
     @Test
     public void given__defaultStrategyList__when__emptyStrategyList__then__strategyAdded() throws Exception {
-        GitHubSCMSourceContext ctx = new GitHubSCMSourceContext(null, SCMHeadObserver.none());
+        AzureDevOpsRepoSCMSourceContext ctx = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none());
         assumeThat(ctx.notificationStrategies().size(), is(1));
         ctx.withNotificationStrategies(Collections.<AbstractGitHubNotificationStrategy>emptyList());
         assertThat(ctx.notificationStrategies().size(), is(1));
@@ -86,7 +86,7 @@ public class GitHubNotificationTest {
 
     @Test
     public void given__customStrategy__when__emptyStrategyList__then__noDefaultStrategy() throws Exception {
-        GitHubSCMSourceContext ctx = new GitHubSCMSourceContext(null, SCMHeadObserver.none());
+        AzureDevOpsRepoSCMSourceContext ctx = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none());
         assumeThat(ctx.notificationStrategies().size(), is(1));
         ctx.withNotificationStrategy(new TestNotificationStrategy());
         List<AbstractGitHubNotificationStrategy> strategies = ctx.notificationStrategies();
@@ -97,7 +97,7 @@ public class GitHubNotificationTest {
     private final class TestNotificationStrategy extends AbstractGitHubNotificationStrategy {
 
         @Override
-        public List<GitHubNotificationRequest> notifications(GitHubNotificationContext notificationContext, TaskListener listener) {
+        public List<AzureDevOpsRepoNotificationRequest> notifications(AzureDevOpsRepoNotificationContext notificationContext, TaskListener listener) {
             return null;
         }
 

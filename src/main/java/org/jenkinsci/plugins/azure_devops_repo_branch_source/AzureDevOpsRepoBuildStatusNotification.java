@@ -74,14 +74,14 @@ public class AzureDevOpsRepoBuildStatusNotification {
                         Result result = build.getResult();
                         String revisionToNotify = resolveHeadCommit(revision);
                         SCMHead head = revision.getHead();
-                        List<AbstractGitHubNotificationStrategy> strategies = new GitHubSCMSourceContext(null, SCMHeadObserver.none())
-                                .withTraits(((GitHubSCMSource) src).getTraits()).notificationStrategies();
+                        List<AbstractGitHubNotificationStrategy> strategies = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none())
+                                .withTraits(((AzureDevOpsRepoSCMSource) src).getTraits()).notificationStrategies();
                         for (AbstractGitHubNotificationStrategy strategy : strategies) {
                             // TODO allow strategies to combine/cooperate on a notification
-                            GitHubNotificationContext notificationContext = GitHubNotificationContext.build(null, build,
+                            AzureDevOpsRepoNotificationContext notificationContext = AzureDevOpsRepoNotificationContext.build(null, build,
                                     src, head);
-                            List<GitHubNotificationRequest> details = strategy.notifications(notificationContext, listener);
-                            for (GitHubNotificationRequest request : details) {
+                            List<AzureDevOpsRepoNotificationRequest> details = strategy.notifications(notificationContext, listener);
+                            for (AzureDevOpsRepoNotificationRequest request : details) {
                                 boolean ignoreError = request.isIgnoreError();
                                 try {
                                     repo.createCommitStatus(revisionToNotify, request.getState(), request.getUrl(), request.getMessage(),
@@ -133,8 +133,8 @@ public class AzureDevOpsRepoBuildStatusNotification {
             return null;
         }
         SCMSource src = SCMSource.SourceByItem.findSource(job);
-        if (src instanceof GitHubSCMSource) {
-            GitHubSCMSource source = (GitHubSCMSource) src;
+        if (src instanceof AzureDevOpsRepoSCMSource) {
+            AzureDevOpsRepoSCMSource source = (AzureDevOpsRepoSCMSource) src;
             if (source.getScanCredentialsId() != null) {
                 return github.getRepository(source.getRepoOwner() + "/" + source.getRepository());
             }
@@ -147,15 +147,15 @@ public class AzureDevOpsRepoBuildStatusNotification {
      *
      * @param job A {@link Job}
      * @return A {@link GHRepository} or {@code null}, if any of: a credentials was not provided; notifications were
-     * disabled, or the job is not from a {@link GitHubSCMSource}.
+     * disabled, or the job is not from a {@link AzureDevOpsRepoSCMSource}.
      * @throws IOException
      */
     @CheckForNull
     private static GitHub lookUpGitHub(@NonNull Job<?, ?> job) throws IOException {
         SCMSource src = SCMSource.SourceByItem.findSource(job);
-        if (src instanceof GitHubSCMSource) {
-            GitHubSCMSource source = (GitHubSCMSource) src;
-            if (new GitHubSCMSourceContext(null, SCMHeadObserver.none())
+        if (src instanceof AzureDevOpsRepoSCMSource) {
+            AzureDevOpsRepoSCMSource source = (AzureDevOpsRepoSCMSource) src;
+            if (new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none())
                     .withTraits(source.getTraits())
                     .notificationsDisabled()) {
                 return null;
@@ -196,15 +196,15 @@ public class AzureDevOpsRepoBuildStatusNotification {
             final long taskId = wi.getId();
             final Job<?, ?> job = (Job) wi.task;
             final SCMSource source = SCMSource.SourceByItem.findSource(job);
-            if (!(source instanceof GitHubSCMSource)) {
+            if (!(source instanceof AzureDevOpsRepoSCMSource)) {
                 return;
             }
             final SCMHead head = SCMHead.HeadByItem.findHead(job);
             if (!(head instanceof PullRequestSCMHead)) {
                 return;
             }
-            final GitHubSCMSourceContext sourceContext = new GitHubSCMSourceContext(null, SCMHeadObserver.none())
-                    .withTraits(((GitHubSCMSource) source).getTraits());
+            final AzureDevOpsRepoSCMSourceContext sourceContext = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none())
+                    .withTraits(((AzureDevOpsRepoSCMSource) source).getTraits());
             if (sourceContext.notificationsDisabled()) {
                 return;
             }
@@ -239,10 +239,10 @@ public class AzureDevOpsRepoBuildStatusNotification {
                                 List<AbstractGitHubNotificationStrategy> strategies = sourceContext.notificationStrategies();
                                 for (AbstractGitHubNotificationStrategy strategy : strategies) {
                                     // TODO allow strategies to combine/cooperate on a notification
-                                    GitHubNotificationContext notificationContext = GitHubNotificationContext.build(job, null,
+                                    AzureDevOpsRepoNotificationContext notificationContext = AzureDevOpsRepoNotificationContext.build(job, null,
                                             source, head);
-                                    List<GitHubNotificationRequest> details = strategy.notifications(notificationContext, null);
-                                    for (GitHubNotificationRequest request : details) {
+                                    List<AzureDevOpsRepoNotificationRequest> details = strategy.notifications(notificationContext, null);
+                                    for (AzureDevOpsRepoNotificationRequest request : details) {
                                         boolean ignoreErrors = request.isIgnoreError();
                                         try {
                                             repo.createCommitStatus(hash, request.getState(), request.getUrl(), request.getMessage(),

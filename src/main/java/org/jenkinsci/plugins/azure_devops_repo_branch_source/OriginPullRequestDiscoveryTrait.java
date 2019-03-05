@@ -107,7 +107,7 @@ public class OriginPullRequestDiscoveryTrait extends SCMSourceTrait {
      */
     @Override
     protected void decorateContext(SCMSourceContext<?, ?> context) {
-        GitHubSCMSourceContext ctx = (GitHubSCMSourceContext) context;
+        AzureDevOpsRepoSCMSourceContext ctx = (AzureDevOpsRepoSCMSourceContext) context;
         ctx.wantOriginPRs(true);
         ctx.withAuthority(new OriginChangeRequestSCMHeadAuthority());
         ctx.withOriginPRStrategies(getStrategies());
@@ -138,7 +138,7 @@ public class OriginPullRequestDiscoveryTrait extends SCMSourceTrait {
          */
         @Override
         public Class<? extends SCMSourceContext> getContextClass() {
-            return GitHubSCMSourceContext.class;
+            return AzureDevOpsRepoSCMSourceContext.class;
         }
 
         /**

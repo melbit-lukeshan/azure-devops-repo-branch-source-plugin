@@ -38,8 +38,8 @@ public final class DefaultGitHubNotificationStrategy extends AbstractGitHubNotif
     /**
      * {@inheritDoc}
      */
-    public List<GitHubNotificationRequest> notifications(GitHubNotificationContext notificationContext, TaskListener listener) {
-        return Collections.singletonList(GitHubNotificationRequest.build(notificationContext.getDefaultContext(listener),
+    public List<AzureDevOpsRepoNotificationRequest> notifications(AzureDevOpsRepoNotificationContext notificationContext, TaskListener listener) {
+        return Collections.singletonList(AzureDevOpsRepoNotificationRequest.build(notificationContext.getDefaultContext(listener),
                 notificationContext.getDefaultUrl(listener),
                 notificationContext.getDefaultMessage(listener),
                 notificationContext.getDefaultState(listener),

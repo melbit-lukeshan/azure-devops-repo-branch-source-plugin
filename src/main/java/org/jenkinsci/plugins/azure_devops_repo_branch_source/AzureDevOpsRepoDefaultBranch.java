@@ -32,7 +32,7 @@ import java.io.Serializable;
 /**
  * @author Stephen Connolly
  */
-public class GitHubDefaultBranch extends InvisibleAction implements Serializable {
+public class AzureDevOpsRepoDefaultBranch extends InvisibleAction implements Serializable {
     private static final long serialVersionUID = 1L;
     @NonNull
     private final String repoOwner;
@@ -41,7 +41,7 @@ public class GitHubDefaultBranch extends InvisibleAction implements Serializable
     @NonNull
     private final String defaultBranch;
 
-    public GitHubDefaultBranch(@NonNull String repoOwner, @NonNull String repository, @NonNull String defaultBranch) {
+    public AzureDevOpsRepoDefaultBranch(@NonNull String repoOwner, @NonNull String repository, @NonNull String defaultBranch) {
         this.repoOwner = repoOwner;
         this.repository = repository;
         this.defaultBranch = defaultBranch;
@@ -71,7 +71,7 @@ public class GitHubDefaultBranch extends InvisibleAction implements Serializable
             return false;
         }
 
-        GitHubDefaultBranch that = (GitHubDefaultBranch) o;
+        AzureDevOpsRepoDefaultBranch that = (AzureDevOpsRepoDefaultBranch) o;
 
         if (!repoOwner.equals(that.repoOwner)) {
             return false;
@@ -92,7 +92,7 @@ public class GitHubDefaultBranch extends InvisibleAction implements Serializable
 
     @Override
     public String toString() {
-        return "GitHubDefaultBranch{" +
+        return "AzureDevOpsRepoDefaultBranch{" +
                 "repoOwner='" + repoOwner + '\'' +
                 ", repository='" + repository + '\'' +
                 ", defaultBranch='" + defaultBranch + '\'' +

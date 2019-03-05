@@ -33,7 +33,7 @@ import java.io.IOException;
  *
  * @since TODO
  */
-public abstract class GitHubPermissionsSource {
+public abstract class AzureDevOpsRepoPermissionsSource {
     /**
      * Fetches the permissions of the supplied username.
      *

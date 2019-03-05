@@ -20,19 +20,19 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class GitHubSCMProbeTest {
+public class AzureDevOpsRepoSCMProbeTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
     public static WireMockRuleFactory factory = new WireMockRuleFactory();
     @Rule
     public WireMockRule githubApi = factory.getRule(WireMockConfiguration.options().dynamicPort().usingFilesUnderClasspath("api"));
-    private GitHubSCMProbe probe;
+    private AzureDevOpsRepoSCMProbe probe;
 
     @Before
     public void setUp() throws Exception {
-        GitHubSCMProbe.JENKINS_54126_WORKAROUND = true;
-        GitHubSCMProbe.STAT_RETHROW_API_FNF = true;
+        AzureDevOpsRepoSCMProbe.JENKINS_54126_WORKAROUND = true;
+        AzureDevOpsRepoSCMProbe.STAT_RETHROW_API_FNF = true;
         final GitHub github = Connector.connect("http://localhost:" + githubApi.port(), null);
         githubApi.stubFor(
                 get(urlEqualTo("/repos/cloudbeers/yolo"))
@@ -43,7 +43,7 @@ public class GitHubSCMProbeTest {
         );
         final GHRepository repo = github.getRepository("cloudbeers/yolo");
         final PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "cloudbeers", "yolo", "b", 1, new BranchSCMHead("master"), new SCMHeadOrigin.Fork("rsandell"), ChangeRequestCheckoutStrategy.MERGE);
-        probe = new GitHubSCMProbe(github, repo,
+        probe = new AzureDevOpsRepoSCMProbe(github, repo,
                 head,
                 new PullRequestSCMRevision(head, "a", "b"));
     }
@@ -58,8 +58,8 @@ public class GitHubSCMProbeTest {
     @Issue("JENKINS-54126")
     @Test
     public void statWhenRootIs404WorkaroundOff() throws Exception {
-        GitHubSCMProbe.JENKINS_54126_WORKAROUND = false;
-        GitHubSCMProbe.STAT_RETHROW_API_FNF = false;
+        AzureDevOpsRepoSCMProbe.JENKINS_54126_WORKAROUND = false;
+        AzureDevOpsRepoSCMProbe.STAT_RETHROW_API_FNF = false;
         githubApi.stubFor(get(urlPathEqualTo("/repos/cloudbeers/yolo/contents/")).willReturn(aResponse().withStatus(404)));
         assertFalse(probe.stat("README.md").exists());
     }

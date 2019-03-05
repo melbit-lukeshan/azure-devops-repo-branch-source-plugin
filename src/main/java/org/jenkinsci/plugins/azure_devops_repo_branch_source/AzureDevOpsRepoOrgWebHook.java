@@ -40,9 +40,9 @@ import java.util.logging.Logger;
 /**
  * Manages the GitHub organization webhook.
  */
-public class GitHubOrgWebHook {
+public class AzureDevOpsRepoOrgWebHook {
 
-    private static final Logger LOGGER = Logger.getLogger(GitHubOrgWebHook.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AzureDevOpsRepoOrgWebHook.class.getName());
     private static final List<GHEvent> EVENTS = Arrays.asList(GHEvent.REPOSITORY, GHEvent.PUSH, GHEvent.PULL_REQUEST);
 
     /**

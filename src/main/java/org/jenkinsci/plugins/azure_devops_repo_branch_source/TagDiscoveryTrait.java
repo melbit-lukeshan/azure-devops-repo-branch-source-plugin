@@ -54,7 +54,7 @@ public class TagDiscoveryTrait extends SCMSourceTrait {
      */
     @Override
     protected void decorateContext(SCMSourceContext<?, ?> context) {
-        GitHubSCMSourceContext ctx = (GitHubSCMSourceContext) context;
+        AzureDevOpsRepoSCMSourceContext ctx = (AzureDevOpsRepoSCMSourceContext) context;
         ctx.wantTags(true);
         ctx.withAuthority(new TagSCMHeadAuthority());
     }
@@ -88,7 +88,7 @@ public class TagDiscoveryTrait extends SCMSourceTrait {
          */
         @Override
         public Class<? extends SCMSourceContext> getContextClass() {
-            return GitHubSCMSourceContext.class;
+            return AzureDevOpsRepoSCMSourceContext.class;
         }
 
         /**
@@ -96,7 +96,7 @@ public class TagDiscoveryTrait extends SCMSourceTrait {
          */
         @Override
         public Class<? extends SCMSource> getSourceClass() {
-            return GitHubSCMSource.class;
+            return AzureDevOpsRepoSCMSource.class;
         }
 
     }
@@ -104,12 +104,12 @@ public class TagDiscoveryTrait extends SCMSourceTrait {
     /**
      * Trusts tags from the origin repository.
      */
-    public static class TagSCMHeadAuthority extends SCMHeadAuthority<SCMSourceRequest, GitHubTagSCMHead, GitTagSCMRevision> {
+    public static class TagSCMHeadAuthority extends SCMHeadAuthority<SCMSourceRequest, AzureDevOpsRepoTagSCMHead, GitTagSCMRevision> {
         /**
          * {@inheritDoc}
          */
         @Override
-        protected boolean checkTrusted(@NonNull SCMSourceRequest request, @NonNull GitHubTagSCMHead head) {
+        protected boolean checkTrusted(@NonNull SCMSourceRequest request, @NonNull AzureDevOpsRepoTagSCMHead head) {
             return true;
         }
 

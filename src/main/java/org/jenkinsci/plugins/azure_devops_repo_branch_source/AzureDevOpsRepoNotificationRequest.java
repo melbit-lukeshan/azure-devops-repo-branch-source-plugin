@@ -28,14 +28,14 @@ import org.kohsuke.github.GHCommitState;
 
 /**
  * Details of a GitHub status notification to be sent.
- * One GitHubNotificationRequest represents one notification. A strategy supplies a list of these to request one or more
+ * One AzureDevOpsRepoNotificationRequest represents one notification. A strategy supplies a list of these to request one or more
  * notifications.
  * Notifications are differentiated by their Context label. If two notification requests with the same Context label are
  * provided, one will override the other.
  * @see <a href="https://developer.github.com/v3/repos/statuses/">Github API</a> for details of the purpose of each notification field.
  * @since TODO
  */
-public class GitHubNotificationRequest {
+public class AzureDevOpsRepoNotificationRequest {
 
     private final String context;
     private final String url;
@@ -46,7 +46,7 @@ public class GitHubNotificationRequest {
     /**
      * @since TODO
      */
-    private GitHubNotificationRequest(String context, String url, String message, GHCommitState state, boolean ignoreError) {
+    private AzureDevOpsRepoNotificationRequest(String context, String url, String message, GHCommitState state, boolean ignoreError) {
         this.context = context;
         this.url = url;
         this.message = message;
@@ -54,8 +54,8 @@ public class GitHubNotificationRequest {
         this.ignoreError = ignoreError;
     }
 
-    public static GitHubNotificationRequest build(String context, String url, String message, GHCommitState state, boolean ignoreError) {
-        return new GitHubNotificationRequest(context, url, message, state, ignoreError);
+    public static AzureDevOpsRepoNotificationRequest build(String context, String url, String message, GHCommitState state, boolean ignoreError) {
+        return new AzureDevOpsRepoNotificationRequest(context, url, message, state, ignoreError);
     }
 
     /**
@@ -108,7 +108,7 @@ public class GitHubNotificationRequest {
      */
     @Override
     public String toString() {
-        return "GitHubNotificationRequest{" +
+        return "AzureDevOpsRepoNotificationRequest{" +
                 "context='" + context + '\'' +
                 ", url='" + url + '\'' +
                 ", message='" + message + '\'' +
@@ -125,7 +125,7 @@ public class GitHubNotificationRequest {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        GitHubNotificationRequest that = (GitHubNotificationRequest) o;
+        AzureDevOpsRepoNotificationRequest that = (AzureDevOpsRepoNotificationRequest) o;
 
         if (ignoreError != that.ignoreError) return false;
         if (context != null ? !context.equals(that.context) : that.context != null) return false;

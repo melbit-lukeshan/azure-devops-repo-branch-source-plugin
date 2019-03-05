@@ -238,7 +238,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
      */
     @DataBoundSetter
     public void setApiUri(String apiUri) {
-        apiUri = GitHubConfiguration.normalizeApiUri(Util.fixEmptyAndTrim(apiUri));
+        apiUri = AzureDevOpsRepoConfiguration.normalizeApiUri(Util.fixEmptyAndTrim(apiUri));
         this.apiUri = GitHubServerConfig.GITHUB_URL.equals(apiUri) ? null : apiUri;
     }
 
@@ -376,7 +376,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
             }
             this.traits = traits;
         }
-        if (!StringUtils.equals(apiUri, GitHubConfiguration.normalizeApiUri(apiUri))) {
+        if (!StringUtils.equals(apiUri, AzureDevOpsRepoConfiguration.normalizeApiUri(apiUri))) {
             setApiUri(apiUri);
         }
         return this;
@@ -905,7 +905,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
                 throw new AbortException(message);
             }
 
-            GitHubSCMNavigatorRequest request = new GitHubSCMNavigatorContext()
+            AzureDevOpsRepoSCMNavigatorRequest request = new AzureDevOpsRepoSCMNavigatorContext()
                     .withTraits(traits) // TODO
                     .newRequest(this, observer);
             try {
@@ -922,7 +922,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
                     }
                     if (myself != null && repoOwner.equalsIgnoreCase(myself.getLogin())) {
                         listener.getLogger()
-                                .println(GitHubConsoleNote.create(System.currentTimeMillis(), String.format(
+                                .println(AzureDevOpsRepoConsoleNote.create(System.currentTimeMillis(), String.format(
                                         "Looking up repositories of myself %s", repoOwner
                                 )));
                         for (GHRepository repo : myself.listRepositories(100)) {
@@ -932,12 +932,12 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
                             }
                             if (request.process(repo.getName(), sourceFactory, null, witness)) {
                                 listener.getLogger()
-                                        .println(GitHubConsoleNote.create(System.currentTimeMillis(), String.format(
+                                        .println(AzureDevOpsRepoConsoleNote.create(System.currentTimeMillis(), String.format(
                                                 "%d repositories were processed (query completed)", witness.getCount()
                                         )));
                             }
                         }
-                        listener.getLogger().println(GitHubConsoleNote.create(System.currentTimeMillis(), String.format(
+                        listener.getLogger().println(AzureDevOpsRepoConsoleNote.create(System.currentTimeMillis(), String.format(
                                 "%d repositories were processed", witness.getCount()
                         )));
                         return;
@@ -953,19 +953,19 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
                     // may be an user... ok to ignore
                 }
                 if (org != null && repoOwner.equalsIgnoreCase(org.getLogin())) {
-                    listener.getLogger().println(GitHubConsoleNote.create(System.currentTimeMillis(), String.format(
+                    listener.getLogger().println(AzureDevOpsRepoConsoleNote.create(System.currentTimeMillis(), String.format(
                             "Looking up repositories of organization %s", repoOwner
                     )));
                     for (GHRepository repo : org.listRepositories(100)) {
                         Connector.checkApiRateLimit(listener, github);
                         if (request.process(repo.getName(), sourceFactory, null, witness)) {
                             listener.getLogger()
-                                    .println(GitHubConsoleNote.create(System.currentTimeMillis(), String.format(
+                                    .println(AzureDevOpsRepoConsoleNote.create(System.currentTimeMillis(), String.format(
                                             "%d repositories were processed (query completed)", witness.getCount()
                                     )));
                         }
                     }
-                    listener.getLogger().println(GitHubConsoleNote.create(System.currentTimeMillis(), String.format(
+                    listener.getLogger().println(AzureDevOpsRepoConsoleNote.create(System.currentTimeMillis(), String.format(
                             "%d repositories were processed", witness.getCount()
                     )));
                     return;
@@ -986,12 +986,12 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
                         Connector.checkApiRateLimit(listener, github);
                         if (request.process(repo.getName(), sourceFactory, null, witness)) {
                             listener.getLogger()
-                                    .println(GitHubConsoleNote.create(System.currentTimeMillis(), String.format(
+                                    .println(AzureDevOpsRepoConsoleNote.create(System.currentTimeMillis(), String.format(
                                             "%d repositories were processed (query completed)", witness.getCount()
                                     )));
                         }
                     }
-                    listener.getLogger().println(GitHubConsoleNote.create(System.currentTimeMillis(), String.format(
+                    listener.getLogger().println(AzureDevOpsRepoConsoleNote.create(System.currentTimeMillis(), String.format(
                             "%d repositories were processed", witness.getCount()
                     )));
                     return;
@@ -1042,7 +1042,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
                 throw new AbortException(message);
             }
 
-            GitHubSCMNavigatorRequest request = new GitHubSCMNavigatorContext()
+            AzureDevOpsRepoSCMNavigatorRequest request = new AzureDevOpsRepoSCMNavigatorContext()
                     .withTraits(traits)
                     .newRequest(this, observer);
             try {
@@ -1066,12 +1066,12 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
                         if (repo != null && repo.getOwnerName().equals(repoOwner)) {
                             if (request.process(repo.getName(), sourceFactory, null, witness)) {
                                 listener.getLogger()
-                                        .println(GitHubConsoleNote.create(System.currentTimeMillis(), String.format(
+                                        .println(AzureDevOpsRepoConsoleNote.create(System.currentTimeMillis(), String.format(
                                                 "%d repositories were processed (query completed)", witness.getCount()
                                         )));
                             }
                         }
-                        listener.getLogger().println(GitHubConsoleNote.create(System.currentTimeMillis(), String.format(
+                        listener.getLogger().println(AzureDevOpsRepoConsoleNote.create(System.currentTimeMillis(), String.format(
                                 "%d repositories were processed", witness.getCount()
                         )));
                         return;
@@ -1096,12 +1096,12 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
                     if (repo != null) {
                         if (request.process(repo.getName(), sourceFactory, null, witness)) {
                             listener.getLogger()
-                                    .println(GitHubConsoleNote.create(System.currentTimeMillis(), String.format(
+                                    .println(AzureDevOpsRepoConsoleNote.create(System.currentTimeMillis(), String.format(
                                             "%d repositories were processed (query completed)", witness.getCount()
                                     )));
                         }
                     }
-                    listener.getLogger().println(GitHubConsoleNote.create(System.currentTimeMillis(), String.format(
+                    listener.getLogger().println(AzureDevOpsRepoConsoleNote.create(System.currentTimeMillis(), String.format(
                             "%d repositories were processed", witness.getCount()
                     )));
                     return;
@@ -1121,12 +1121,12 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
                     if (repo != null) {
                         if (request.process(repo.getName(), sourceFactory, null, witness)) {
                             listener.getLogger()
-                                    .println(GitHubConsoleNote.create(System.currentTimeMillis(), String.format(
+                                    .println(AzureDevOpsRepoConsoleNote.create(System.currentTimeMillis(), String.format(
                                             "%d repositories were processed (query completed)", witness.getCount()
                                     )));
                         }
                     }
-                    listener.getLogger().println(GitHubConsoleNote.create(System.currentTimeMillis(), String.format(
+                    listener.getLogger().println(AzureDevOpsRepoConsoleNote.create(System.currentTimeMillis(), String.format(
                             "%d repositories were processed", witness.getCount()
                     )));
                     return;
@@ -1164,8 +1164,8 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
                     null,
                     objectUrl)
             );
-            result.add(new GitHubOrgMetadataAction(u));
-            result.add(new GitHubLink("icon-github-logo", u.getHtmlUrl()));
+            result.add(new AzureDevOpsRepoOrgMetadataAction(u));
+            result.add(new AzureDevOpsRepoLink("icon-github-logo", u.getHtmlUrl()));
             if (objectUrl == null) {
                 listener.getLogger().println("Organization URL: unspecified");
             } else {
@@ -1189,7 +1189,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
             StandardCredentials credentials = Connector.lookupScanCredentials((Item) owner, getApiUri(), credentialsId);
             GitHub hub = Connector.connect(getApiUri(), credentials);
             try {
-                GitHubOrgWebHook.register(hub, repoOwner);
+                AzureDevOpsRepoOrgWebHook.register(hub, repoOwner);
             } finally {
                 Connector.release(hub);
             }
@@ -1352,7 +1352,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
         public ListBoxModel doFillApiUriItems() {
             ListBoxModel result = new ListBoxModel();
             result.add("GitHub", "");
-            for (Endpoint e : GitHubConfiguration.get().getEndpoints()) {
+            for (Endpoint e : AzureDevOpsRepoConfiguration.get().getEndpoints()) {
                 result.add(e.getName() == null ? e.getApiUri() : e.getName() + " (" + e.getApiUri() + ")",
                         e.getApiUri());
             }
@@ -1367,7 +1367,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
          */
         @SuppressWarnings("unused") // jelly
         public boolean isApiUriSelectable() {
-            return !GitHubConfiguration.get().getEndpoints().isEmpty();
+            return !AzureDevOpsRepoConfiguration.get().getEndpoints().isEmpty();
         }
 
         /**
@@ -1381,8 +1381,8 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
             AzureDevOpsRepoSCMSource.DescriptorImpl sourceDescriptor =
                     Jenkins.getActiveInstance().getDescriptorByType(AzureDevOpsRepoSCMSource.DescriptorImpl.class);
             List<SCMTraitDescriptor<?>> all = new ArrayList<>();
-            all.addAll(SCMNavigatorTrait._for(this, GitHubSCMNavigatorContext.class, AzureDevOpsRepoSCMSourceBuilder.class));
-            all.addAll(SCMSourceTrait._for(sourceDescriptor, GitHubSCMSourceContext.class, null));
+            all.addAll(SCMNavigatorTrait._for(this, AzureDevOpsRepoSCMNavigatorContext.class, AzureDevOpsRepoSCMSourceBuilder.class));
+            all.addAll(SCMSourceTrait._for(sourceDescriptor, AzureDevOpsRepoSCMSourceContext.class, null));
             all.addAll(SCMSourceTrait._for(sourceDescriptor, null, AzureDevOpsRepoSCMBuilder.class));
             Set<SCMTraitDescriptor<?>> dedup = new HashSet<>();
             for (Iterator<SCMTraitDescriptor<?>> iterator = all.iterator(); iterator.hasNext(); ) {
@@ -1543,14 +1543,14 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
         /**
          * The request.
          */
-        private final GitHubSCMNavigatorRequest request;
+        private final AzureDevOpsRepoSCMNavigatorRequest request;
 
         /**
          * Constructor.
          *
          * @param request the request to decorate {@link SCMSource} instances with.
          */
-        public SourceFactory(GitHubSCMNavigatorRequest request) {
+        public SourceFactory(AzureDevOpsRepoSCMNavigatorRequest request) {
             this.request = request;
         }
 

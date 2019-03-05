@@ -40,15 +40,15 @@ import java.util.logging.Logger;
  * A timestamped console note from the GitHub branch source.
  */
 @Restricted(NoExternalUse.class)
-public class GitHubConsoleNote extends ConsoleNote {
+public class AzureDevOpsRepoConsoleNote extends ConsoleNote {
 
-    private static final Logger LOGGER = Logger.getLogger(GitHubConsoleNote.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AzureDevOpsRepoConsoleNote.class.getName());
     
     private static final long serialVersionUID = 1L;
 
     private final long timestamp;
 
-    public GitHubConsoleNote(long timestamp) {
+    public AzureDevOpsRepoConsoleNote(long timestamp) {
         this.timestamp = timestamp;
     }
 
@@ -60,10 +60,10 @@ public class GitHubConsoleNote extends ConsoleNote {
 
     public static String create(long timestamp, String text) {
         try {
-            return new GitHubConsoleNote(timestamp).encode() + text;
+            return new AzureDevOpsRepoConsoleNote(timestamp).encode() + text;
         } catch (IOException e) {
             // impossible, but don't make this a fatal problem
-            LOGGER.log(Level.WARNING, "Failed to serialize " + GitHubConsoleNote.class, e);
+            LOGGER.log(Level.WARNING, "Failed to serialize " + AzureDevOpsRepoConsoleNote.class, e);
             return text;
         }
     }

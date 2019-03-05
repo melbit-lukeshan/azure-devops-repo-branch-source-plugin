@@ -27,9 +27,9 @@ package org.jenkinsci.plugins.azure_devops_repo_branch_source;
 import java.io.Closeable;
 
 /**
- * Package private interface to allow {@link GitHubSCMFile} and {@link GitHubSCMFileSystem} to be aware of the state
+ * Package private interface to allow {@link AzureDevOpsRepoSCMFile} and {@link AzureDevOpsRepoSCMFileSystem} to be aware of the state
  * of their connection.
  */
-interface GitHubClosable extends Closeable {
+interface AzureDevOpsRepoClosable extends Closeable {
     boolean isOpen();
 }

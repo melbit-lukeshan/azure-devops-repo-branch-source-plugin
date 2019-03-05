@@ -41,7 +41,7 @@ import org.kohsuke.github.GHCommitState;
  * When implementing a notification strategy, be aware that some details may be absent depending on the point of notification.
  * @since TODO
  */
-public final class GitHubNotificationContext {
+public final class AzureDevOpsRepoNotificationContext {
     private final Job<?, ?> job;
     private final Run<?, ?> build;
     private final SCMSource source;
@@ -50,15 +50,15 @@ public final class GitHubNotificationContext {
     /**
      * @since TODO
      */
-    private GitHubNotificationContext(Job<?, ?> job, Run<?, ?> build, SCMSource source, SCMHead head) {
+    private AzureDevOpsRepoNotificationContext(Job<?, ?> job, Run<?, ?> build, SCMSource source, SCMHead head) {
         this.job = job;
         this.build = build;
         this.source = source;
         this.head = head;
     }
 
-    public static GitHubNotificationContext build(@Nullable Job<?, ?> job, @Nullable Run<?, ?> build, SCMSource source, SCMHead head) {
-        return new GitHubNotificationContext(job, build, source, head);
+    public static AzureDevOpsRepoNotificationContext build(@Nullable Job<?, ?> job, @Nullable Run<?, ?> build, SCMSource source, SCMHead head) {
+        return new AzureDevOpsRepoNotificationContext(job, build, source, head);
     }
 
     /**
@@ -102,7 +102,7 @@ public final class GitHubNotificationContext {
      */
     @Override
     public String toString() {
-        return "GitHubNotificationContext{" +
+        return "AzureDevOpsRepoNotificationContext{" +
                 "job=" + job +
                 ", build=" + build +
                 ", source=" + source +
@@ -118,7 +118,7 @@ public final class GitHubNotificationContext {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        GitHubNotificationContext that = (GitHubNotificationContext) o;
+        AzureDevOpsRepoNotificationContext that = (AzureDevOpsRepoNotificationContext) o;
 
         if (job != null ? !job.equals(that.job) : that.job != null) return false;
         if (build != null ? !build.equals(that.build) : that.build != null) return false;

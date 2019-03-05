@@ -176,8 +176,8 @@ public class GitHubSCMNavigatorTest {
                 Matchers.<Action>is(
                         new ObjectMetadataAction("CloudBeers, Inc.", null, "https://github.com/cloudbeers")
                 ),
-                Matchers.<Action>is(new GitHubOrgMetadataAction("https://avatars.githubusercontent.com/u/4181899?v=3")),
-                Matchers.<Action>is(new GitHubLink("icon-github-logo", "https://github.com/cloudbeers"))));
+                Matchers.<Action>is(new AzureDevOpsRepoOrgMetadataAction("https://avatars.githubusercontent.com/u/4181899?v=3")),
+                Matchers.<Action>is(new AzureDevOpsRepoLink("icon-github-logo", "https://github.com/cloudbeers"))));
     }
 
     @Test

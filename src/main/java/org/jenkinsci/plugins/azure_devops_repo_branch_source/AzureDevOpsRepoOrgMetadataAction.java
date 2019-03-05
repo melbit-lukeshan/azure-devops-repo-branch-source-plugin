@@ -41,25 +41,25 @@ import java.io.ObjectStreamException;
  *
  * @author Kohsuke Kawaguchi
  */
-public class GitHubOrgMetadataAction extends AvatarMetadataAction {
+public class AzureDevOpsRepoOrgMetadataAction extends AvatarMetadataAction {
     @CheckForNull
     private final String avatar;
 
-    public GitHubOrgMetadataAction(@NonNull GHUser org) throws IOException {
+    public AzureDevOpsRepoOrgMetadataAction(@NonNull GHUser org) throws IOException {
         this(org.getAvatarUrl());
     }
 
-    public GitHubOrgMetadataAction(@CheckForNull String avatar) {
+    public AzureDevOpsRepoOrgMetadataAction(@CheckForNull String avatar) {
         this.avatar = Util.fixEmpty(avatar);
     }
 
-    public GitHubOrgMetadataAction(@NonNull GitHubOrgMetadataAction that) {
+    public AzureDevOpsRepoOrgMetadataAction(@NonNull AzureDevOpsRepoOrgMetadataAction that) {
         this(that.getAvatar());
     }
 
     private Object readResolve() throws ObjectStreamException {
         if (avatar != null && StringUtils.isBlank(avatar))
-            return new GitHubOrgMetadataAction(this);
+            return new AzureDevOpsRepoOrgMetadataAction(this);
         return this;
     }
 
@@ -116,7 +116,7 @@ public class GitHubOrgMetadataAction extends AvatarMetadataAction {
             return false;
         }
 
-        GitHubOrgMetadataAction that = (GitHubOrgMetadataAction) o;
+        AzureDevOpsRepoOrgMetadataAction that = (AzureDevOpsRepoOrgMetadataAction) o;
 
         return avatar != null ? avatar.equals(that.avatar) : that.avatar == null;
 
@@ -135,7 +135,7 @@ public class GitHubOrgMetadataAction extends AvatarMetadataAction {
      */
     @Override
     public String toString() {
-        return "GitHubOrgMetadataAction{" +
+        return "AzureDevOpsRepoOrgMetadataAction{" +
                 ", avatar='" + avatar + '\'' +
                 "}";
     }

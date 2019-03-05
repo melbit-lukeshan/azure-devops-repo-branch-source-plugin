@@ -70,7 +70,7 @@ public class Endpoint extends AbstractDescribableImpl<Endpoint> {
 
     @DataBoundConstructor
     public Endpoint(String apiUri, String name) {
-        this.apiUri = GitHubConfiguration.normalizeApiUri(Util.fixEmptyAndTrim(apiUri));
+        this.apiUri = AzureDevOpsRepoConfiguration.normalizeApiUri(Util.fixEmptyAndTrim(apiUri));
         if (StringUtils.isBlank(name)) {
             this.name = SCMName.fromUrl(this.apiUri, COMMON_PREFIX_HOSTNAMES);
         } else {
@@ -79,7 +79,7 @@ public class Endpoint extends AbstractDescribableImpl<Endpoint> {
     }
 
     private Object readResolve() throws ObjectStreamException {
-        if (!apiUri.equals(GitHubConfiguration.normalizeApiUri(apiUri))) {
+        if (!apiUri.equals(AzureDevOpsRepoConfiguration.normalizeApiUri(apiUri))) {
             return new Endpoint(apiUri, name);
         }
         return this;

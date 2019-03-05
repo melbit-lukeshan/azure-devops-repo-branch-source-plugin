@@ -60,7 +60,7 @@ public class ForkPullRequestDiscoveryTrait extends SCMSourceTrait {
      * The authority.
      */
     @NonNull
-    private final SCMHeadAuthority<? super GitHubSCMSourceRequest, ? extends ChangeRequestSCMHead2, ? extends
+    private final SCMHeadAuthority<? super AzureDevOpsRepoSCMSourceRequest, ? extends ChangeRequestSCMHead2, ? extends
             SCMRevision>
             trust;
 
@@ -72,7 +72,7 @@ public class ForkPullRequestDiscoveryTrait extends SCMSourceTrait {
      */
     @DataBoundConstructor
     public ForkPullRequestDiscoveryTrait(int strategyId,
-                                        @NonNull SCMHeadAuthority<? super GitHubSCMSourceRequest, ? extends
+                                         @NonNull SCMHeadAuthority<? super AzureDevOpsRepoSCMSourceRequest, ? extends
                                                  ChangeRequestSCMHead2, ? extends SCMRevision> trust) {
         this.strategyId = strategyId;
         this.trust = trust;
@@ -85,7 +85,7 @@ public class ForkPullRequestDiscoveryTrait extends SCMSourceTrait {
      * @param trust      the authority.
      */
     public ForkPullRequestDiscoveryTrait(@NonNull Set<ChangeRequestCheckoutStrategy> strategies,
-                                         @NonNull SCMHeadAuthority<? super GitHubSCMSourceRequest, ? extends
+                                         @NonNull SCMHeadAuthority<? super AzureDevOpsRepoSCMSourceRequest, ? extends
                                                  ChangeRequestSCMHead2, ? extends SCMRevision> trust) {
         this((strategies.contains(ChangeRequestCheckoutStrategy.MERGE) ? 1 : 0)
                 + (strategies.contains(ChangeRequestCheckoutStrategy.HEAD) ? 2 : 0), trust);
@@ -125,7 +125,7 @@ public class ForkPullRequestDiscoveryTrait extends SCMSourceTrait {
      * @return the authority.
      */
     @NonNull
-    public SCMHeadAuthority<? super GitHubSCMSourceRequest, ? extends ChangeRequestSCMHead2, ? extends SCMRevision> getTrust() {
+    public SCMHeadAuthority<? super AzureDevOpsRepoSCMSourceRequest, ? extends ChangeRequestSCMHead2, ? extends SCMRevision> getTrust() {
         return trust;
     }
 
@@ -134,7 +134,7 @@ public class ForkPullRequestDiscoveryTrait extends SCMSourceTrait {
      */
     @Override
     protected void decorateContext(SCMSourceContext<?, ?> context) {
-        GitHubSCMSourceContext ctx = (GitHubSCMSourceContext) context;
+        AzureDevOpsRepoSCMSourceContext ctx = (AzureDevOpsRepoSCMSourceContext) context;
         ctx.wantForkPRs(true);
         ctx.withAuthority(trust);
         ctx.withForkPRStrategies(getStrategies());
@@ -169,7 +169,7 @@ public class ForkPullRequestDiscoveryTrait extends SCMSourceTrait {
          */
         @Override
         public Class<? extends SCMSourceContext> getContextClass() {
-            return GitHubSCMSourceContext.class;
+            return AzureDevOpsRepoSCMSourceContext.class;
         }
 
         /**
@@ -177,7 +177,7 @@ public class ForkPullRequestDiscoveryTrait extends SCMSourceTrait {
          */
         @Override
         public Class<? extends SCMSource> getSourceClass() {
-            return GitHubSCMSource.class;
+            return AzureDevOpsRepoSCMSource.class;
         }
 
         /**
@@ -205,7 +205,7 @@ public class ForkPullRequestDiscoveryTrait extends SCMSourceTrait {
         @SuppressWarnings("unused") // stapler
         public List<SCMHeadAuthorityDescriptor> getTrustDescriptors() {
             return SCMHeadAuthority._for(
-                    GitHubSCMSourceRequest.class,
+                    AzureDevOpsRepoSCMSourceRequest.class,
                     PullRequestSCMHead.class,
                     PullRequestSCMRevision.class,
                     SCMHeadOrigin.Fork.class
@@ -274,7 +274,7 @@ public class ForkPullRequestDiscoveryTrait extends SCMSourceTrait {
      * An {@link SCMHeadAuthority} that trusts contributors to the repository.
      */
     public static class TrustContributors
-            extends SCMHeadAuthority<GitHubSCMSourceRequest, PullRequestSCMHead, PullRequestSCMRevision> {
+            extends SCMHeadAuthority<AzureDevOpsRepoSCMSourceRequest, PullRequestSCMHead, PullRequestSCMRevision> {
         /**
          * Constructor.
          */
@@ -286,7 +286,7 @@ public class ForkPullRequestDiscoveryTrait extends SCMSourceTrait {
          * {@inheritDoc}
          */
         @Override
-        protected boolean checkTrusted(@NonNull GitHubSCMSourceRequest request, @NonNull PullRequestSCMHead head) {
+        protected boolean checkTrusted(@NonNull AzureDevOpsRepoSCMSourceRequest request, @NonNull PullRequestSCMHead head) {
             return !head.getOrigin().equals(SCMHeadOrigin.DEFAULT)
                     && request.getCollaboratorNames().contains(head.getSourceOwner());
         }
@@ -321,7 +321,7 @@ public class ForkPullRequestDiscoveryTrait extends SCMSourceTrait {
      * An {@link SCMHeadAuthority} that trusts those with write permission to the repository.
      */
     public static class TrustPermission
-            extends SCMHeadAuthority<GitHubSCMSourceRequest, PullRequestSCMHead, PullRequestSCMRevision> {
+            extends SCMHeadAuthority<AzureDevOpsRepoSCMSourceRequest, PullRequestSCMHead, PullRequestSCMRevision> {
 
         /**
          * Constructor.
@@ -334,7 +334,7 @@ public class ForkPullRequestDiscoveryTrait extends SCMSourceTrait {
          * {@inheritDoc}
          */
         @Override
-        protected boolean checkTrusted(@NonNull GitHubSCMSourceRequest request, @NonNull PullRequestSCMHead head)
+        protected boolean checkTrusted(@NonNull AzureDevOpsRepoSCMSourceRequest request, @NonNull PullRequestSCMHead head)
                 throws IOException, InterruptedException {
             if (!head.getOrigin().equals(SCMHeadOrigin.DEFAULT)) {
                 GHPermissionType permission = request.getPermissions(head.getSourceOwner());
@@ -342,7 +342,8 @@ public class ForkPullRequestDiscoveryTrait extends SCMSourceTrait {
                     case ADMIN:
                     case WRITE:
                         return true;
-                    default:return false;
+                    default:
+                        return false;
                 }
             }
             return false;

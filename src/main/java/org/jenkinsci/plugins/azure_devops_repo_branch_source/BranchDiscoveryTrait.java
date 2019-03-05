@@ -102,7 +102,7 @@ public class BranchDiscoveryTrait extends SCMSourceTrait {
      */
     @Override
     protected void decorateContext(SCMSourceContext<?, ?> context) {
-        GitHubSCMSourceContext ctx = (GitHubSCMSourceContext) context;
+        AzureDevOpsRepoSCMSourceContext ctx = (AzureDevOpsRepoSCMSourceContext) context;
         ctx.wantBranches(true);
         ctx.withAuthority(new BranchSCMHeadAuthority());
         switch (strategyId) {
@@ -151,7 +151,7 @@ public class BranchDiscoveryTrait extends SCMSourceTrait {
          */
         @Override
         public Class<? extends SCMSourceContext> getContextClass() {
-            return GitHubSCMSourceContext.class;
+            return AzureDevOpsRepoSCMSourceContext.class;
         }
 
         /**

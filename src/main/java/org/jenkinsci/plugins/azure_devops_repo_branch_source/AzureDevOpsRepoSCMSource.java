@@ -327,7 +327,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
      */
     @DataBoundSetter
     public void setApiUri(@CheckForNull String apiUri) {
-        this.apiUri = GitHubConfiguration.normalizeApiUri(Util.fixEmptyAndTrim(apiUri));
+        this.apiUri = AzureDevOpsRepoConfiguration.normalizeApiUri(Util.fixEmptyAndTrim(apiUri));
     }
 
     /**
@@ -492,7 +492,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
             }
             this.traits = traits;
         }
-        if (!StringUtils.equals(apiUri, GitHubConfiguration.normalizeApiUri(apiUri))) {
+        if (!StringUtils.equals(apiUri, AzureDevOpsRepoConfiguration.normalizeApiUri(apiUri))) {
             setApiUri(apiUri);
         }
         return this;
@@ -853,7 +853,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                 listener.getLogger().format("Examining %s%n",
                         HyperlinkNote.encodeTo(ghRepository.getHtmlUrl().toString(), fullName));
                 repositoryUrl = ghRepository.getHtmlUrl();
-                try (final GitHubSCMSourceRequest request = new GitHubSCMSourceContext(criteria, observer)
+                try (final GitHubSCMSourceRequest request = new AzureDevOpsRepoSCMSourceContext(criteria, observer)
                         .withTraits(traits)
                         .newRequest(this, listener)) {
                     // populate the request with its data sources
@@ -869,7 +869,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                         request.setTags(new LazyTags(request, ghRepository));
                     }
                     request.setCollaboratorNames(new LazyContributorNames(request, listener, github, ghRepository, credentials));
-                    request.setPermissionsSource(new GitHubPermissionsSource() {
+                    request.setPermissionsSource(new AzureDevOpsRepoPermissionsSource() {
                         @Override
                         public GHPermissionType fetch(String username) throws IOException, InterruptedException {
                             return ghRepository.getPermission(username);
@@ -892,7 +892,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                                         public SCMSourceCriteria.Probe create(@NonNull BranchSCMHead head,
                                                                               @Nullable SCMRevisionImpl revisionInfo)
                                                 throws IOException, InterruptedException {
-                                            return new GitHubSCMProbe(github, ghRepository, head, revisionInfo);
+                                            return new AzureDevOpsRepoSCMProbe(github, ghRepository, head, revisionInfo);
                                         }
                                     }, new CriteriaWitness(listener))) {
                                 listener.getLogger().format("%n  %d branches were processed (query completed)%n", count);
@@ -943,7 +943,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                                                 if (!trusted) {
                                                     listener.getLogger().format("    (not from a trusted source)%n");
                                                 }
-                                                return new GitHubSCMProbe(github, ghRepository,
+                                                return new AzureDevOpsRepoSCMProbe(github, ghRepository,
                                                         trusted ? head : head.getTarget(), null);
                                             }
                                         },
@@ -1026,7 +1026,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                                         public SCMSourceCriteria.Probe create(@NonNull GitHubTagSCMHead head,
                                                                               @Nullable GitTagSCMRevision revisionInfo)
                                                 throws IOException, InterruptedException {
-                                            return new GitHubSCMProbe(github, ghRepository, head, revisionInfo);
+                                            return new AzureDevOpsRepoSCMProbe(github, ghRepository, head, revisionInfo);
                                         }
                                     }, new CriteriaWitness(listener))) {
                                 listener.getLogger()
@@ -1078,7 +1078,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                 listener.getLogger().format("Listing %s%n",
                         HyperlinkNote.encodeTo(ghRepository.getHtmlUrl().toString(), fullName));
                 repositoryUrl = ghRepository.getHtmlUrl();
-                GitHubSCMSourceContext context = new GitHubSCMSourceContext(null, SCMHeadObserver.none())
+                AzureDevOpsRepoSCMSourceContext context = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none())
                         .withTraits(traits);
                 boolean wantBranches = context.wantBranches();
                 boolean wantTags = context.wantTags();
@@ -1164,7 +1164,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
             final GHRepository ghRepository = this.ghRepository;
             listener.getLogger().format("Examining %s%n",
                     HyperlinkNote.encodeTo(ghRepository.getHtmlUrl().toString(), fullName));
-            GitHubSCMSourceContext context = new GitHubSCMSourceContext(null, SCMHeadObserver.none())
+            AzureDevOpsRepoSCMSourceContext context = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none())
                     .withTraits(traits);
             Matcher prMatcher = Pattern.compile("^PR-(\\d+)(?:-(.*))?$").matcher(headName);
             if (prMatcher.matches()) {
@@ -1388,7 +1388,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         try {
             String fullName = repoOwner + "/" + repository;
             final GHRepository repo = github.getRepository(fullName);
-            return new GitHubSCMProbe(github, repo, head, revision);
+            return new AzureDevOpsRepoSCMProbe(github, repo, head, revision);
         } catch (IOException | RuntimeException | Error e) {
             Connector.release(github);
             throw e;
@@ -1533,7 +1533,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         if (revision instanceof PullRequestSCMRevision) {
             PullRequestSCMHead head = (PullRequestSCMHead) revision.getHead();
 
-            try (GitHubSCMSourceRequest request = new GitHubSCMSourceContext(null, SCMHeadObserver.none())
+            try (GitHubSCMSourceRequest request = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none())
                     .withTraits(traits)
                     .newRequest(this, listener)) {
                 if (collaboratorNames != null) {
@@ -1587,7 +1587,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         List<Action> result = new ArrayList<>();
         SCMSourceOwner owner = getOwner();
         if (owner instanceof Actionable) {
-            GitHubLink repoLink = ((Actionable) owner).getAction(GitHubLink.class);
+            AzureDevOpsRepoLink repoLink = ((Actionable) owner).getAction(AzureDevOpsRepoLink.class);
             if (repoLink != null) {
                 String url;
                 ObjectMetadataAction metadataAction = null;
@@ -1609,11 +1609,11 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                     url = repoLink.getUrl() + "/tree/" + head.getName();
                     metadataAction = new ObjectMetadataAction(head.getName(), null, url);
                 }
-                result.add(new GitHubLink("icon-github-branch", url));
+                result.add(new AzureDevOpsRepoLink("icon-github-branch", url));
                 result.add(metadataAction);
             }
             if (head instanceof BranchSCMHead) {
-                for (GitHubDefaultBranch p : ((Actionable) owner).getActions(GitHubDefaultBranch.class)) {
+                for (AzureDevOpsRepoDefaultBranch p : ((Actionable) owner).getActions(AzureDevOpsRepoDefaultBranch.class)) {
                     if (StringUtils.equals(getRepoOwner(), p.getRepoOwner())
                             && StringUtils.equals(repository, p.getRepository())
                             && StringUtils.equals(p.getDefaultBranch(), head.getName())) {
@@ -1635,7 +1635,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                                            @NonNull TaskListener listener) throws IOException {
         // TODO when we have support for trusted events, use the details from event if event was from trusted source
         List<Action> result = new ArrayList<>();
-        result.add(new GitHubRepoMetadataAction());
+        result.add(new AzureDevOpsRepoRepoMetadataAction());
         StandardCredentials credentials = Connector.lookupScanCredentials((Item) getOwner(), apiUri, credentialsId);
         GitHub hub = Connector.connect(apiUri, credentials);
         try {
@@ -1649,9 +1649,9 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                                 credentials == null ? "anonymous access" : CredentialsNameProvider.name(credentials), repoOwner, repository, apiUri == null ? GITHUB_URL : apiUri));
             }
             result.add(new ObjectMetadataAction(null, ghRepository.getDescription(), Util.fixEmpty(ghRepository.getHomepage())));
-            result.add(new GitHubLink("icon-github-repo", ghRepository.getHtmlUrl()));
+            result.add(new AzureDevOpsRepoLink("icon-github-repo", ghRepository.getHtmlUrl()));
             if (StringUtils.isNotBlank(ghRepository.getDefaultBranch())) {
-                result.add(new GitHubDefaultBranch(getRepoOwner(), repository, ghRepository.getDefaultBranch()));
+                result.add(new AzureDevOpsRepoDefaultBranch(getRepoOwner(), repository, ghRepository.getDefaultBranch()));
             }
             return result;
         } finally {
@@ -1798,7 +1798,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         public ListBoxModel doFillApiUriItems() {
             ListBoxModel result = new ListBoxModel();
             result.add("GitHub", "");
-            for (Endpoint e : GitHubConfiguration.get().getEndpoints()) {
+            for (Endpoint e : AzureDevOpsRepoConfiguration.get().getEndpoints()) {
                 result.add(e.getName() == null ? e.getApiUri() : e.getName() + " (" + e.getApiUri() + ")",
                         e.getApiUri());
             }
@@ -1806,7 +1806,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         }
 
         public boolean isApiUriSelectable() {
-            return !GitHubConfiguration.get().getEndpoints().isEmpty();
+            return !AzureDevOpsRepoConfiguration.get().getEndpoints().isEmpty();
         }
 
         @Restricted(NoExternalUse.class)
@@ -1979,7 +1979,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
 
         public List<NamedArrayList<? extends SCMTraitDescriptor<?>>> getTraitsDescriptorLists() {
             List<SCMTraitDescriptor<?>> all = new ArrayList<>();
-            all.addAll(SCMSourceTrait._for(this, GitHubSCMSourceContext.class, null));
+            all.addAll(SCMSourceTrait._for(this, AzureDevOpsRepoSCMSourceContext.class, null));
             all.addAll(SCMSourceTrait._for(this, null, AzureDevOpsRepoSCMBuilder.class));
             Set<SCMTraitDescriptor<?>> dedup = new HashSet<>();
             for (Iterator<SCMTraitDescriptor<?>> iterator = all.iterator(); iterator.hasNext(); ) {
@@ -2445,7 +2445,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         }
     }
 
-    private class DeferredPermissionsSource extends GitHubPermissionsSource implements Closeable {
+    private class DeferredPermissionsSource extends AzureDevOpsRepoPermissionsSource implements Closeable {
 
         private final TaskListener listener;
         private GitHub github;

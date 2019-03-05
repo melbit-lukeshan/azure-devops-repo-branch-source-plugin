@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2017 Steven Foster
+ * Copyright 2016 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,33 +24,58 @@
 
 package org.jenkinsci.plugins.azure_devops_repo_branch_source;
 
-import hudson.ExtensionPoint;
-import hudson.model.TaskListener;
+import hudson.Extension;
+import hudson.model.Descriptor;
+import hudson.model.TopLevelItem;
+import hudson.model.View;
+import hudson.views.ViewJobFilter;
+import jenkins.scm.api.SCMHead;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.List;
 
 /**
- * Represents a strategy for constructing GitHub status notifications
- * @since TODO
+ * A {@link ViewJobFilter} that matches {@link PullRequestSCMHead} based branches.
+ *
+ * @since FIXME
  */
-public abstract class AbstractGitHubNotificationStrategy implements ExtensionPoint {
-
+public class AzureDevOpsRepoPullRequestFilter extends ViewJobFilter {
     /**
-     * Creates the list of {@link AzureDevOpsRepoNotificationRequest} for the given context.
-     * @param notificationContext {@link AzureDevOpsRepoNotificationContext} the context details
-     * @param listener the listener
-     * @return a list of notification requests
-     * @since TODO
+     * Our constructor.
      */
-    public abstract List<AzureDevOpsRepoNotificationRequest> notifications(AzureDevOpsRepoNotificationContext notificationContext, TaskListener listener);
+    @DataBoundConstructor
+    public AzureDevOpsRepoPullRequestFilter() {
+    }
 
     /**
      * {@inheritDoc}
      */
-    public abstract boolean equals(Object o);
+    @Override
+    public List<TopLevelItem> filter(List<TopLevelItem> added, List<TopLevelItem> all, View filteringView) {
+        for (TopLevelItem item:all) {
+            if (added.contains(item)) {
+                continue;
+            }
+            if (SCMHead.HeadByItem.findHead(item) instanceof PullRequestSCMHead) {
+                added.add(item);
+            }
+        }
+        return added;
+    }
 
     /**
-     * {@inheritDoc}
+     * Our descriptor.
      */
-    public abstract int hashCode();
+    @Extension(optional = true)
+    public static class DescriptorImpl extends Descriptor<ViewJobFilter> {
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public String getDisplayName() {
+            return Messages.GitHubPullRequestFilter_DisplayName();
+        }
+    }
+
 }

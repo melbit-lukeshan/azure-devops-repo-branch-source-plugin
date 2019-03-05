@@ -59,7 +59,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeThat;
 
 @RunWith(Parameterized.class)
-public class GitHubSCMFileSystemTest {
+public class AzureDevOpsRepoSCMFileSystemTest {
     /**
      * All tests in this class only use Jenkins for the extensions
      */
@@ -107,7 +107,7 @@ public class GitHubSCMFileSystemTest {
     );
     private GitHubSCMSource source;
 
-    public GitHubSCMFileSystemTest(String revision) {
+    public AzureDevOpsRepoSCMFileSystemTest(String revision) {
         this.revision = revision == null ? null : new AbstractGitSCMSource.SCMRevisionImpl(master, revision);
     }
 

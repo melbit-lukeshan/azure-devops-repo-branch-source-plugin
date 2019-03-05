@@ -44,7 +44,7 @@ import java.util.*;
  *
  * @since 2.2.0
  */
-public class GitHubSCMSourceRequest extends SCMSourceRequest {
+public class AzureDevOpsRepoSCMSourceRequest extends SCMSourceRequest {
     /**
      * {@code true} if branch details need to be fetched.
      */
@@ -126,7 +126,7 @@ public class GitHubSCMSourceRequest extends SCMSourceRequest {
      * A deferred lookup of the permissions.
      */
     @CheckForNull
-    private GitHubPermissionsSource permissionsSource;
+    private AzureDevOpsRepoPermissionsSource permissionsSource;
 
     /**
      * Constructor.
@@ -135,7 +135,7 @@ public class GitHubSCMSourceRequest extends SCMSourceRequest {
      * @param context  the context.
      * @param listener the listener.
      */
-    GitHubSCMSourceRequest(SCMSource source, GitHubSCMSourceContext context, TaskListener listener) {
+    AzureDevOpsRepoSCMSourceRequest(SCMSource source, AzureDevOpsRepoSCMSourceContext context, TaskListener listener) {
         super(source, context, listener);
         fetchBranches = context.wantBranches();
         fetchTags = context.wantTags();
@@ -160,7 +160,7 @@ public class GitHubSCMSourceRequest extends SCMSourceRequest {
                     if (SCMHeadOrigin.DEFAULT.equals(h.getOrigin())) {
                         branchNames.add(((PullRequestSCMHead) h).getOriginName());
                     }
-                } else if (h instanceof GitHubTagSCMHead) {
+                } else if (h instanceof AzureDevOpsRepoTagSCMHead) {
                     tagNames.add(h.getName());
                 }
             }
@@ -482,7 +482,7 @@ public class GitHubSCMSourceRequest extends SCMSourceRequest {
      * @return the permission source.
      */
     @CheckForNull
-    public GitHubPermissionsSource getPermissionsSource() {
+    public AzureDevOpsRepoPermissionsSource getPermissionsSource() {
         return permissionsSource;
     }
 
@@ -491,7 +491,7 @@ public class GitHubSCMSourceRequest extends SCMSourceRequest {
      *
      * @param permissionsSource the permission source.
      */
-    public void setPermissionsSource(@CheckForNull GitHubPermissionsSource permissionsSource) {
+    public void setPermissionsSource(@CheckForNull AzureDevOpsRepoPermissionsSource permissionsSource) {
         this.permissionsSource = permissionsSource;
     }
 }

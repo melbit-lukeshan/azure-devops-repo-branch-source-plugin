@@ -293,7 +293,7 @@ public class PushGHEventSubscriber extends GHEventsSubscriber {
              * things for us, so we just claim a BranchSCMHead
              */
 
-            GitHubSCMSourceContext context = new GitHubSCMSourceContext(null, SCMHeadObserver.none())
+            AzureDevOpsRepoSCMSourceContext context = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none())
                     .withTraits(src.getTraits());
             String ref = push.getRef();
             if (context.wantBranches() && !ref.startsWith(R_TAGS)) {

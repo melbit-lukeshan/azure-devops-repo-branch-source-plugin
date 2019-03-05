@@ -57,9 +57,9 @@ import static org.kohsuke.github.GHEvent.REPOSITORY;
  * This subscriber manages {@link org.kohsuke.github.GHEvent} REPOSITORY.
  */
 @Extension
-public class GitHubRepositoryEventSubscriber extends GHEventsSubscriber {
+public class AzureDevOpsRepoRepositoryEventSubscriber extends GHEventsSubscriber {
 
-    private static final Logger LOGGER = Logger.getLogger(GitHubRepositoryEventSubscriber.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AzureDevOpsRepoRepositoryEventSubscriber.class.getName());
     private static final Pattern REPOSITORY_NAME_PATTERN = Pattern.compile("https?://([^/]+)/([^/]+)/([^/]+)");
 
 

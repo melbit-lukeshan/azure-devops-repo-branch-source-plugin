@@ -48,7 +48,7 @@ import java.util.Objects;
 /**
  * Implements {@link SCMFileSystem} for GitHub.
  */
-public class GitHubSCMFileSystem extends SCMFileSystem implements GitHubClosable {
+public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements AzureDevOpsRepoClosable {
     private final GitHub gitHub;
     private final GHRepository repo;
     private final String ref;
@@ -63,7 +63,7 @@ public class GitHubSCMFileSystem extends SCMFileSystem implements GitHubClosable
      * @param rev the optional revision.
      * @throws IOException if I/O errors occur.
      */
-    protected GitHubSCMFileSystem(GitHub gitHub, GHRepository repo, String refName, @CheckForNull SCMRevision rev) throws IOException {
+    protected AzureDevOpsRepoSCMFileSystem(GitHub gitHub, GHRepository repo, String refName, @CheckForNull SCMRevision rev) throws IOException {
         super(rev);
         this.gitHub = gitHub;
         this.open = true;
@@ -188,7 +188,7 @@ public class GitHubSCMFileSystem extends SCMFileSystem implements GitHubClosable
     @NonNull
     @Override
     public SCMFile getRoot() {
-        return new GitHubSCMFile(this, repo, ref);
+        return new AzureDevOpsRepoSCMFile(this, repo, ref);
     }
 
     @Extension
@@ -273,7 +273,7 @@ public class GitHubSCMFileSystem extends SCMFileSystem implements GitHubClosable
                             Connector.release(github);
                             return null;
                         }
-                        return new GitHubSCMFileSystem(
+                        return new AzureDevOpsRepoSCMFileSystem(
                                 github, repo,
                                 pr.getSourceBranch(),
                                 rev);
@@ -317,7 +317,7 @@ public class GitHubSCMFileSystem extends SCMFileSystem implements GitHubClosable
                         rev = new AbstractGitSCMSource.SCMRevisionImpl(head, ref.getObject().getSha());
                     }
                 }
-                return new GitHubSCMFileSystem(github, repo, refName, rev);
+                return new AzureDevOpsRepoSCMFileSystem(github, repo, refName, rev);
             } catch (IOException | RuntimeException e) {
                 Connector.release(github);
                 throw e;

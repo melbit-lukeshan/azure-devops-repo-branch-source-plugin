@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2016 CloudBees, Inc.
+ * Copyright (c) 2017, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,62 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package org.jenkinsci.plugins.azure_devops_repo_branch_source;
 
-import jenkins.scm.api.metadata.AvatarMetadataAction;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.scm.api.SCMNavigator;
+import jenkins.scm.api.SCMSourceObserver;
+import jenkins.scm.api.trait.SCMNavigatorRequest;
 
 /**
- * Invisible property that retains information about GitHub repository.
+ * The {@link SCMNavigatorRequest} for GitHub.
  *
- * @author Kohsuke Kawaguchi
+ * @since 2.2.0
  */
-public class GitHubRepoMetadataAction extends AvatarMetadataAction {
-
+public class AzureDevOpsRepoSCMNavigatorRequest extends SCMNavigatorRequest {
     /**
-     * {@inheritDoc}
+     * Constructor.
+     *
+     * @param source   the source.
+     * @param context  the context.
+     * @param observer the observer.
      */
-    @Override
-    public String getAvatarIconClassName() {
-        return "icon-github-repo";
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getAvatarDescription() {
-        return Messages.GitHubRepoMetadataAction_IconDescription();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        return true;
-
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public int hashCode() {
-        return 0;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String toString() {
-        return "GitHubRepoMetadataAction{}";
+    protected AzureDevOpsRepoSCMNavigatorRequest(@NonNull SCMNavigator source,
+                                                 @NonNull AzureDevOpsRepoSCMNavigatorContext context,
+                                                 @NonNull SCMSourceObserver observer) {
+        super(source, context, observer);
     }
 }
