@@ -79,7 +79,7 @@ public class PushGHEventSubscriber extends GHEventsSubscriber {
             if (project instanceof SCMSourceOwner) {
                 SCMSourceOwner owner = (SCMSourceOwner) project;
                 for (SCMSource source : owner.getSCMSources()) {
-                    if (source instanceof GitHubSCMSource) {
+                    if (source instanceof AzureDevOpsRepoSCMSource) {
                         return true;
                     }
                 }
@@ -87,7 +87,7 @@ public class PushGHEventSubscriber extends GHEventsSubscriber {
             if (project.getParent() instanceof SCMSourceOwner) {
                 SCMSourceOwner owner = (SCMSourceOwner) project.getParent();
                 for (SCMSource source : owner.getSCMSources()) {
-                    if (source instanceof GitHubSCMSource) {
+                    if (source instanceof AzureDevOpsRepoSCMSource) {
                         return true;
                     }
                 }
@@ -165,7 +165,7 @@ public class PushGHEventSubscriber extends GHEventsSubscriber {
     }
 
     private void fireAfterDelay(final SCMHeadEventImpl e) {
-        SCMHeadEvent.fireLater(e, GitHubSCMSource.getEventDelaySeconds(), TimeUnit.SECONDS);
+        SCMHeadEvent.fireLater(e, AzureDevOpsRepoSCMSource.getEventDelaySeconds(), TimeUnit.SECONDS);
     }
 
     private static class SCMHeadEventImpl extends SCMHeadEvent<GHEventPayload.Push> {
@@ -192,8 +192,8 @@ public class PushGHEventSubscriber extends GHEventsSubscriber {
          */
         @Override
         public boolean isMatch(@NonNull SCMNavigator navigator) {
-            return navigator instanceof GitHubSCMNavigator
-                    && repoOwner.equalsIgnoreCase(((GitHubSCMNavigator) navigator).getRepoOwner());
+            return navigator instanceof AzureDevOpsRepoSCMNavigator
+                    && repoOwner.equalsIgnoreCase(((AzureDevOpsRepoSCMNavigator) navigator).getRepoOwner());
         }
 
         /**
@@ -259,26 +259,26 @@ public class PushGHEventSubscriber extends GHEventsSubscriber {
         @NonNull
         @Override
         public Map<SCMHead, SCMRevision> heads(@NonNull SCMSource source) {
-            if (!(source instanceof GitHubSCMSource
-                    && isApiMatch(((GitHubSCMSource) source).getApiUri())
-                    && repoOwner.equalsIgnoreCase(((GitHubSCMSource) source).getRepoOwner())
-                    && repository.equalsIgnoreCase(((GitHubSCMSource) source).getRepository()))) {
+            if (!(source instanceof AzureDevOpsRepoSCMSource
+                    && isApiMatch(((AzureDevOpsRepoSCMSource) source).getApiUri())
+                    && repoOwner.equalsIgnoreCase(((AzureDevOpsRepoSCMSource) source).getRepoOwner())
+                    && repository.equalsIgnoreCase(((AzureDevOpsRepoSCMSource) source).getRepository()))) {
                 return Collections.emptyMap();
             }
-            GitHubSCMSource src = (GitHubSCMSource) source;
+            AzureDevOpsRepoSCMSource src = (AzureDevOpsRepoSCMSource) source;
             GHEventPayload.Push push = getPayload();
             GHRepository repo = push.getRepository();
             String repoName = repo.getName();
-            if (!repoName.matches(GitHubSCMSource.VALID_GITHUB_REPO_NAME)) {
+            if (!repoName.matches(AzureDevOpsRepoSCMSource.VALID_GITHUB_REPO_NAME)) {
                 // fake repository name
                 return Collections.emptyMap();
             }
             String repoOwner = push.getRepository().getOwnerName();
-            if (!repoOwner.matches(GitHubSCMSource.VALID_GITHUB_USER_NAME)) {
+            if (!repoOwner.matches(AzureDevOpsRepoSCMSource.VALID_GITHUB_USER_NAME)) {
                 // fake owner name
                 return Collections.emptyMap();
             }
-            if (!push.getHead().matches(GitHubSCMSource.VALID_GIT_SHA1)) {
+            if (!push.getHead().matches(AzureDevOpsRepoSCMSource.VALID_GIT_SHA1)) {
                 // fake head sha1
                 return Collections.emptyMap();
             }
@@ -337,7 +337,7 @@ public class PushGHEventSubscriber extends GHEventsSubscriber {
                 // will not strip the tag *here* (because it will always be only a few seconds "old"), but when
                 // the fetch call actually has the real tag date the pre-filter will apply at that point in time.
 
-                GitHubTagSCMHead head = new GitHubTagSCMHead(ref.substring(R_TAGS.length()), getTimestamp());
+                AzureDevOpsRepoTagSCMHead head = new AzureDevOpsRepoTagSCMHead(ref.substring(R_TAGS.length()), getTimestamp());
                 boolean excluded = false;
                 for (SCMHeadPrefilter prefilter : context.prefilters()) {
                     if (prefilter.isExcluded(source, head)) {

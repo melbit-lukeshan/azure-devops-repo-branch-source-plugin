@@ -94,7 +94,7 @@ public class PullRequestSCMHead extends SCMHead implements ChangeRequestSCMHead2
     }
 
     public PullRequestSCMHead(@NonNull String name, String sourceOwner, String sourceRepo, String sourceBranch, int number,
-                       BranchSCMHead target, SCMHeadOrigin origin, ChangeRequestCheckoutStrategy strategy) {
+                              BranchSCMHead target, SCMHeadOrigin origin, ChangeRequestCheckoutStrategy strategy) {
         super(name);
         this.merge = ChangeRequestCheckoutStrategy.MERGE == strategy;
         this.number = number;
@@ -271,21 +271,21 @@ public class PullRequestSCMHead extends SCMHead implements ChangeRequestSCMHead2
     @Restricted(NoExternalUse.class)
     @Extension
     public static class FixOriginMigration extends
-            SCMHeadMigration<GitHubSCMSource, FixOrigin, PullRequestSCMRevision> {
+            SCMHeadMigration<AzureDevOpsRepoSCMSource, FixOrigin, PullRequestSCMRevision> {
         public FixOriginMigration() {
-            super(GitHubSCMSource.class, FixOrigin.class, PullRequestSCMRevision.class);
+            super(AzureDevOpsRepoSCMSource.class, FixOrigin.class, PullRequestSCMRevision.class);
         }
 
         @Override
-        public PullRequestSCMHead migrate(@NonNull GitHubSCMSource source, @NonNull FixOrigin head) {
+        public PullRequestSCMHead migrate(@NonNull AzureDevOpsRepoSCMSource source, @NonNull FixOrigin head) {
             return new PullRequestSCMHead(head.getName(), head.getSourceOwner(), head.getSourceRepo(),
                     head.getSourceBranch(), head.getNumber(), head.getTarget(), source.getRepoOwner().equalsIgnoreCase(head.getSourceOwner())
-                                        ? SCMHeadOrigin.DEFAULT
-                                        : new SCMHeadOrigin.Fork(head.getSourceOwner()), head.getCheckoutStrategy());
+                    ? SCMHeadOrigin.DEFAULT
+                    : new SCMHeadOrigin.Fork(head.getSourceOwner()), head.getCheckoutStrategy());
         }
 
         @Override
-        public SCMRevision migrate(@NonNull GitHubSCMSource source,
+        public SCMRevision migrate(@NonNull AzureDevOpsRepoSCMSource source,
                                    @NonNull PullRequestSCMRevision revision) {
             PullRequestSCMHead head = migrate(source, (FixOrigin) revision.getHead());
             return head != null ? new PullRequestSCMRevision(
@@ -320,23 +320,23 @@ public class PullRequestSCMHead extends SCMHead implements ChangeRequestSCMHead2
     @Restricted(NoExternalUse.class)
     @Extension
     public static class FixMetadataMigration extends
-            SCMHeadMigration<GitHubSCMSource, FixMetadata, PullRequestSCMRevision> {
+            SCMHeadMigration<AzureDevOpsRepoSCMSource, FixMetadata, PullRequestSCMRevision> {
         public FixMetadataMigration() {
-            super(GitHubSCMSource.class, FixMetadata.class, PullRequestSCMRevision.class);
+            super(AzureDevOpsRepoSCMSource.class, FixMetadata.class, PullRequestSCMRevision.class);
         }
 
         @Override
-        public PullRequestSCMHead migrate(@NonNull GitHubSCMSource source, @NonNull FixMetadata head) {
+        public PullRequestSCMHead migrate(@NonNull AzureDevOpsRepoSCMSource source, @NonNull FixMetadata head) {
             PullRequestSource src = source.retrievePullRequestSource(head.getNumber());
             return new PullRequestSCMHead(head.getName(), src == null ? null : src.getSourceOwner(),
                     src == null ? null : src.getSourceRepo(), src == null ? null : src.getSourceBranch(),
                     head.getNumber(), head.getTarget(), src != null && source.getRepoOwner().equalsIgnoreCase(src.getSourceOwner())
-                                        ? SCMHeadOrigin.DEFAULT
-                                        : new SCMHeadOrigin.Fork(head.getSourceOwner()), head.getCheckoutStrategy());
+                    ? SCMHeadOrigin.DEFAULT
+                    : new SCMHeadOrigin.Fork(head.getSourceOwner()), head.getCheckoutStrategy());
         }
 
         @Override
-        public SCMRevision migrate(@NonNull GitHubSCMSource source,
+        public SCMRevision migrate(@NonNull AzureDevOpsRepoSCMSource source,
                                    @NonNull PullRequestSCMRevision revision) {
             PullRequestSCMHead head = migrate(source, (FixMetadata) revision.getHead());
             return head != null ? new PullRequestSCMRevision(

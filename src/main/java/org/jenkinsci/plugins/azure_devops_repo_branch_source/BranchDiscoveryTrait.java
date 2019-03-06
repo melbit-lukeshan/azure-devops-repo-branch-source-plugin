@@ -159,7 +159,7 @@ public class BranchDiscoveryTrait extends SCMSourceTrait {
          */
         @Override
         public Class<? extends SCMSource> getSourceClass() {
-            return GitHubSCMSource.class;
+            return AzureDevOpsRepoSCMSource.class;
         }
 
         /**
@@ -224,8 +224,8 @@ public class BranchDiscoveryTrait extends SCMSourceTrait {
          */
         @Override
         public boolean isExcluded(@NonNull SCMSourceRequest request, @NonNull SCMHead head) {
-            if (head instanceof BranchSCMHead && request instanceof GitHubSCMSourceRequest) {
-                for (GHPullRequest p : ((GitHubSCMSourceRequest) request).getPullRequests()) {
+            if (head instanceof BranchSCMHead && request instanceof AzureDevOpsRepoSCMSourceRequest) {
+                for (GHPullRequest p : ((AzureDevOpsRepoSCMSourceRequest) request).getPullRequests()) {
                     GHRepository headRepo = p.getHead().getRepository();
                     if (headRepo != null // head repo can be null if the PR is from a repo that has been deleted
                             && p.getBase().getRepository().getFullName().equalsIgnoreCase(headRepo.getFullName())
@@ -247,8 +247,8 @@ public class BranchDiscoveryTrait extends SCMSourceTrait {
          */
         @Override
         public boolean isExcluded(@NonNull SCMSourceRequest request, @NonNull SCMHead head) {
-            if (head instanceof BranchSCMHead && request instanceof GitHubSCMSourceRequest) {
-                for (GHPullRequest p : ((GitHubSCMSourceRequest) request).getPullRequests()) {
+            if (head instanceof BranchSCMHead && request instanceof AzureDevOpsRepoSCMSourceRequest) {
+                for (GHPullRequest p : ((AzureDevOpsRepoSCMSourceRequest) request).getPullRequests()) {
                     GHRepository headRepo = p.getHead().getRepository();
                     if (headRepo != null // head repo can be null if the PR is from a repo that has been deleted
                             && p.getBase().getRepository().getFullName().equalsIgnoreCase(headRepo.getFullName())

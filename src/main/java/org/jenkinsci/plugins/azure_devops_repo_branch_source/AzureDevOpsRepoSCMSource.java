@@ -853,7 +853,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                 listener.getLogger().format("Examining %s%n",
                         HyperlinkNote.encodeTo(ghRepository.getHtmlUrl().toString(), fullName));
                 repositoryUrl = ghRepository.getHtmlUrl();
-                try (final GitHubSCMSourceRequest request = new AzureDevOpsRepoSCMSourceContext(criteria, observer)
+                try (final AzureDevOpsRepoSCMSourceRequest request = new AzureDevOpsRepoSCMSourceContext(criteria, observer)
                         .withTraits(traits)
                         .newRequest(this, listener)) {
                     // populate the request with its data sources
@@ -1018,12 +1018,12 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                                     // we just need enough of a date value to allow for probing
                                 }
                             }
-                            GitHubTagSCMHead head = new GitHubTagSCMHead(tagName, tagDate);
+                            AzureDevOpsRepoTagSCMHead head = new AzureDevOpsRepoTagSCMHead(tagName, tagDate);
                             if (request.process(head, new GitTagSCMRevision(head, sha),
-                                    new SCMSourceRequest.ProbeLambda<GitHubTagSCMHead, GitTagSCMRevision>() {
+                                    new SCMSourceRequest.ProbeLambda<AzureDevOpsRepoTagSCMHead, GitTagSCMRevision>() {
                                         @NonNull
                                         @Override
-                                        public SCMSourceCriteria.Probe create(@NonNull GitHubTagSCMHead head,
+                                        public SCMSourceCriteria.Probe create(@NonNull AzureDevOpsRepoTagSCMHead head,
                                                                               @Nullable GitTagSCMRevision revisionInfo)
                                                 throws IOException, InterruptedException {
                                             return new AzureDevOpsRepoSCMProbe(github, ghRepository, head, revisionInfo);
@@ -1303,7 +1303,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                     }
                     listener.getLogger().format("Resolved %s as tag %s at revision %s%n", headName, headName,
                             tagSha);
-                    return new GitTagSCMRevision(new GitHubTagSCMHead(headName, tagDate), tagSha);
+                    return new GitTagSCMRevision(new AzureDevOpsRepoTagSCMHead(headName, tagDate), tagSha);
                 }
             } catch (FileNotFoundException e) {
                 // ok it doesn't exist
@@ -1425,8 +1425,8 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                             break;
                     }
                     return new PullRequestSCMRevision(prhead, baseHash, pr.getHead().getSha());
-                } else if (head instanceof GitHubTagSCMHead) {
-                    GitHubTagSCMHead tagHead = (GitHubTagSCMHead) head;
+                } else if (head instanceof AzureDevOpsRepoTagSCMHead) {
+                    AzureDevOpsRepoTagSCMHead tagHead = (AzureDevOpsRepoTagSCMHead) head;
                     GHRef tag = ghRepository.getRef("tags/" + tagHead.getName());
                     String sha = tag.getObject().getSha();
                     if ("tag".equalsIgnoreCase(tag.getObject().getType())) {
@@ -1533,7 +1533,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         if (revision instanceof PullRequestSCMRevision) {
             PullRequestSCMHead head = (PullRequestSCMHead) revision.getHead();
 
-            try (GitHubSCMSourceRequest request = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none())
+            try (AzureDevOpsRepoSCMSourceRequest request = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none())
                     .withTraits(traits)
                     .newRequest(this, listener)) {
                 if (collaboratorNames != null) {
@@ -2022,10 +2022,10 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     }
 
     private static class LazyBranches extends LazyIterable<GHBranch> {
-        private final GitHubSCMSourceRequest request;
+        private final AzureDevOpsRepoSCMSourceRequest request;
         private final GHRepository repo;
 
-        public LazyBranches(GitHubSCMSourceRequest request, GHRepository repo) {
+        public LazyBranches(AzureDevOpsRepoSCMSourceRequest request, GHRepository repo) {
             this.request = request;
             this.repo = repo;
         }
@@ -2070,10 +2070,10 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     }
 
     private static class LazyTags extends LazyIterable<GHRef> {
-        private final GitHubSCMSourceRequest request;
+        private final AzureDevOpsRepoSCMSourceRequest request;
         private final GHRepository repo;
 
-        public LazyTags(GitHubSCMSourceRequest request, GHRepository repo) {
+        public LazyTags(AzureDevOpsRepoSCMSourceRequest request, GHRepository repo) {
             this.request = request;
             this.repo = repo;
         }
@@ -2224,13 +2224,13 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     }
 
     private class LazyPullRequests extends LazyIterable<GHPullRequest> implements Closeable {
-        private final GitHubSCMSourceRequest request;
+        private final AzureDevOpsRepoSCMSourceRequest request;
         private final GHRepository repo;
         private Set<Integer> pullRequestMetadataKeys = new HashSet<>();
         private boolean fullScanRequested = false;
         private boolean iterationCompleted = false;
 
-        public LazyPullRequests(GitHubSCMSourceRequest request, GHRepository repo) {
+        public LazyPullRequests(AzureDevOpsRepoSCMSourceRequest request, GHRepository repo) {
             this.request = request;
             this.repo = repo;
         }
@@ -2340,13 +2340,13 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     }
 
     private class LazyContributorNames extends LazySet<String> {
-        private final GitHubSCMSourceRequest request;
+        private final AzureDevOpsRepoSCMSourceRequest request;
         private final TaskListener listener;
         private final GitHub github;
         private final GHRepository repo;
         private final StandardCredentials credentials;
 
-        public LazyContributorNames(GitHubSCMSourceRequest request,
+        public LazyContributorNames(AzureDevOpsRepoSCMSourceRequest request,
                                     TaskListener listener, GitHub github, GHRepository repo,
                                     StandardCredentials credentials) {
             this.request = request;
@@ -2371,10 +2371,10 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     }
 
     private class DeferredContributorNames extends LazySet<String> {
-        private final GitHubSCMSourceRequest request;
+        private final AzureDevOpsRepoSCMSourceRequest request;
         private final TaskListener listener;
 
-        public DeferredContributorNames(GitHubSCMSourceRequest request, TaskListener listener) {
+        public DeferredContributorNames(AzureDevOpsRepoSCMSourceRequest request, TaskListener listener) {
             this.request = request;
             this.listener = listener;
         }

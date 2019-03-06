@@ -56,7 +56,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 /**
- * A {@link SCMSourceTrait} for {@link GitHubSCMSource} that causes the {@link GitSCM} checkout to be performed using a
+ * A {@link SCMSourceTrait} for {@link AzureDevOpsRepoSCMSource} that causes the {@link GitSCM} checkout to be performed using a
  * SSH private key rather than the GitHub username password credentials used for scanning / indexing.
  *
  * @since 2.2.0
@@ -73,12 +73,12 @@ public class SSHCheckoutTrait extends SCMSourceTrait {
      * Constructor.
      *
      * @param credentialsId the {@link SSHUserPrivateKey#getId()} of the credentials to use or
-     *                      {@link GitHubSCMSource.DescriptorImpl#ANONYMOUS} to defer to the agent configured
+     *                      {@link AzureDevOpsRepoSCMSource.DescriptorImpl#ANONYMOUS} to defer to the agent configured
      *                      credentials (typically anonymous but not always)
      */
     @DataBoundConstructor
     public SSHCheckoutTrait(String credentialsId) {
-        if (GitHubSCMSource.DescriptorImpl.ANONYMOUS.equals(credentialsId)) {
+        if (AzureDevOpsRepoSCMSource.DescriptorImpl.ANONYMOUS.equals(credentialsId)) {
             // legacy migration of "magic" credential ID.
             this.credentialsId = null;
         } else {
@@ -100,8 +100,8 @@ public class SSHCheckoutTrait extends SCMSourceTrait {
      * {@inheritDoc}
      */
     @Override
-    protected void decorateBuilder(SCMBuilder<?,?> builder) {
-        ((GitHubSCMBuilder)builder).withCredentials(credentialsId, GitHubSCMBuilder.SSH);
+    protected void decorateBuilder(SCMBuilder<?, ?> builder) {
+        ((AzureDevOpsRepoSCMBuilder) builder).withCredentials(credentialsId, AzureDevOpsRepoSCMBuilder.SSH);
     }
 
     /**
@@ -132,7 +132,7 @@ public class SSHCheckoutTrait extends SCMSourceTrait {
          */
         @Override
         public Class<? extends SCMSource> getSourceClass() {
-            return GitHubSCMSource.class;
+            return AzureDevOpsRepoSCMSource.class;
         }
 
         /**
@@ -155,7 +155,7 @@ public class SSHCheckoutTrait extends SCMSourceTrait {
          * Form completion.
          *
          * @param context       the context.
-         * @param apiUri     the server url.
+         * @param apiUri        the server url.
          * @param credentialsId the current selection.
          * @return the form items.
          */

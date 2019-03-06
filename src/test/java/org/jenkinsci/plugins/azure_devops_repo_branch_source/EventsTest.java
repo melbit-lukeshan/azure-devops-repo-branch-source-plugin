@@ -48,14 +48,14 @@ public class EventsTest {
     @ClassRule
     public static JenkinsRule r = new JenkinsRule();
 
-    private static int defaultFireDelayInSeconds = GitHubSCMSource.getEventDelaySeconds();
+    private static int defaultFireDelayInSeconds = AzureDevOpsRepoSCMSource.getEventDelaySeconds();
 
     private static SCMEvent.Type firedEventType;
     private static GHSubscriberEvent ghEvent;
 
     @BeforeClass
     public static void setupDelay() {
-        GitHubSCMSource.setEventDelaySeconds(1);
+        AzureDevOpsRepoSCMSource.setEventDelaySeconds(1);
     }
 
     @Before
@@ -67,7 +67,7 @@ public class EventsTest {
 
     @AfterClass
     public static void resetDelay() {
-        GitHubSCMSource.setEventDelaySeconds(defaultFireDelayInSeconds);
+        AzureDevOpsRepoSCMSource.setEventDelaySeconds(defaultFireDelayInSeconds);
     }
 
     @Test

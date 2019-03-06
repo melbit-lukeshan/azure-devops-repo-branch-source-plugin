@@ -87,13 +87,13 @@ public class AzureDevOpsRepoSCMProbeTest {
     @Issue("JENKINS-54126")
     @Test
     public void statWhenRootIs404AndCacheOnThenOff() throws Exception {
-        GitHubSCMSource.setCacheSize(10);
+        AzureDevOpsRepoSCMSource.setCacheSize(10);
         githubApi.stubFor(get(urlPathEqualTo("/repos/cloudbeers/yolo/contents/")).withHeader("Cache-Control", containing("max-age")).willReturn(aResponse().withStatus(404)));
         githubApi.stubFor(get(urlPathEqualTo("/repos/cloudbeers/yolo/contents/")).withHeader("Cache-Control", absent())
                 .willReturn(aResponse()
-                    .withStatus(200)
-                    .withHeader("Content-Type", "application/json")
-                    .withBodyFile("body-yolo-contents-8rd37.json")));
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBodyFile("body-yolo-contents-8rd37.json")));
 
         assertTrue(probe.stat("README.md").exists());
         githubApi.verify(RequestPatternBuilder.newRequestPattern(RequestMethod.GET, urlPathEqualTo("/repos/cloudbeers/yolo/contents/")).withHeader("Cache-Control", containing("max-age")));

@@ -67,7 +67,7 @@ public class AzureDevOpsRepoRepositoryEventSubscriber extends GHEventsSubscriber
     protected boolean isApplicable(@Nullable Item item) {
         if (item instanceof SCMNavigatorOwner) {
             for (SCMNavigator navigator : ((SCMNavigatorOwner) item).getSCMNavigators()) {
-                if (navigator instanceof GitHubSCMNavigator) {
+                if (navigator instanceof AzureDevOpsRepoSCMNavigator) {
                     return true; // TODO allow navigators to opt-out
                 }
             }
@@ -113,7 +113,7 @@ public class AzureDevOpsRepoRepositoryEventSubscriber extends GHEventsSubscriber
                 }
                 final NewSCMSourceEvent e = new NewSCMSourceEvent(event.getTimestamp(), event.getOrigin(), p, repo);
                 // Delaying the indexing for some seconds to avoid GitHub cache
-                SCMSourceEvent.fireLater(e, GitHubSCMSource.getEventDelaySeconds(), TimeUnit.SECONDS);
+                SCMSourceEvent.fireLater(e, AzureDevOpsRepoSCMSource.getEventDelaySeconds(), TimeUnit.SECONDS);
             } else {
                 LOGGER.log(WARNING, "Malformed repository URL {0}", repoUrl);
             }
@@ -144,17 +144,17 @@ public class AzureDevOpsRepoRepositoryEventSubscriber extends GHEventsSubscriber
 
         @Override
         public boolean isMatch(@NonNull SCMNavigator navigator) {
-            return navigator instanceof GitHubSCMNavigator
-                    && isApiMatch(((GitHubSCMNavigator) navigator).getApiUri())
-                    && repoOwner.equalsIgnoreCase(((GitHubSCMNavigator) navigator).getRepoOwner());
+            return navigator instanceof AzureDevOpsRepoSCMNavigator
+                    && isApiMatch(((AzureDevOpsRepoSCMNavigator) navigator).getApiUri())
+                    && repoOwner.equalsIgnoreCase(((AzureDevOpsRepoSCMNavigator) navigator).getRepoOwner());
         }
 
         @Override
         public boolean isMatch(@NonNull SCMSource source) {
-            return source instanceof GitHubSCMSource
-                    && isApiMatch(((GitHubSCMSource) source).getApiUri())
-                    && repoOwner.equalsIgnoreCase(((GitHubSCMSource) source).getRepoOwner())
-                    && repository.equalsIgnoreCase(((GitHubSCMSource) source).getRepository());
+            return source instanceof AzureDevOpsRepoSCMSource
+                    && isApiMatch(((AzureDevOpsRepoSCMSource) source).getApiUri())
+                    && repoOwner.equalsIgnoreCase(((AzureDevOpsRepoSCMSource) source).getRepoOwner())
+                    && repository.equalsIgnoreCase(((AzureDevOpsRepoSCMSource) source).getRepository());
         }
 
         @NonNull

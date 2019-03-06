@@ -86,14 +86,14 @@ import static java.util.logging.Level.FINE;
 public class Connector {
     private static final Logger LOGGER = Logger.getLogger(Connector.class.getName());
 
-    private static final Map<GitHub,Long> lastUsed = new HashMap<>();
+    private static final Map<GitHub, Long> lastUsed = new HashMap<>();
     private static final Map<Details, GitHub> githubs = new HashMap<>();
     private static final Map<GitHub, Integer> usage = new HashMap<>();
-    private static final Map<TaskListener, Map<GitHub,Void>> checked = new WeakHashMap<>();
+    private static final Map<TaskListener, Map<GitHub, Void>> checked = new WeakHashMap<>();
     private static final long API_URL_REVALIDATE_MILLIS = TimeUnit.MINUTES.toMillis(5);
-    private static final Map<String,Long> apiUrlValid = new LinkedHashMap<String,Long>(){
+    private static final Map<String, Long> apiUrlValid = new LinkedHashMap<String, Long>() {
         @Override
-        protected boolean removeEldestEntry(Map.Entry<String,Long> eldest) {
+        protected boolean removeEldestEntry(Map.Entry<String, Long> eldest) {
             Long t = eldest.getValue();
             return t == null || t < System.currentTimeMillis() - API_URL_REVALIDATE_MILLIS;
         }
@@ -173,7 +173,7 @@ public class Connector {
         if (!scanCredentialsId.isEmpty()) {
             ListBoxModel options = listScanCredentials(context, apiUri);
             boolean found = false;
-            for (ListBoxModel.Option b: options) {
+            for (ListBoxModel.Option b : options) {
                 if (scanCredentialsId.equals(b.value)) {
                     found = true;
                     break;
@@ -194,7 +194,7 @@ public class Connector {
                     try {
                         try {
                             return FormValidation.ok("User %s", connector.getMyself().getLogin());
-                        } catch (IOException e){
+                        } catch (IOException e) {
                             return FormValidation.error("Invalid credentials");
                         }
                     } finally {
@@ -246,15 +246,15 @@ public class Connector {
             return null;
         } else {
             return CredentialsMatchers.firstOrNull(
-                CredentialsProvider.lookupCredentials(
-                    StandardUsernameCredentials.class,
-                    context,
-                    context instanceof Queue.Task
-                            ? Tasks.getDefaultAuthenticationOf((Queue.Task) context)
-                            : ACL.SYSTEM,
-                    githubDomainRequirements(apiUri)
-                ),
-                CredentialsMatchers.allOf(CredentialsMatchers.withId(scanCredentialsId), githubScanCredentialsMatcher())
+                    CredentialsProvider.lookupCredentials(
+                            StandardUsernameCredentials.class,
+                            context,
+                            context instanceof Queue.Task
+                                    ? Tasks.getDefaultAuthenticationOf((Queue.Task) context)
+                                    : ACL.SYSTEM,
+                            githubDomainRequirements(apiUri)
+                    ),
+                    CredentialsMatchers.allOf(CredentialsMatchers.withId(scanCredentialsId), githubScanCredentialsMatcher())
             );
         }
     }
@@ -262,8 +262,8 @@ public class Connector {
     /**
      * Retained for binary compatibility only.
      *
-     * @param context           the context.
-     * @param apiUri            the API endpoint.
+     * @param context the context.
+     * @param apiUri  the API endpoint.
      * @return the {@link StandardCredentials} or {@code null}
      * @deprecated use {@link #listCheckoutCredentials(Item, String)}
      */
@@ -284,8 +284,8 @@ public class Connector {
     public static ListBoxModel listCheckoutCredentials(@CheckForNull Item context, String apiUri) {
         StandardListBoxModel result = new StandardListBoxModel();
         result.includeEmptyValue();
-        result.add("- same as scan credentials -", GitHubSCMSource.DescriptorImpl.SAME);
-        result.add("- anonymous -", GitHubSCMSource.DescriptorImpl.ANONYMOUS);
+        result.add("- same as scan credentials -", AzureDevOpsRepoSCMSource.DescriptorImpl.SAME);
+        result.add("- anonymous -", AzureDevOpsRepoSCMSource.DescriptorImpl.ANONYMOUS);
         return result.includeMatchingAs(
                 context instanceof Queue.Task
                         ? Tasks.getDefaultAuthenticationOf((Queue.Task) context)
@@ -319,7 +319,8 @@ public class Connector {
         }
     }
 
-    public static @Nonnull GitHub connect(@CheckForNull String apiUri, @CheckForNull StandardCredentials credentials) throws IOException {
+    public static @Nonnull
+    GitHub connect(@CheckForNull String apiUri, @CheckForNull StandardCredentials credentials) throws IOException {
         String apiUrl = Util.fixEmptyAndTrim(apiUri);
         apiUrl = apiUrl != null ? apiUrl : GitHubServerConfig.GITHUB_URL;
         String username;
@@ -363,7 +364,7 @@ public class Connector {
 
             OkHttpClient client = new OkHttpClient().setProxy(getProxy(host));
 
-            int cacheSize = GitHubSCMSource.getCacheSize();
+            int cacheSize = AzureDevOpsRepoSCMSource.getCacheSize();
             if (cacheSize > 0) {
                 File cacheBase = new File(jenkins.getRootDir(),
                         AzureDevOpsRepoSCMProbe.class.getName() + ".cache");
@@ -464,7 +465,6 @@ public class Connector {
      * Uses proxy if configured on pluginManager/advanced page
      *
      * @param host GitHub's hostname to build proxy to
-     *
      * @return proxy to use it in connector. Should not be null as it can lead to unexpected behaviour
      */
     @Nonnull
@@ -522,12 +522,13 @@ public class Connector {
         }
     }
 
-    /*package*/ static void checkConnectionValidity(String apiUri, @NonNull TaskListener listener,
-                                                    StandardCredentials credentials,
-                                                    GitHub github)
+    /*package*/
+    static void checkConnectionValidity(String apiUri, @NonNull TaskListener listener,
+                                        StandardCredentials credentials,
+                                        GitHub github)
             throws IOException {
         synchronized (githubs) {
-            Map<GitHub,Void> hubs = checked.get(listener);
+            Map<GitHub, Void> hubs = checked.get(listener);
             if (hubs != null && hubs.containsKey(github)) {
                 // only check if not already in use
                 return;
@@ -540,7 +541,7 @@ public class Connector {
         }
         if (credentials != null && !isCredentialValid(github)) {
             String message = String.format("Invalid scan credentials %s to connect to %s, skipping",
-                    CredentialsNameProvider.name(credentials), apiUri == null ? GitHubSCMSource.GITHUB_URL : apiUri);
+                    CredentialsNameProvider.name(credentials), apiUri == null ? AzureDevOpsRepoSCMSource.GITHUB_URL : apiUri);
             throw new AbortException(message);
         }
         if (!github.isAnonymous()) {
@@ -548,13 +549,13 @@ public class Connector {
             listener.getLogger().println(AzureDevOpsRepoConsoleNote.create(
                     System.currentTimeMillis(),
                     String.format("Connecting to %s using %s",
-                    apiUri == null ? GitHubSCMSource.GITHUB_URL : apiUri,
-                    CredentialsNameProvider.name(credentials))
+                            apiUri == null ? AzureDevOpsRepoSCMSource.GITHUB_URL : apiUri,
+                            CredentialsNameProvider.name(credentials))
             ));
         } else {
             listener.getLogger().println(AzureDevOpsRepoConsoleNote.create(System.currentTimeMillis(), String.format(
                     "Connecting to %s with no credentials, anonymous access",
-                    apiUri == null ? GitHubSCMSource.GITHUB_URL : apiUri
+                    apiUri == null ? AzureDevOpsRepoSCMSource.GITHUB_URL : apiUri
             )));
         }
     }
@@ -581,7 +582,7 @@ public class Connector {
                         rateLimit.remaining, rateLimit.remaining - ideal, rateLimit.limit,
                         Util.getTimeSpanString(rateLimitResetMillis)
                 )));
-            } else  if (rateLimit.remaining < ideal) {
+            } else if (rateLimit.remaining < ideal) {
                 check = true;
                 final long expiration;
                 if (rateLimit.remaining < buffer) {

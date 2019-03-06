@@ -40,21 +40,21 @@ import java.util.*;
  * @since 2.2.0
  */
 public class AzureDevOpsRepoSCMSourceContext
-        extends SCMSourceContext<AzureDevOpsRepoSCMSourceContext, GitHubSCMSourceRequest> {
+        extends SCMSourceContext<AzureDevOpsRepoSCMSourceContext, AzureDevOpsRepoSCMSourceRequest> {
     /**
-     * {@code true} if the {@link GitHubSCMSourceRequest} will need information about branches.
+     * {@code true} if the {@link AzureDevOpsRepoSCMSourceRequest} will need information about branches.
      */
     private boolean wantBranches;
     /**
-     * {@code true} if the {@link GitHubSCMSourceRequest} will need information about tags.
+     * {@code true} if the {@link AzureDevOpsRepoSCMSourceRequest} will need information about tags.
      */
     private boolean wantTags;
     /**
-     * {@code true} if the {@link GitHubSCMSourceRequest} will need information about origin pull requests.
+     * {@code true} if the {@link AzureDevOpsRepoSCMSourceRequest} will need information about origin pull requests.
      */
     private boolean wantOriginPRs;
     /**
-     * {@code true} if the {@link GitHubSCMSourceRequest} will need information about fork pull requests.
+     * {@code true} if the {@link AzureDevOpsRepoSCMSourceRequest} will need information about fork pull requests.
      */
     private boolean wantForkPRs;
     /**
@@ -89,45 +89,45 @@ public class AzureDevOpsRepoSCMSourceContext
     }
 
     /**
-     * Returns {@code true} if the {@link GitHubSCMSourceRequest} will need information about branches.
+     * Returns {@code true} if the {@link AzureDevOpsRepoSCMSourceRequest} will need information about branches.
      *
-     * @return {@code true} if the {@link GitHubSCMSourceRequest} will need information about branches.
+     * @return {@code true} if the {@link AzureDevOpsRepoSCMSourceRequest} will need information about branches.
      */
     public final boolean wantBranches() {
         return wantBranches;
     }
 
     /**
-     * Returns {@code true} if the {@link GitHubSCMSourceRequest} will need information about tags.
+     * Returns {@code true} if the {@link AzureDevOpsRepoSCMSourceRequest} will need information about tags.
      *
-     * @return {@code true} if the {@link GitHubSCMSourceRequest} will need information about tags.
+     * @return {@code true} if the {@link AzureDevOpsRepoSCMSourceRequest} will need information about tags.
      */
     public final boolean wantTags() {
         return wantTags;
     }
 
     /**
-     * Returns {@code true} if the {@link GitHubSCMSourceRequest} will need information about pull requests.
+     * Returns {@code true} if the {@link AzureDevOpsRepoSCMSourceRequest} will need information about pull requests.
      *
-     * @return {@code true} if the {@link GitHubSCMSourceRequest} will need information about pull requests.
+     * @return {@code true} if the {@link AzureDevOpsRepoSCMSourceRequest} will need information about pull requests.
      */
     public final boolean wantPRs() {
         return wantOriginPRs || wantForkPRs;
     }
 
     /**
-     * Returns {@code true} if the {@link GitHubSCMSourceRequest} will need information about origin pull requests.
+     * Returns {@code true} if the {@link AzureDevOpsRepoSCMSourceRequest} will need information about origin pull requests.
      *
-     * @return {@code true} if the {@link GitHubSCMSourceRequest} will need information about origin pull requests.
+     * @return {@code true} if the {@link AzureDevOpsRepoSCMSourceRequest} will need information about origin pull requests.
      */
     public final boolean wantOriginPRs() {
         return wantOriginPRs;
     }
 
     /**
-     * Returns {@code true} if the {@link GitHubSCMSourceRequest} will need information about fork pull requests.
+     * Returns {@code true} if the {@link AzureDevOpsRepoSCMSourceRequest} will need information about fork pull requests.
      *
-     * @return {@code true} if the {@link GitHubSCMSourceRequest} will need information about fork pull requests.
+     * @return {@code true} if the {@link AzureDevOpsRepoSCMSourceRequest} will need information about fork pull requests.
      */
     public final boolean wantForkPRs() {
         return wantForkPRs;
@@ -153,8 +153,10 @@ public class AzureDevOpsRepoSCMSourceContext
     public final Set<ChangeRequestCheckoutStrategy> forkPRStrategies() {
         return forkPRStrategies;
     }
+
     /**
      * Returns the strategies used to notify Github of build status.
+     *
      * @return the strategies used to notify Github of build status.
      * @since TODO
      */
@@ -164,6 +166,7 @@ public class AzureDevOpsRepoSCMSourceContext
         }
         return Collections.unmodifiableList(notificationStrategies);
     }
+
     /**
      * Returns {@code true} if notifications should be disabled.
      *
@@ -174,7 +177,7 @@ public class AzureDevOpsRepoSCMSourceContext
     }
 
     /**
-     * Adds a requirement for branch details to any {@link GitHubSCMSourceRequest} for this context.
+     * Adds a requirement for branch details to any {@link AzureDevOpsRepoSCMSourceRequest} for this context.
      *
      * @param include {@code true} to add the requirement or {@code false} to leave the requirement as is (makes
      *                simpler with method chaining)
@@ -187,7 +190,7 @@ public class AzureDevOpsRepoSCMSourceContext
     }
 
     /**
-     * Adds a requirement for tag details to any {@link GitHubSCMSourceRequest} for this context.
+     * Adds a requirement for tag details to any {@link AzureDevOpsRepoSCMSourceRequest} for this context.
      *
      * @param include {@code true} to add the requirement or {@code false} to leave the requirement as is (makes
      *                simpler with method chaining)
@@ -200,7 +203,7 @@ public class AzureDevOpsRepoSCMSourceContext
     }
 
     /**
-     * Adds a requirement for origin pull request details to any {@link GitHubSCMSourceRequest} for this context.
+     * Adds a requirement for origin pull request details to any {@link AzureDevOpsRepoSCMSourceRequest} for this context.
      *
      * @param include {@code true} to add the requirement or {@code false} to leave the requirement as is (makes
      *                simpler with method chaining)
@@ -213,7 +216,7 @@ public class AzureDevOpsRepoSCMSourceContext
     }
 
     /**
-     * Adds a requirement for fork pull request details to any {@link GitHubSCMSourceRequest} for this context.
+     * Adds a requirement for fork pull request details to any {@link AzureDevOpsRepoSCMSourceRequest} for this context.
      *
      * @param include {@code true} to add the requirement or {@code false} to leave the requirement as is (makes
      *                simpler with method chaining)
@@ -248,6 +251,7 @@ public class AzureDevOpsRepoSCMSourceContext
         forkPRStrategies.addAll(strategies);
         return this;
     }
+
     /**
      * Replaces the list of strategies used to notify Github of build status.
      *
@@ -268,6 +272,7 @@ public class AzureDevOpsRepoSCMSourceContext
 
     /**
      * Add a strategy used to notify Github of build status.
+     *
      * @param strategy a strategy used to notify Github of build status.
      * @return {@code this} for method chaining.
      * @since TODO
@@ -297,7 +302,7 @@ public class AzureDevOpsRepoSCMSourceContext
      */
     @NonNull
     @Override
-    public GitHubSCMSourceRequest newRequest(@NonNull SCMSource source, @CheckForNull TaskListener listener) {
-        return new GitHubSCMSourceRequest(source, this, listener);
+    public AzureDevOpsRepoSCMSourceRequest newRequest(@NonNull SCMSource source, @CheckForNull TaskListener listener) {
+        return new AzureDevOpsRepoSCMSourceRequest(source, this, listener);
     }
 }

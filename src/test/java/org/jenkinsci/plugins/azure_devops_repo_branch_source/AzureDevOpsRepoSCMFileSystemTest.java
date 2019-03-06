@@ -105,7 +105,7 @@ public class AzureDevOpsRepoSCMFileSystemTest {
 
                     })
     );
-    private GitHubSCMSource source;
+    private AzureDevOpsRepoSCMSource source;
 
     public AzureDevOpsRepoSCMFileSystemTest(String revision) {
         this.revision = revision == null ? null : new AbstractGitSCMSource.SCMRevisionImpl(master, revision);
@@ -134,7 +134,7 @@ public class AzureDevOpsRepoSCMFileSystemTest {
                 get(urlMatching(".*")).atPriority(10).willReturn(aResponse().proxiedFrom("https://api.github.com/")));
         githubRaw.stubFor(get(urlMatching(".*")).atPriority(10)
                 .willReturn(aResponse().proxiedFrom("https://raw.githubusercontent.com/")));
-        source = new GitHubSCMSource(null, "http://localhost:" + githubApi.port(), GitHubSCMSource.DescriptorImpl.SAME, null, "cloudbeers", "yolo");
+        source = new AzureDevOpsRepoSCMSource(null, "http://localhost:" + githubApi.port(), AzureDevOpsRepoSCMSource.DescriptorImpl.SAME, null, "cloudbeers", "yolo");
     }
 
     @Test

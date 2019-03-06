@@ -66,7 +66,7 @@ public class PullRequestGHEventSubscriber extends GHEventsSubscriber {
             if (project instanceof SCMSourceOwner) {
                 SCMSourceOwner owner = (SCMSourceOwner) project;
                 for (SCMSource source : owner.getSCMSources()) {
-                    if (source instanceof GitHubSCMSource) {
+                    if (source instanceof AzureDevOpsRepoSCMSource) {
                         return true;
                     }
                 }
@@ -74,7 +74,7 @@ public class PullRequestGHEventSubscriber extends GHEventsSubscriber {
             if (project.getParent() instanceof SCMSourceOwner) {
                 SCMSourceOwner owner = (SCMSourceOwner) project.getParent();
                 for (SCMSource source : owner.getSCMSources()) {
-                    if (source instanceof GitHubSCMSource) {
+                    if (source instanceof AzureDevOpsRepoSCMSource) {
                         return true;
                     }
                 }
@@ -145,7 +145,7 @@ public class PullRequestGHEventSubscriber extends GHEventsSubscriber {
     }
 
     private void fireAfterDelay(final SCMHeadEventImpl e) {
-        SCMHeadEvent.fireLater(e, GitHubSCMSource.getEventDelaySeconds(), TimeUnit.SECONDS);
+        SCMHeadEvent.fireLater(e, AzureDevOpsRepoSCMSource.getEventDelaySeconds(), TimeUnit.SECONDS);
     }
 
     private static class SCMHeadEventImpl extends SCMHeadEvent<GHEventPayload.PullRequest> {
@@ -167,8 +167,8 @@ public class PullRequestGHEventSubscriber extends GHEventsSubscriber {
 
         @Override
         public boolean isMatch(@NonNull SCMNavigator navigator) {
-            return navigator instanceof GitHubSCMNavigator
-                    && repoOwner.equalsIgnoreCase(((GitHubSCMNavigator) navigator).getRepoOwner());
+            return navigator instanceof AzureDevOpsRepoSCMNavigator
+                    && repoOwner.equalsIgnoreCase(((AzureDevOpsRepoSCMNavigator) navigator).getRepoOwner());
         }
 
         @Override
@@ -237,18 +237,18 @@ public class PullRequestGHEventSubscriber extends GHEventsSubscriber {
         @NonNull
         @Override
         public Map<SCMHead, SCMRevision> heads(@NonNull SCMSource source) {
-            if (!(source instanceof GitHubSCMSource
-                    && isApiMatch(((GitHubSCMSource) source).getApiUri())
-                    && repoOwner.equalsIgnoreCase(((GitHubSCMSource) source).getRepoOwner())
-                    && repository.equalsIgnoreCase(((GitHubSCMSource) source).getRepository()))) {
+            if (!(source instanceof AzureDevOpsRepoSCMSource
+                    && isApiMatch(((AzureDevOpsRepoSCMSource) source).getApiUri())
+                    && repoOwner.equalsIgnoreCase(((AzureDevOpsRepoSCMSource) source).getRepoOwner())
+                    && repository.equalsIgnoreCase(((AzureDevOpsRepoSCMSource) source).getRepository()))) {
                 return Collections.emptyMap();
             }
-            GitHubSCMSource src = (GitHubSCMSource) source;
+            AzureDevOpsRepoSCMSource src = (AzureDevOpsRepoSCMSource) source;
             GHEventPayload.PullRequest pullRequest = getPayload();
             GHPullRequest ghPullRequest = pullRequest.getPullRequest();
             GHRepository repo = pullRequest.getRepository();
             String prRepoName = repo.getName();
-            if (!prRepoName.matches(GitHubSCMSource.VALID_GITHUB_REPO_NAME)) {
+            if (!prRepoName.matches(AzureDevOpsRepoSCMSource.VALID_GITHUB_REPO_NAME)) {
                 // fake repository name
                 return Collections.emptyMap();
             }
@@ -260,15 +260,15 @@ public class PullRequestGHEventSubscriber extends GHEventsSubscriber {
                 return Collections.emptyMap();
             }
             String prOwnerName = user.getLogin();
-            if (!prOwnerName.matches(GitHubSCMSource.VALID_GITHUB_USER_NAME)) {
+            if (!prOwnerName.matches(AzureDevOpsRepoSCMSource.VALID_GITHUB_USER_NAME)) {
                 // fake owner name
                 return Collections.emptyMap();
             }
-            if (!ghPullRequest.getBase().getSha().matches(GitHubSCMSource.VALID_GIT_SHA1)) {
+            if (!ghPullRequest.getBase().getSha().matches(AzureDevOpsRepoSCMSource.VALID_GIT_SHA1)) {
                 // fake base sha1
                 return Collections.emptyMap();
             }
-            if (!ghPullRequest.getHead().getSha().matches(GitHubSCMSource.VALID_GIT_SHA1)) {
+            if (!ghPullRequest.getHead().getSha().matches(AzureDevOpsRepoSCMSource.VALID_GIT_SHA1)) {
                 // fake head sha1
                 return Collections.emptyMap();
             }
@@ -277,12 +277,12 @@ public class PullRequestGHEventSubscriber extends GHEventsSubscriber {
 
             Map<SCMHead, SCMRevision> result = new HashMap<>();
             AzureDevOpsRepoSCMSourceContext context = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none())
-                            .withTraits(src.getTraits());
+                    .withTraits(src.getTraits());
             if (!fork && context.wantBranches()) {
                 final String branchName = ghPullRequest.getHead().getRef();
                 SCMHead head = new BranchSCMHead(branchName);
                 boolean excluded = false;
-                for (SCMHeadPrefilter prefilter: context.prefilters()) {
+                for (SCMHeadPrefilter prefilter : context.prefilters()) {
                     if (prefilter.isExcluded(source, head)) {
                         excluded = true;
                         break;
@@ -297,7 +297,7 @@ public class PullRequestGHEventSubscriber extends GHEventsSubscriber {
             if (context.wantPRs()) {
                 int number = pullRequest.getNumber();
                 Set<ChangeRequestCheckoutStrategy> strategies = fork ? context.forkPRStrategies() : context.originPRStrategies();
-                for (ChangeRequestCheckoutStrategy strategy: strategies) {
+                for (ChangeRequestCheckoutStrategy strategy : strategies) {
                     final String branchName;
                     if (strategies.size() == 1) {
                         branchName = "PR-" + number;

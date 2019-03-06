@@ -61,7 +61,7 @@ class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosabl
         if (head instanceof PullRequestSCMHead) {
             PullRequestSCMHead pr = (PullRequestSCMHead) head;
             this.ref = "pull/" + pr.getNumber() + (pr.isMerge() ? "/merge" : "/head");
-        } else if (head instanceof GitHubTagSCMHead){
+        } else if (head instanceof AzureDevOpsRepoTagSCMHead) {
             this.ref = "tags/" + head.getName();
         } else {
             this.ref = "heads/" + head.getName();
@@ -175,7 +175,7 @@ class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosabl
                     status = Optional.empty();
                 }
 
-                if (GitHubSCMSource.getCacheSize() > 0
+                if (AzureDevOpsRepoSCMSource.getCacheSize() > 0
                         && gitHub.getConnector() instanceof Connector.ForceValidationOkHttpConnector
                         && status.isPresent() && status.get().stream().anyMatch((s) -> s.contains("40"))) { //Any status >= 400 is a FNF in okhttp
                     //JENKINS-54126 try again without cache headers
@@ -188,7 +188,7 @@ class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosabl
                     } finally {
                         gitHub.setConnector(oldConnector);
                     }
-                } else if (STAT_RETHROW_API_FNF){
+                } else if (STAT_RETHROW_API_FNF) {
                     throw fnf;
                 } else {
                     LOG.log(Level.FINE, "JENKINS-54126 silently ignoring the problem.");
@@ -212,7 +212,7 @@ class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosabl
         if (revision != null) {
             if (revision.getHead() instanceof PullRequestSCMHead) {
                 ref = this.ref;
-            } else if (revision instanceof AbstractGitSCMSource.SCMRevisionImpl){
+            } else if (revision instanceof AbstractGitSCMSource.SCMRevisionImpl) {
                 ref = ((AbstractGitSCMSource.SCMRevisionImpl) revision).getHash();
             } else {
                 ref = this.ref;

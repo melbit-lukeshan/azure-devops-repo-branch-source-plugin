@@ -33,7 +33,7 @@ import jenkins.scm.api.SCMSourceOwner;
 import java.util.Collection;
 
 /**
- * Finds the repository name(s) associated with a {@link SCMSourceOwner}'s {@link GitHubSCMSource}s.
+ * Finds the repository name(s) associated with a {@link SCMSourceOwner}'s {@link AzureDevOpsRepoSCMSource}s.
  *
  * @see GitHubRepositoryNameContributor#parseAssociatedNames(Item)
  * @see org.jenkinsci.plugins.github.webhook.WebhookManager#registerFor(Item)
@@ -46,8 +46,8 @@ public class AzureDevOpsRepoSCMSourceRepositoryNameContributor extends GitHubRep
         if (item instanceof SCMSourceOwner) {
             SCMSourceOwner mp = (SCMSourceOwner) item;
             for (Object o : mp.getSCMSources()) {
-                if (o instanceof GitHubSCMSource) {
-                    GitHubSCMSource gitHubSCMSource = (GitHubSCMSource) o;
+                if (o instanceof AzureDevOpsRepoSCMSource) {
+                    AzureDevOpsRepoSCMSource gitHubSCMSource = (AzureDevOpsRepoSCMSource) o;
                     result.add(new GitHubRepositoryName(
                             RepositoryUriResolver.hostnameFromApiUri(gitHubSCMSource.getApiUri()),
                             gitHubSCMSource.getRepoOwner(),
