@@ -124,7 +124,7 @@ public class AzureDevOpsRepoBuildStatusNotification {
      * Returns the GitHub Repository associated to a Job.
      *
      * @param job A {@link Job}
-     * @return A {@link GHRepository} or null, either if a scan credentials was not provided, or a GitHubSCMSource was not defined.
+     * @return A {@link GHRepository} or null, either if a scan credentials was not provided, or a AzureDevOpsRepoSCMSource was not defined.
      * @throws IOException
      */
     @CheckForNull
