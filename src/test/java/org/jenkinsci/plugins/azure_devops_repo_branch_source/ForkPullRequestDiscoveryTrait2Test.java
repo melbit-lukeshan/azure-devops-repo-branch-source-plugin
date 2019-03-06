@@ -58,6 +58,7 @@ public class ForkPullRequestDiscoveryTrait2Test {
         AzureDevOpsRepoSCMSource s = new AzureDevOpsRepoSCMSource("nobody", "nowhere");
         p.setSourcesList(Collections.singletonList(new BranchSource(s)));
         s.setTraits(Collections.<SCMSourceTrait>singletonList(new ForkPullRequestDiscoveryTrait(0, trust)));
+        //TODO Below line will cause failure but I don't know why yet
         r.configRoundtrip(p);
         List<SCMSourceTrait> traits = ((AzureDevOpsRepoSCMSource) p.getSourcesList().get(0).getSource()).getTraits();
         assertEquals(1, traits.size());
