@@ -1265,12 +1265,74 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
             return Messages.GitHubSCMNavigator_Description();
         }
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public String getIconFilePathPattern() {
-            return "plugin/github-branch-source/images/:size/github-scmnavigator.png";
+        static {
+            IconSet.icons.addIcon(
+                    new Icon("icon-github-scm-navigator icon-sm",
+                            "plugin/azdo-branch-source/images/16x16/github-scmnavigator.png",
+                            Icon.ICON_SMALL_STYLE));
+            IconSet.icons.addIcon(
+                    new Icon("icon-github-scm-navigator icon-md",
+                            "plugin/azdo-branch-source/images/24x24/github-scmnavigator.png",
+                            Icon.ICON_MEDIUM_STYLE));
+            IconSet.icons.addIcon(
+                    new Icon("icon-github-scm-navigator icon-lg",
+                            "plugin/azdo-branch-source/images/32x32/github-scmnavigator.png",
+                            Icon.ICON_LARGE_STYLE));
+            IconSet.icons.addIcon(
+                    new Icon("icon-github-scm-navigator icon-xlg",
+                            "plugin/azdo-branch-source/images/48x48/github-scmnavigator.png",
+                            Icon.ICON_XLARGE_STYLE));
+
+            IconSet.icons.addIcon(
+                    new Icon("icon-github-logo icon-sm",
+                            "plugin/azdo-branch-source/images/16x16/github-logo.png",
+                            Icon.ICON_SMALL_STYLE));
+            IconSet.icons.addIcon(
+                    new Icon("icon-github-logo icon-md",
+                            "plugin/azdo-branch-source/images/24x24/github-logo.png",
+                            Icon.ICON_MEDIUM_STYLE));
+            IconSet.icons.addIcon(
+                    new Icon("icon-github-logo icon-lg",
+                            "plugin/azdo-branch-source/images/32x32/github-logo.png",
+                            Icon.ICON_LARGE_STYLE));
+            IconSet.icons.addIcon(
+                    new Icon("icon-github-logo icon-xlg",
+                            "plugin/azdo-branch-source/images/48x48/github-logo.png",
+                            Icon.ICON_XLARGE_STYLE));
+
+            IconSet.icons.addIcon(
+                    new Icon("icon-github-repo icon-sm",
+                            "plugin/azdo-branch-source/images/16x16/github-repo.png",
+                            Icon.ICON_SMALL_STYLE));
+            IconSet.icons.addIcon(
+                    new Icon("icon-github-repo icon-md",
+                            "plugin/azdo-branch-source/images/24x24/github-repo.png",
+                            Icon.ICON_MEDIUM_STYLE));
+            IconSet.icons.addIcon(
+                    new Icon("icon-github-repo icon-lg",
+                            "plugin/azdo-branch-source/images/32x32/github-repo.png",
+                            Icon.ICON_LARGE_STYLE));
+            IconSet.icons.addIcon(
+                    new Icon("icon-github-repo icon-xlg",
+                            "plugin/azdo-branch-source/images/48x48/github-repo.png",
+                            Icon.ICON_XLARGE_STYLE));
+
+            IconSet.icons.addIcon(
+                    new Icon("icon-github-branch icon-sm",
+                            "plugin/azdo-branch-source/images/16x16/github-branch.png",
+                            Icon.ICON_SMALL_STYLE));
+            IconSet.icons.addIcon(
+                    new Icon("icon-github-branch icon-md",
+                            "plugin/azdo-branch-source/images/24x24/github-branch.png",
+                            Icon.ICON_MEDIUM_STYLE));
+            IconSet.icons.addIcon(
+                    new Icon("icon-github-branch icon-lg",
+                            "plugin/azdo-branch-source/images/32x32/github-branch.png",
+                            Icon.ICON_LARGE_STYLE));
+            IconSet.icons.addIcon(
+                    new Icon("icon-github-branch icon-xlg",
+                            "plugin/azdo-branch-source/images/48x48/github-branch.png",
+                            Icon.ICON_XLARGE_STYLE));
         }
 
         /**
@@ -1416,74 +1478,12 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
             return result;
         }
 
-        static {
-            IconSet.icons.addIcon(
-                    new Icon("icon-github-scm-navigator icon-sm",
-                            "plugin/github-branch-source/images/16x16/github-scmnavigator.png",
-                            Icon.ICON_SMALL_STYLE));
-            IconSet.icons.addIcon(
-                    new Icon("icon-github-scm-navigator icon-md",
-                            "plugin/github-branch-source/images/24x24/github-scmnavigator.png",
-                            Icon.ICON_MEDIUM_STYLE));
-            IconSet.icons.addIcon(
-                    new Icon("icon-github-scm-navigator icon-lg",
-                            "plugin/github-branch-source/images/32x32/github-scmnavigator.png",
-                            Icon.ICON_LARGE_STYLE));
-            IconSet.icons.addIcon(
-                    new Icon("icon-github-scm-navigator icon-xlg",
-                            "plugin/github-branch-source/images/48x48/github-scmnavigator.png",
-                            Icon.ICON_XLARGE_STYLE));
-
-            IconSet.icons.addIcon(
-                    new Icon("icon-github-logo icon-sm",
-                            "plugin/github-branch-source/images/16x16/github-logo.png",
-                            Icon.ICON_SMALL_STYLE));
-            IconSet.icons.addIcon(
-                    new Icon("icon-github-logo icon-md",
-                            "plugin/github-branch-source/images/24x24/github-logo.png",
-                            Icon.ICON_MEDIUM_STYLE));
-            IconSet.icons.addIcon(
-                    new Icon("icon-github-logo icon-lg",
-                            "plugin/github-branch-source/images/32x32/github-logo.png",
-                            Icon.ICON_LARGE_STYLE));
-            IconSet.icons.addIcon(
-                    new Icon("icon-github-logo icon-xlg",
-                            "plugin/github-branch-source/images/48x48/github-logo.png",
-                            Icon.ICON_XLARGE_STYLE));
-
-            IconSet.icons.addIcon(
-                    new Icon("icon-github-repo icon-sm",
-                            "plugin/github-branch-source/images/16x16/github-repo.png",
-                            Icon.ICON_SMALL_STYLE));
-            IconSet.icons.addIcon(
-                    new Icon("icon-github-repo icon-md",
-                            "plugin/github-branch-source/images/24x24/github-repo.png",
-                            Icon.ICON_MEDIUM_STYLE));
-            IconSet.icons.addIcon(
-                    new Icon("icon-github-repo icon-lg",
-                            "plugin/github-branch-source/images/32x32/github-repo.png",
-                            Icon.ICON_LARGE_STYLE));
-            IconSet.icons.addIcon(
-                    new Icon("icon-github-repo icon-xlg",
-                            "plugin/github-branch-source/images/48x48/github-repo.png",
-                            Icon.ICON_XLARGE_STYLE));
-
-            IconSet.icons.addIcon(
-                    new Icon("icon-github-branch icon-sm",
-                            "plugin/github-branch-source/images/16x16/github-branch.png",
-                            Icon.ICON_SMALL_STYLE));
-            IconSet.icons.addIcon(
-                    new Icon("icon-github-branch icon-md",
-                            "plugin/github-branch-source/images/24x24/github-branch.png",
-                            Icon.ICON_MEDIUM_STYLE));
-            IconSet.icons.addIcon(
-                    new Icon("icon-github-branch icon-lg",
-                            "plugin/github-branch-source/images/32x32/github-branch.png",
-                            Icon.ICON_LARGE_STYLE));
-            IconSet.icons.addIcon(
-                    new Icon("icon-github-branch icon-xlg",
-                            "plugin/github-branch-source/images/48x48/github-branch.png",
-                            Icon.ICON_XLARGE_STYLE));
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public String getIconFilePathPattern() {
+            return "plugin/azdo-branch-source/images/:size/github-scmnavigator.png";
         }
     }
 

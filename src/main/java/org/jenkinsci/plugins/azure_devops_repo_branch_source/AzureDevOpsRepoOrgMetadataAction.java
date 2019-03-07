@@ -79,7 +79,7 @@ public class AzureDevOpsRepoOrgMetadataAction extends AvatarMetadataAction {
             return image != null
                     ? image
                     : (Stapler.getCurrentRequest().getContextPath() + Hudson.RESOURCE_PATH
-                            + "/plugin/github-branch-source/images/" + size + "/github-logo.png");
+                    + "/plugin/azdo-branch-source/images/" + size + "/github-logo.png");
         } else {
             String[] xy = size.split("x");
             if (xy.length == 0) return avatar;
