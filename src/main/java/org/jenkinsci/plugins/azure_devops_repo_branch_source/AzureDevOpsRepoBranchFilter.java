@@ -74,7 +74,7 @@ public class AzureDevOpsRepoBranchFilter extends ViewJobFilter {
          */
         @Override
         public String getDisplayName() {
-            return Messages.GitHubBranchFilter_DisplayName();
+            return Messages.AzureDevOpsRepoBranchFilter_DisplayName();
         }
     }
 

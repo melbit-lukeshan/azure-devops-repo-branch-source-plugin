@@ -101,7 +101,7 @@ public class AzureDevOpsRepoOrgMetadataAction extends AvatarMetadataAction {
      */
     @Override
     public String getAvatarDescription() {
-        return Messages.GitHubOrgMetadataAction_IconDescription();
+        return Messages.AzureDevOpsRepoOrgMetadataAction_IconDescription();
     }
 
     /**

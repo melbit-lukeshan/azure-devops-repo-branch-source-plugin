@@ -103,7 +103,7 @@ public class AzureDevOpsRepoBuildStatusNotification {
                             }
                         }
                         if (result != null) {
-                            listener.getLogger().format("%n" + Messages.GitHubBuildStatusNotification_CommitStatusSet() + "%n%n");
+                            listener.getLogger().format("%n" + Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatusSet() + "%n%n");
                         }
                     }
                 } finally {

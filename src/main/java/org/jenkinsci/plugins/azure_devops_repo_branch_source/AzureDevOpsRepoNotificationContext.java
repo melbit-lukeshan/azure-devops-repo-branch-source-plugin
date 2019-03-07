@@ -39,6 +39,7 @@ import org.kohsuke.github.GHCommitState;
  * When creating a new point of notification (e.g. on build completion), populate this object with
  * the relevant details accessible at that point.
  * When implementing a notification strategy, be aware that some details may be absent depending on the point of notification.
+ *
  * @since TODO
  */
 public final class AzureDevOpsRepoNotificationContext {
@@ -63,6 +64,7 @@ public final class AzureDevOpsRepoNotificationContext {
 
     /**
      * Returns the job, if any, associated with the planned notification event
+     *
      * @return Job
      * @since TODO
      */
@@ -72,6 +74,7 @@ public final class AzureDevOpsRepoNotificationContext {
 
     /**
      * Returns the run, if any, associated with the planned notification event
+     *
      * @return Run
      * @since TODO
      */
@@ -81,6 +84,7 @@ public final class AzureDevOpsRepoNotificationContext {
 
     /**
      * Returns the SCMSource associated with the planned notification event
+     *
      * @return SCMSource
      * @since TODO
      */
@@ -90,6 +94,7 @@ public final class AzureDevOpsRepoNotificationContext {
 
     /**
      * Returns the SCMHead associated with the planned notification event
+     *
      * @return SCMHead
      * @since TODO
      */
@@ -140,6 +145,7 @@ public final class AzureDevOpsRepoNotificationContext {
 
     /**
      * Retrieves default context
+     *
      * @param listener Listener for the build, if any
      * @return Default notification context
      * @since TODO
@@ -158,6 +164,7 @@ public final class AzureDevOpsRepoNotificationContext {
 
     /**
      * Retrieves default URL
+     *
      * @param listener Listener for the build, if any
      * @return Default notification URL backref
      * @since TODO
@@ -167,8 +174,7 @@ public final class AzureDevOpsRepoNotificationContext {
         try {
             if (null != build) {
                 url = DisplayURLProvider.get().getRunURL(build);
-            }
-            else if (null != job) {
+            } else if (null != job) {
                 url = DisplayURLProvider.get().getJobURL(job);
             }
         } catch (IllegalStateException e) {
@@ -182,6 +188,7 @@ public final class AzureDevOpsRepoNotificationContext {
 
     /**
      * Retrieves default notification message
+     *
      * @param listener Listener for the build, if any
      * @return Default notification message
      * @since TODO
@@ -190,24 +197,25 @@ public final class AzureDevOpsRepoNotificationContext {
         if (null != build) {
             Result result = build.getResult();
             if (Result.SUCCESS.equals(result)) {
-                return Messages.GitHubBuildStatusNotification_CommitStatus_Good();
+                return Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatus_Good();
             } else if (Result.UNSTABLE.equals(result)) {
-                return Messages.GitHubBuildStatusNotification_CommitStatus_Unstable();
+                return Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatus_Unstable();
             } else if (Result.FAILURE.equals(result)) {
-                return Messages.GitHubBuildStatusNotification_CommitStatus_Failure();
+                return Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatus_Failure();
             } else if (Result.ABORTED.equals(result)) {
-                return Messages.GitHubBuildStatusNotification_CommitStatus_Aborted();
+                return Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatus_Aborted();
             } else if (result != null) { // NOT_BUILT etc.
-                return Messages.GitHubBuildStatusNotification_CommitStatus_Other();
+                return Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatus_Other();
             } else {
-                return Messages.GitHubBuildStatusNotification_CommitStatus_Pending();
+                return Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatus_Pending();
             }
         }
-        return Messages.GitHubBuildStatusNotification_CommitStatus_Queued();
+        return Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatus_Queued();
     }
 
     /**
      * Retrieves default notification state
+     *
      * @param listener Listener for the build, if any
      * @return Default notification state
      * @since TODO
@@ -232,6 +240,7 @@ public final class AzureDevOpsRepoNotificationContext {
 
     /**
      * Retrieves whether plugin should ignore errors when updating the GitHub status
+     *
      * @param listener Listener for the build, if any
      * @return Default ignore errors policy
      * @since TODO

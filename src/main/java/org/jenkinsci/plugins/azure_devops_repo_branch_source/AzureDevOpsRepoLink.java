@@ -88,7 +88,7 @@ public class AzureDevOpsRepoLink implements Action, IconSpec {
 
     @Override
     public String getDisplayName() {
-        return Messages.GitHubLink_DisplayName();
+        return Messages.AzureDevOpsRepoLink_DisplayName();
     }
 
     @Override

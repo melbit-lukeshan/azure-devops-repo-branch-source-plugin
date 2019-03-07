@@ -52,7 +52,7 @@ public class AzureDevOpsRepoPullRequestFilter extends ViewJobFilter {
      */
     @Override
     public List<TopLevelItem> filter(List<TopLevelItem> added, List<TopLevelItem> all, View filteringView) {
-        for (TopLevelItem item:all) {
+        for (TopLevelItem item : all) {
             if (added.contains(item)) {
                 continue;
             }
@@ -74,7 +74,7 @@ public class AzureDevOpsRepoPullRequestFilter extends ViewJobFilter {
          */
         @Override
         public String getDisplayName() {
-            return Messages.GitHubPullRequestFilter_DisplayName();
+            return Messages.AzureDevOpsRepoPullRequestFilter_DisplayName();
         }
     }
 

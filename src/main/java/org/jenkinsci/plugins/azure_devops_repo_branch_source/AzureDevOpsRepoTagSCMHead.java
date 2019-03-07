@@ -21,7 +21,7 @@ public class AzureDevOpsRepoTagSCMHead extends GitTagSCMHead implements TagSCMHe
      */
     @Override
     public String getPronoun() {
-        return Messages.GitHubTagSCMHead_Pronoun();
+        return Messages.AzureDevOpsRepoTagSCMHead_Pronoun();
     }
 
 }

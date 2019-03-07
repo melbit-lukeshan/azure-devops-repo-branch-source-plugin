@@ -1246,7 +1246,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
          */
         @Override
         public String getPronoun() {
-            return Messages.GitHubSCMNavigator_Pronoun();
+            return Messages.AzureDevOpsRepoSCMNavigator_Pronoun();
         }
 
         /**
@@ -1254,7 +1254,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
          */
         @Override
         public String getDisplayName() {
-            return Messages.GitHubSCMNavigator_DisplayName();
+            return Messages.AzureDevOpsRepoSCMNavigator_DisplayName();
         }
 
         /**
@@ -1262,7 +1262,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
          */
         @Override
         public String getDescription() {
-            return Messages.GitHubSCMNavigator_Description();
+            return Messages.AzureDevOpsRepoSCMNavigator_Description();
         }
 
         static {
@@ -1361,7 +1361,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
         @Override
         protected SCMSourceCategory[] createCategories() {
             return new SCMSourceCategory[]{
-                    new UncategorizedSCMSourceCategory(Messages._GitHubSCMNavigator_UncategorizedCategory())
+                    new UncategorizedSCMSourceCategory(Messages._AzureDevOpsRepoSCMNavigator_UncategorizedCategory())
                     // TODO add support for forks
             };
         }
