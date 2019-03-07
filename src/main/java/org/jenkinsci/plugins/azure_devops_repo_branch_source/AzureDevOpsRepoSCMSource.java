@@ -112,35 +112,34 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     private static final Logger LOGGER = Logger.getLogger(AzureDevOpsRepoSCMSource.class.getName());
     private static final String R_PULL = Constants.R_REFS + "pull/";
     /**
-     * How long to delay events received from GitHub in order to allow the API caches to sync.
-     */
-    private static /*mostly final*/ int eventDelaySeconds =
-            Math.min(300, Math.max(0, Integer.getInteger(AzureDevOpsRepoSCMSource.class.getName() + ".eventDelaySeconds", 5)));
-    /**
-     * How big (in megabytes) an on-disk cache to keep of GitHub API responses. Cache is per repo, per credentials.
-     */
-    private static /*mostly final*/ int cacheSize =
-            Math.min(1024, Math.max(0, Integer.getInteger(AzureDevOpsRepoSCMSource.class.getName() + ".cacheSize", isWindows() ? 0 : 20)));
-    /**
-     * Lock to guard access to the {@link #pullRequestSourceMap} field and prevent concurrent GitHub queries during
+     * Lock to guard access to the {@link #pullRequestSourceMap} field and prevent concurrent Azure DevOps Repo queries during
      * a 1.x to 2.2.0+ upgrade.
      *
      * @since 2.2.0
      */
     private static final Object pullRequestSourceMapLock = new Object();
+    /**
+     * How long to delay events received from Azure DevOps Repo in order to allow the API caches to sync.
+     */
+    private static /*mostly final*/ int eventDelaySeconds =
+            Math.min(300, Math.max(0, Integer.getInteger(AzureDevOpsRepoSCMSource.class.getName() + ".eventDelaySeconds", 5)));
+    /**
+     * How big (in megabytes) an on-disk cache to keep of Azure DevOps Repo API responses. Cache is per repo, per credentials.
+     */
+    private static /*mostly final*/ int cacheSize =
+            Math.min(1024, Math.max(0, Integer.getInteger(AzureDevOpsRepoSCMSource.class.getName() + ".cacheSize", isWindows() ? 0 : 20)));
 
     //////////////////////////////////////////////////////////////////////
     // Configuration fields
     //////////////////////////////////////////////////////////////////////
-
     /**
-     * The GitHub end-point or {@code null} if {@link #GITHUB_URL} is implied.
+     * The Azure DevOps Repo end-point or {@code null} if {@link #GITHUB_URL} is implied.
      */
     @CheckForNull // TODO migrate to non-null with configuration of GITHUB_URL by default
     private String apiUri;
 
     /**
-     * Credentials for GitHub API; currently only supports username/password (personal access token).
+     * Credentials for Azure DevOps Repo API; currently only supports username/password (personal access token).
      *
      * @since 2.2.0
      */
@@ -285,7 +284,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
      * Legacy constructor.
      *
      * @param id                    the source id.
-     * @param apiUri                the GitHub endpoint.
+     * @param apiUri                the Azure DevOps Repo endpoint.
      * @param checkoutCredentialsId the checkout credentials id or {@link DescriptorImpl#SAME} or
      *                              {@link DescriptorImpl#ANONYMOUS}.
      * @param scanCredentialsId     the scan credentials id or {@code null}.
@@ -310,28 +309,16 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     }
 
     /**
-     * Returns the GitHub API end-point or {@code null} if {@link #GITHUB_URL}.
+     * Returns how long to delay events received from Azure DevOps Repo in order to allow the API caches to sync.
      *
-     * @return the GitHub API end-point or {@code null} if {@link #GITHUB_URL}.
+     * @return how long to delay events received from Azure DevOps Repo in order to allow the API caches to sync.
      */
-    @CheckForNull // TODO switch to NonNull
-    public String getApiUri() {
-        return apiUri;
+    public static int getEventDelaySeconds() {
+        return eventDelaySeconds;
     }
 
     /**
-     * Sets the GitHub API end-point.
-     *
-     * @param apiUri the GitHub API end-point or {@code null} if {@link #GITHUB_URL}.
-     * @since 2.2.0
-     */
-    @DataBoundSetter
-    public void setApiUri(@CheckForNull String apiUri) {
-        this.apiUri = AzureDevOpsRepoConfiguration.normalizeApiUri(Util.fixEmptyAndTrim(apiUri));
-    }
-
-    /**
-     * Sets how long to delay events received from GitHub in order to allow the API caches to sync.
+     * Sets how long to delay events received from Azure DevOps Repo in order to allow the API caches to sync.
      *
      * @param eventDelaySeconds number of seconds to delay, will be restricted into a value within the range
      *                          {@code [0,300]} inclusive
@@ -342,21 +329,18 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     }
 
     /**
-     * Sets the credentials used to access the GitHub REST API (also used as the default credentials for checking out
-     * sources.
+     * Returns how many megabytes of on-disk cache to maintain per Azure DevOps Repo API URL per credentials.
      *
-     * @param credentialsId the credentials used to access the GitHub REST API or {@code null} to access anonymously
-     * @since 2.2.0
+     * @return how many megabytes of on-disk cache to maintain per Azure DevOps Repo API URL per credentials.
      */
-    @DataBoundSetter
-    public void setCredentialsId(@CheckForNull String credentialsId) {
-        this.credentialsId = Util.fixEmpty(credentialsId);
+    public static int getCacheSize() {
+        return cacheSize;
     }
 
     /**
-     * Sets how long to delay events received from GitHub in order to allow the API caches to sync.
+     * Sets how long to delay events received from Azure DevOps Repo in order to allow the API caches to sync.
      *
-     * @param cacheSize how many megabytes of on-disk cache to maintain per GitHub API URL per credentials,
+     * @param cacheSize how many megabytes of on-disk cache to maintain per Azure DevOps Repo API URL per credentials,
      *                  will be restricted into a value within the range {@code [0,1024]} inclusive.
      */
     @Restricted(NoExternalUse.class) // to allow configuration from system groovy console
@@ -365,15 +349,24 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     }
 
     /**
-     * Gets the credentials used to access the GitHub REST API (also used as the default credentials for checking out
-     * sources.
+     * Returns the Azure DevOps Repo API end-point or {@code null} if {@link #GITHUB_URL}.
      *
-     * @return the credentials used to access the GitHub REST API or {@code null} to access anonymously
+     * @return the Azure DevOps Repo API end-point or {@code null} if {@link #GITHUB_URL}.
      */
-    @Override
-    @CheckForNull
-    public String getCredentialsId() {
-        return credentialsId;
+    @CheckForNull // TODO switch to NonNull
+    public String getApiUri() {
+        return apiUri;
+    }
+
+    /**
+     * Sets the Azure DevOps Repo API end-point.
+     *
+     * @param apiUri the Azure DevOps Repo API end-point or {@code null} if {@link #GITHUB_URL}.
+     * @since 2.2.0
+     */
+    @DataBoundSetter
+    public void setApiUri(@CheckForNull String apiUri) {
+        this.apiUri = AzureDevOpsRepoConfiguration.normalizeApiUri(Util.fixEmptyAndTrim(apiUri));
     }
 
     /**
@@ -409,12 +402,15 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     }
 
     /**
-     * Returns how long to delay events received from GitHub in order to allow the API caches to sync.
+     * Gets the credentials used to access the Azure DevOps Repo REST API (also used as the default credentials for checking out
+     * sources.
      *
-     * @return how long to delay events received from GitHub in order to allow the API caches to sync.
+     * @return the credentials used to access the Azure DevOps Repo REST API or {@code null} to access anonymously
      */
-    public static int getEventDelaySeconds() {
-        return eventDelaySeconds;
+    @Override
+    @CheckForNull
+    public String getCredentialsId() {
+        return credentialsId;
     }
 
     /**
@@ -428,12 +424,15 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     }
 
     /**
-     * Returns how many megabytes of on-disk cache to maintain per GitHub API URL per credentials.
+     * Sets the credentials used to access the Azure DevOps Repo REST API (also used as the default credentials for checking out
+     * sources.
      *
-     * @return how many megabytes of on-disk cache to maintain per GitHub API URL per credentials.
+     * @param credentialsId the credentials used to access the Azure DevOps Repo REST API or {@code null} to access anonymously
+     * @since 2.2.0
      */
-    public static int getCacheSize() {
-        return cacheSize;
+    @DataBoundSetter
+    public void setCredentialsId(@CheckForNull String credentialsId) {
+        this.credentialsId = Util.fixEmpty(credentialsId);
     }
 
     /**
@@ -513,7 +512,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
      */
     @Override
     public String getPronoun() {
-        return Messages.GitHubSCMSource_Pronoun();
+        return Messages.AzureDevOpsRepoSCMSource_Pronoun();
     }
 
     /**
@@ -1712,7 +1711,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
 
         @Initializer(before = InitMilestone.PLUGINS_STARTED)
         public static void addAliases() {
-            XSTREAM2.addCompatibilityAlias("org.jenkinsci.plugins.azure_devops_repo_branch_source.OriginGitHubSCMSource", AzureDevOpsRepoSCMSource.class);
+            XSTREAM2.addCompatibilityAlias("org.jenkinsci.plugins.azure_devops_repo_branch_source.OriginAzureDevOpsRepoSCMSource", AzureDevOpsRepoSCMSource.class);
         }
 
         /**
@@ -1747,7 +1746,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         @Restricted(NoExternalUse.class)
         public FormValidation doCheckIncludes(@QueryParameter String value) {
             if (value.isEmpty()) {
-                return FormValidation.warning(Messages.GitHubSCMSource_did_you_mean_to_use_to_match_all_branches());
+                return FormValidation.warning(Messages.AzureDevOpsRepoSCMSource_did_you_mean_to_use_to_match_all_branches());
             }
             return FormValidation.ok();
         }
@@ -1797,7 +1796,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
 
         public ListBoxModel doFillApiUriItems() {
             ListBoxModel result = new ListBoxModel();
-            result.add("GitHub", "");
+            result.add("Azure DevOps Repo", "");
             for (Endpoint e : AzureDevOpsRepoConfiguration.get().getEndpoints()) {
                 result.add(e.getName() == null ? e.getApiUri() : e.getName() + " (" + e.getApiUri() + ")",
                         e.getApiUri());
@@ -1856,7 +1855,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                 LOGGER.log(Level.SEVERE, e.getMessage(), e);
                 throw new FillErrorResponse(e.getMessage(), false);
             }
-            throw new FillErrorResponse(Messages.GitHubSCMSource_CouldNotConnectionGithub(credentialsId), true);
+            throw new FillErrorResponse(Messages.AzureDevOpsRepoSCMSource_CouldNotConnectionGithub(credentialsId), true);
         }
 
         @RequirePOST
@@ -1974,7 +1973,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                 LOGGER.log(Level.SEVERE, e.getMessage(), e);
                 throw new FillErrorResponse(e.getMessage(), false);
             }
-            throw new FillErrorResponse(Messages.GitHubSCMSource_NoMatchingOwner(repoOwner), true);
+            throw new FillErrorResponse(Messages.AzureDevOpsRepoSCMSource_NoMatchingOwner(repoOwner), true);
         }
 
         public List<NamedArrayList<? extends SCMTraitDescriptor<?>>> getTraitsDescriptorLists() {
@@ -1993,9 +1992,8 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                 }
             }
             List<NamedArrayList<? extends SCMTraitDescriptor<?>>> result = new ArrayList<>();
-            NamedArrayList.select(all, "Within repository", NamedArrayList
-                            .anyOf(NamedArrayList.withAnnotation(Discovery.class),
-                                    NamedArrayList.withAnnotation(Selection.class)),
+            NamedArrayList.select(all, "Within repository", NamedArrayList.anyOf(NamedArrayList.withAnnotation(Discovery.class),
+                    NamedArrayList.withAnnotation(Selection.class)),
                     true, result);
             NamedArrayList.select(all, "General", null, true, result);
             return result;
@@ -2013,9 +2011,9 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         @Override
         protected SCMHeadCategory[] createCategories() {
             return new SCMHeadCategory[]{
-                    new UncategorizedSCMHeadCategory(Messages._GitHubSCMSource_UncategorizedCategory()),
-                    new ChangeRequestSCMHeadCategory(Messages._GitHubSCMSource_ChangeRequestCategory()),
-                    new TagSCMHeadCategory(Messages._GitHubSCMSource_TagCategory())
+                    new UncategorizedSCMHeadCategory(Messages._AzureDevOpsRepoSCMSource_UncategorizedCategory()),
+                    new ChangeRequestSCMHeadCategory(Messages._AzureDevOpsRepoSCMSource_ChangeRequestCategory()),
+                    new TagSCMHeadCategory(Messages._AzureDevOpsRepoSCMSource_TagCategory())
             };
         }
 
