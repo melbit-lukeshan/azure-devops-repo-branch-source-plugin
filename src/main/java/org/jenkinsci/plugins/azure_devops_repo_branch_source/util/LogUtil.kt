@@ -1,6 +1,5 @@
 package org.jenkinsci.plugins.azure_devops_repo_branch_source.util
 
-import com.emmacanhelp.androidbase.time.DateTimeParserFormatter
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.AzureDevOpsRepoSCMSource
 import java.util.*
 import java.util.logging.Level
