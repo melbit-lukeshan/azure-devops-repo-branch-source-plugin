@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
         <version>3.37</version>
-        <relativePath />
+        <relativePath/>
     </parent>
     <artifactId>azdo-branch-source</artifactId>
     <version>2.4.3</version>
@@ -213,6 +214,28 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.5.2</version>
+                <executions>
+                    <execution>
+                        <id>install.tfs.sdk.jar.locally</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <file>lib/com.microsoft.tfs.sdk-14.134.0.jar</file>
+                            <groupId>com.microsoft.tfs.sdk</groupId>
+                            <artifactId>com.microsoft.tfs.sdk</artifactId>
+                            <version>14.134.0</version>
+                            <packaging>jar</packaging>
+                            <generatePom>true</generatePom>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.jenkins-ci.tools</groupId>
                 <artifactId>maven-hpi-plugin</artifactId>
                 <executions>
@@ -224,6 +247,7 @@
                 </executions>
                 <configuration>
                     <compatibleSinceVersion>2.2.0</compatibleSinceVersion>
+                    <minimumJavaVersion/>
                 </configuration>
             </plugin>
         </plugins>

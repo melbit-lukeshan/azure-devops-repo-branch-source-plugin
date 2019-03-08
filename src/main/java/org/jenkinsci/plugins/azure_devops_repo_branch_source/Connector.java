@@ -81,7 +81,7 @@ import java.util.logging.Logger;
 import static java.util.logging.Level.FINE;
 
 /**
- * Utilities that could perhaps be moved into {@code github-api}.
+ * Utilities that could perhaps be moved into {@code azure-devops-repo-api}.
  */
 public class Connector {
     private static final Logger LOGGER = Logger.getLogger(Connector.class.getName());
@@ -166,7 +166,7 @@ public class Connector {
      * @return the {@link FormValidation} results.
      */
     public static FormValidation checkScanCredentials(@CheckForNull Item context, String apiUri, String scanCredentialsId) {
-        if (context == null && !Jenkins.getActiveInstance().hasPermission(Jenkins.ADMINISTER) ||
+        if (context == null && !Jenkins.get().hasPermission(Jenkins.ADMINISTER) ||
                 context != null && !context.hasPermission(Item.EXTENDED_READ)) {
             return FormValidation.ok();
         }

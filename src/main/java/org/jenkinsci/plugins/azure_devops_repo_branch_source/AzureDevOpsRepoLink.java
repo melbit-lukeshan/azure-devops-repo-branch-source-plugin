@@ -36,7 +36,7 @@ import org.kohsuke.stapler.Stapler;
 import java.net.URL;
 
 /**
- * Link to GitHub
+ * Link to Azure DevOps Repo
  *
  * @author Kohsuke Kawaguchi
  */

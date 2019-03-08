@@ -35,7 +35,7 @@ import jenkins.scm.api.trait.SCMSourceContext;
 import java.util.*;
 
 /**
- * The {@link SCMSourceContext} for GitHub.
+ * The {@link SCMSourceContext} for Azure DevOps Repo.
  *
  * @since 2.2.0
  */
