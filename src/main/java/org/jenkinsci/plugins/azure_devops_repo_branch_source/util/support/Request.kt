@@ -12,7 +12,7 @@ abstract class Request<T, R>(_category: String? = null, _id: String? = null) {
 
     private companion object {
         val REGEX_PLACEHOLDER = Regex("""\{([\w.]+)\}""")
-        val REGEX_NAME_VALUE_PAIR = Regex("""(\w+)=([^&]+)""")
+        val REGEX_NAME_VALUE_PAIR = Regex("""(\w+)=([^&!\{$!\}]+)""")
         val REGEX_NAME_VALUE_PLACEHOLDER_PAIR = Regex("""(\w+)=\{([\w.]+)\}""")
     }
 
