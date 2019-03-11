@@ -73,6 +73,7 @@ import jenkins.scm.impl.trait.WildcardSCMHeadFilterTrait;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.lib.Constants;
 import org.jenkinsci.Symbol;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
 import org.jenkinsci.plugins.github.config.GitHubServerConfig;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -1764,7 +1765,8 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         public FormValidation doCheckCredentialsId(@CheckForNull @AncestorInPath Item context,
                                                    @QueryParameter String apiUri,
                                                    @QueryParameter String value) {
-            return Connector.checkScanCredentials(context, apiUri, value);
+            //return Connector.checkScanCredentials(context, apiUri, value);
+            return AzureConnector.INSTANCE.checkScanCredentials(context, apiUri, value);
         }
 
         @Restricted(NoExternalUse.class)

@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.azure_devops_repo_branch_source.util
+package org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support
 
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.*
@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
+import kotlin.coroutines.resume
 import kotlin.reflect.KClass
 import okhttp3.Request as OkHttp3Request
 
@@ -94,6 +95,20 @@ object OkHttp3Helper {
             requestToCall(request).let {
                 try {
                     responseToResult(it.execute(), request, T::class, R::class)
+                } catch (e: Exception) {
+                    LogUtil.logThrowable(e)
+                    if (it.isCanceled) {
+                        Result.Canceled(if (e.message.equals(CANCELED)) null else e)
+                    } else {
+                        Result.IoError(e)
+                    }
+                }
+            }
+
+    public fun <T : Any, R : Any> executeRequest2(request: Request<T, R>, targetClass: Class<T>, errorClass: Class<R>): Result<T, R> =
+            requestToCall(request).let {
+                try {
+                    responseToResult(it.execute(), request, targetClass.kotlin, errorClass.kotlin)
                 } catch (e: Exception) {
                     LogUtil.logThrowable(e)
                     if (it.isCanceled) {

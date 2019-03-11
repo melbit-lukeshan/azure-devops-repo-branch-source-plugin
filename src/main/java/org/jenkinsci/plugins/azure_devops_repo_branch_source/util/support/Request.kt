@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.azure_devops_repo_branch_source.util
+package org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support
 
 import java.util.*
 import kotlin.collections.HashMap
@@ -18,7 +18,8 @@ abstract class Request<T, R>(_category: String? = null, _id: String? = null) {
 
     private var goodValue: T? = null
     private var httpErrorValue: R? = null
-    val tag = Tag(_category ?: (this::class).qualifiedName.toString(), _id ?: UUID.randomUUID().toString())
+    val tag = Tag(_category ?: (this::class).qualifiedName.toString(), _id
+            ?: UUID.randomUUID().toString())
 
     /**
      *  Mandatory JSON processor to use

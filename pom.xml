@@ -175,20 +175,25 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!--<dependency>-->
+        <!--<groupId>com.squareup.moshi</groupId>-->
+        <!--<artifactId>moshi-kotlin</artifactId>-->
+        <!--<version>1.8.0</version>-->
+        <!--</dependency>-->
         <dependency>
-            <groupId>com.squareup.moshi</groupId>
-            <artifactId>moshi-kotlin</artifactId>
-            <version>1.8.0</version>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.5</version>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>3.13.1</version>
+            <version>3.11.0</version>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>logging-interceptor</artifactId>
-            <version>3.13.1</version>
+            <version>3.11.0</version>
         </dependency>
         <dependency>
             <groupId>org.threeten</groupId>
@@ -206,15 +211,20 @@
             <version>${kotlin.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-reflect</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
             <artifactId>kotlinx-coroutines-jdk8</artifactId>
             <version>${coroutines.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.squareup.okio</groupId>
-            <artifactId>okio</artifactId>
-            <version>1.17.2</version>
-        </dependency>
+        <!--<dependency>-->
+        <!--<groupId>com.squareup.okio</groupId>-->
+        <!--<artifactId>okio</artifactId>-->
+        <!--<version>1.17.3</version>-->
+        <!--</dependency>-->
     </dependencies>
     <dependencyManagement>
         <dependencies>
@@ -255,6 +265,23 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <version>${kotlin.version}</version>
+                <executions>
+                    <execution>
+                        <id>compile</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <jvmTarget>1.8</jvmTarget>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-install-plugin</artifactId>

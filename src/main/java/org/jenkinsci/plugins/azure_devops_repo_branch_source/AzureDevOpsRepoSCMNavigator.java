@@ -59,6 +59,7 @@ import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.Symbol;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
 import org.jenkinsci.plugins.github.config.GitHubServerConfig;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -1380,7 +1381,8 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
         public FormValidation doCheckCredentialsId(@CheckForNull @AncestorInPath Item context,
                                                    @QueryParameter String apiUri,
                                                    @QueryParameter String credentialsId) {
-            return Connector.checkScanCredentials(context, apiUri, credentialsId);
+            //return Connector.checkScanCredentials(context, apiUri, credentialsId);
+            return AzureConnector.INSTANCE.checkScanCredentials(context, apiUri, credentialsId);
         }
 
         /**
