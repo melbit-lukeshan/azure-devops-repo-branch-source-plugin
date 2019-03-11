@@ -19,7 +19,7 @@ import hudson.util.FormValidation
 import hudson.util.ListBoxModel
 import jenkins.model.Jenkins
 import jenkins.scm.api.SCMSourceOwner
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support.OkHttp3Helper
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support.OkHttp2Helper
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support.Result
 import java.io.IOException
 import java.util.logging.Level
@@ -142,7 +142,7 @@ object AzureConnector {
         var apiUrl = Util.fixEmptyAndTrim(apiUri)
         val pat = (credentials as StandardUsernamePasswordCredentials).password.plainText
         val listProjectsRequest = ListProjectsRequest(pat, "lukeshan")
-        OkHttp3Helper.setDebugMode(true)
-        return OkHttp3Helper.executeRequest(listProjectsRequest)
+        OkHttp2Helper.setDebugMode(true)
+        return OkHttp2Helper.executeRequest(listProjectsRequest)
     }
 }

@@ -1,8 +1,8 @@
 package org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support
 
+import com.squareup.okhttp.*
+import com.squareup.okhttp.logging.HttpLoggingInterceptor
 import kotlinx.coroutines.suspendCancellableCoroutine
-import okhttp3.*
-import okhttp3.logging.HttpLoggingInterceptor
 import okio.ByteString
 import java.io.IOException
 import java.security.SecureRandom
@@ -13,9 +13,9 @@ import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 import kotlin.coroutines.resume
 import kotlin.reflect.KClass
-import okhttp3.Request as OkHttp3Request
+import com.squareup.okhttp.Request as OkHttp2Request
 
-object OkHttp3Helper {
+object OkHttp2Helper {
     private var isInDebugMode = false
     private var nukeSSL = false
     private val MEDIA_TYPE_JSON = MediaType.parse("application/json; charset=utf-8")
@@ -42,43 +42,46 @@ object OkHttp3Helper {
     }
 
     private val okHttpClient: OkHttpClient by lazy {
-        OkHttpClient.Builder().apply {
-            retryOnConnectionFailure(false)
+        OkHttpClient().apply {
+            retryOnConnectionFailure = false
             if (isInDebugMode) {
                 HttpLoggingInterceptor().also {
                     it.level = HttpLoggingInterceptor.Level.BODY
-                    addInterceptor(it)
+                    networkInterceptors().add(it)
                 }
             }
             if (nukeSSL) {
                 allowAllSSLOkHttp(this)
             }
-        }.build()
+        }
     }
 
     private val okHttpClientRetryable: OkHttpClient by lazy {
-        okHttpClient.newBuilder().retryOnConnectionFailure(true).build()
+        okHttpClient.clone().apply {
+            retryOnConnectionFailure = true
+        }
     }
 
     private val okHttpClientSequential: OkHttpClient by lazy {
-        OkHttpClient.Builder().apply {
-            retryOnConnectionFailure(false)
+        OkHttpClient().apply {
+            retryOnConnectionFailure = false
+            dispatcher.maxRequests = 1
             if (isInDebugMode) {
                 HttpLoggingInterceptor().also {
                     it.level = HttpLoggingInterceptor.Level.BODY
-                    addInterceptor(it)
+                    networkInterceptors().add(it)
                 }
             }
             if (nukeSSL) {
                 allowAllSSLOkHttp(this)
             }
-        }.build().apply {
-            dispatcher().maxRequests = 1
         }
     }
 
     private val okHttpClientSequentialRetryable: OkHttpClient by lazy {
-        okHttpClientSequential.newBuilder().retryOnConnectionFailure(true).build()
+        okHttpClientSequential.clone().apply {
+            retryOnConnectionFailure = true
+        }
     }
 
     suspend inline fun <reified T : Any, reified R : Any> executeRequestAwait(request: Request<T, R>, inSequentialQueue: Boolean = false): Result<T, R> =
@@ -126,12 +129,13 @@ object OkHttp3Helper {
     fun cancelSingleRequest(request: Request<*, *>?) {
         request?.let {
             listOf(okHttpClient, okHttpClientRetryable, okHttpClientSequential, okHttpClientSequentialRetryable).forEach { client ->
-                (client.dispatcher().queuedCalls() + client.dispatcher().runningCalls()).forEach { call ->
-                    if ((call.request().tag() as Request.Tag) == request.tag) {
-                        call.cancel()
-                        return
-                    }
-                }
+                client.cancel(request.tag)
+//                (client.dispatcher().queuedCalls() + client.dispatcher().runningCalls()).forEach { call ->
+//                    if ((call.request().tag() as Request.Tag) == request.tag) {
+//                        call.cancel()
+//                        return
+//                    }
+//                }
             }
         }
     }
@@ -139,11 +143,12 @@ object OkHttp3Helper {
     fun cancelAllRequestsByCategory(category: String?) {
         category?.let {
             listOf(okHttpClient, okHttpClientRetryable, okHttpClientSequential, okHttpClientSequentialRetryable).forEach { client ->
-                (client.dispatcher().queuedCalls() + client.dispatcher().runningCalls()).forEach { call ->
-                    if ((call.request().tag() as Request.Tag).category == category) {
-                        call.cancel()
-                    }
-                }
+                client.cancel(category)
+//                (client.dispatcher().queuedCalls() + client.dispatcher().runningCalls()).forEach { call ->
+//                    if ((call.request().tag() as Request.Tag).category == category) {
+//                        call.cancel()
+//                    }
+//                }
             }
         }
     }
@@ -151,17 +156,18 @@ object OkHttp3Helper {
     fun cancelSingleRequestById(id: String?) {
         id?.let {
             listOf(okHttpClient, okHttpClientRetryable, okHttpClientSequential, okHttpClientSequentialRetryable).forEach { client ->
-                (client.dispatcher().queuedCalls() + client.dispatcher().runningCalls()).forEach { call ->
-                    if ((call.request().tag() as Request.Tag).id == id) {
-                        call.cancel()
-                        return
-                    }
-                }
+                client.cancel(id)
+//                (client.dispatcher. + client.dispatcher.runningCalls()).forEach { call ->
+//                    if ((call.request().tag() as Request.Tag).id == id) {
+//                        call.cancel()
+//                        return
+//                    }
+//                }
             }
         }
     }
 
-    private fun allowAllSSLOkHttp(builder: OkHttpClient.Builder) {
+    private fun allowAllSSLOkHttp(client: OkHttpClient) {
         suppressThrowable {
             val sc = SSLContext.getInstance("SSL")
             val trustManager = object : X509TrustManager {
@@ -176,27 +182,29 @@ object OkHttp3Helper {
                 }
             }
             sc.init(null, arrayOf<TrustManager>(trustManager), SecureRandom())
-            builder.sslSocketFactory(sc.socketFactory, trustManager)
-            builder.hostnameVerifier { _, _ -> true }
+            client.sslSocketFactory = sc.socketFactory
+            client.setHostnameVerifier { s, sslSession -> true }
+            //builder.sslSocketFactory(sc.socketFactory, trustManager)
+            //builder.hostnameVerifier { _, _ -> true }
         }
     }
 
     @PublishedApi
     internal fun requestToCall(request: Request<*, *>, inSequentialQueue: Boolean = false): Call {
         return if (request.retryIfConnectionFail) {
-            if (inSequentialQueue) okHttpClientSequentialRetryable.newBuilder() else okHttpClientRetryable.newBuilder()
+            if (inSequentialQueue) okHttpClientSequentialRetryable.clone() else okHttpClientRetryable.clone()
         } else {
-            if (inSequentialQueue) okHttpClientSequential.newBuilder() else okHttpClient.newBuilder()
+            if (inSequentialQueue) okHttpClientSequential.clone() else okHttpClient.clone()
         }.apply {
-            connectTimeout(request.timeout.toLong(), TimeUnit.SECONDS)
-            readTimeout(request.timeout.toLong(), TimeUnit.SECONDS)
-            writeTimeout(request.timeout.toLong(), TimeUnit.SECONDS)
-        }.build().newCall(generateOkHttpRequest(request))
+            setConnectTimeout(request.timeout.toLong(), TimeUnit.SECONDS)
+            setReadTimeout(request.timeout.toLong(), TimeUnit.SECONDS)
+            setWriteTimeout(request.timeout.toLong(), TimeUnit.SECONDS)
+        }.newCall(generateOkHttpRequest(request))
     }
 
     @PublishedApi
     internal fun <T : Any, R : Any> responseToResult(response: Response, request: Request<T, R>, targetClass: KClass<T>, errorClass: KClass<R>): Result<T, R> {
-        return response.use { theResponse ->
+        return response.let { theResponse ->
             var responseBodyString = theResponse.body()?.string()
             if (theResponse.isSuccessful) {
                 try {
@@ -228,8 +236,8 @@ object OkHttp3Helper {
         }
     }
 
-    private fun generateOkHttpRequest(request: Request<*, *>): OkHttp3Request =
-            OkHttp3Request.Builder().apply {
+    private fun generateOkHttpRequest(request: Request<*, *>): OkHttp2Request =
+            OkHttp2Request.Builder().apply {
                 url(request.fullUrl)
                 header(ACCEPT, ACCEPT_JSON_AND_ALL)
                 request.headersAsPairList.orEmpty().forEach {
@@ -244,7 +252,7 @@ object OkHttp3Helper {
                             method(request.method.name, RequestBody.create(MEDIA_TYPE_JSON, it))
                         }
                                 ?: request.parametersAsMap?.takeIf { parametersMap -> parametersMap.isNotEmpty() }?.let { parametersMap ->
-                                    FormBody.Builder().apply {
+                                    FormEncodingBuilder().apply {
                                         parametersMap.forEach { parameter ->
                                             addEncoded(parameter.key, parameter.value)
                                         }
@@ -258,18 +266,17 @@ object OkHttp3Helper {
 
     @PublishedApi
     internal class OkHttpJsonCallback<T : Any, R : Any>(val request: Request<T, R>, private val targetClass: KClass<T>, private val errorClass: KClass<R>, private val resultHandler: (Result<T, R>, Request<T, R>) -> Unit) : Callback {
-
-        override fun onFailure(call: Call, e: IOException) {
-            LogUtil.logThrowable(e)
-            if (call.isCanceled) {
-                resultHandler(Result.Canceled(if (e.message.equals(CANCELED)) null else e), request)
-            } else {
+        override fun onFailure(p0: com.squareup.okhttp.Request?, e: IOException?) {
+            LogUtil.logThrowable(e!!)
+            //if (call.isCanceled) {
+            //    resultHandler(Result.Canceled(if (e.message.equals(CANCELED)) null else e), request)
+            //} else {
                 resultHandler(Result.IoError(e), request)
-            }
+            //}
         }
 
-        override fun onResponse(call: Call, response: Response) {
-            resultHandler(responseToResult(response, request, targetClass, errorClass), request)
+        override fun onResponse(response: Response?) {
+            resultHandler(responseToResult(response!!, request, targetClass, errorClass), request)
         }
     }
 }
