@@ -14,6 +14,9 @@
       </f:invisibleEntry>
     </j:otherwise>
   </j:choose>
+  <f:entry title="${%CollectionUrl}" field="collectionUrl">
+      <f:textbox/>
+    </f:entry>
   <f:entry title="${%Credentials}" field="credentialsId">
     <c:select checkMethod="post"/>
   </f:entry>
@@ -21,7 +24,6 @@
     <f:textbox/>
   </f:entry>
   <f:entry title="${%Repository}" field="repository">
-    <!-- TODO switch back to f:select once Jenkins core has JENKINS-42443 -->
     <f:select/>
   </f:entry>
   <f:entry title="${%Behaviours}">

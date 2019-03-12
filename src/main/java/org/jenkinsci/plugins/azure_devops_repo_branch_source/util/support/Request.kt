@@ -94,11 +94,11 @@ abstract class Request<T, R>(_category: String? = null, _id: String? = null) {
 
     val fullUrl: String by lazy {
         if (method == Method.PATCH || method == Method.POST || method == Method.PUT) {
-            "${host.resolvePlaceholders()}${endpoint.resolvePlaceholders()
-                    ?: ""}${path.resolvePlaceholders() ?: ""}"
+            "${host.resolvePlaceholdersNotEncoded()}${endpoint.resolvePlaceholdersNotEncoded()
+                    ?: ""}${path.resolvePlaceholdersNotEncoded() ?: ""}"
         } else {
-            "${host.resolvePlaceholders()}${endpoint.resolvePlaceholders()
-                    ?: ""}${path.resolvePlaceholders()
+            "${host.resolvePlaceholdersNotEncoded()}${endpoint.resolvePlaceholdersNotEncoded()
+                    ?: ""}${path.resolvePlaceholdersNotEncoded()
                     ?: ""}${parameters?.let { "?$it" }.resolvePlaceholders() ?: ""}"
         }
     }
@@ -113,6 +113,10 @@ abstract class Request<T, R>(_category: String? = null, _id: String? = null) {
 
     val headersAsPairList: List<Pair<String, String>>? by lazy {
         headers.resolveNameValuePairsAsPairList()
+    }
+
+    private fun String?.resolvePlaceholdersNotEncoded(): String? = this?.replace(REGEX_PLACEHOLDER) {
+        it.groupValues[1].getPropertyValue(this@Request).toString()
     }
 
     private fun String?.resolvePlaceholders(): String? = this?.replace(REGEX_PLACEHOLDER) {

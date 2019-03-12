@@ -56,7 +56,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     @Before
     public void setUp() throws IOException {
         owner = j.createProject(WorkflowMultiBranchProject.class);
-        source = new AzureDevOpsRepoSCMSource("tester", "test-repo");
+        source = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "tester", "test-repo");
         owner.setSourcesList(Collections.singletonList(new BranchSource(source)));
         source.setOwner(owner);
         Credentials userPasswordCredential = new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, "user-pass", null, "git-user", "git-secret");

@@ -140,6 +140,12 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     private String apiUri;
 
     /**
+     * The Azure DevOps collection URL.
+     */
+    @NonNull
+    private final String collectionUrl;
+
+    /**
      * Credentials for Azure DevOps Repo API; currently only supports username/password (personal access token).
      *
      * @since 2.2.0
@@ -273,7 +279,8 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
      * @since 2.2.0
      */
     @DataBoundConstructor
-    public AzureDevOpsRepoSCMSource(@NonNull String repoOwner, @NonNull String repository) {
+    public AzureDevOpsRepoSCMSource(@NonNull String collectionUrl, @NonNull String repoOwner, @NonNull String repository) {
+        this.collectionUrl = collectionUrl;
         this.repoOwner = repoOwner;
         this.repository = repository;
         pullRequestMetadataCache = new ConcurrentHashMap<>();
@@ -294,9 +301,9 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
      */
     @Deprecated
     public AzureDevOpsRepoSCMSource(@CheckForNull String id, @CheckForNull String apiUri, @NonNull String checkoutCredentialsId,
-                                    @CheckForNull String scanCredentialsId, @NonNull String repoOwner,
+                                    @CheckForNull String scanCredentialsId, @NonNull String collectionUrl, @NonNull String repoOwner,
                                     @NonNull String repository) {
-        this(repoOwner, repository);
+        this(collectionUrl, repoOwner, repository);
         setId(id);
         setApiUri(apiUri);
         setCredentialsId(scanCredentialsId);
@@ -350,8 +357,6 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     }
 
     /**
-     * Returns the Azure DevOps Repo API end-point or {@code null} if {@link #GITHUB_URL}.
-     *
      * @return the Azure DevOps Repo API end-point or {@code null} if {@link #GITHUB_URL}.
      */
     @CheckForNull // TODO switch to NonNull
@@ -368,6 +373,15 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     @DataBoundSetter
     public void setApiUri(@CheckForNull String apiUri) {
         this.apiUri = AzureDevOpsRepoConfiguration.normalizeApiUri(Util.fixEmptyAndTrim(apiUri));
+    }
+
+    /**
+     * @return the Azure DevOps collection url.
+     */
+    @Exported
+    @NonNull
+    public String getCollectionUrl() {
+        return collectionUrl;
     }
 
     /**

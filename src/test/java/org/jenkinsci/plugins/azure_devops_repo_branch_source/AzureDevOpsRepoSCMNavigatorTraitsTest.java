@@ -1553,6 +1553,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
     public void given__legacyCode__when__constructor_cloud__then__discoveryTraitDefaults() throws Exception {
         AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator(
                 null,
+                "https://dev.azure.com/lukeshan",
                 "cloudbeers",
                 "bcaef157-f105-407f-b150-df7722eab6c1",
                 "SAME"
@@ -1586,6 +1587,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
     public void given__legacyCode__when__constructor_server__then__discoveryTraitDefaults() throws Exception {
         AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator(
                 "https://azuredevopsrepo.test/api/v3",
+                "https://dev.azure.com/lukeshan",
                 "cloudbeers",
                 "bcaef157-f105-407f-b150-df7722eab6c1",
                 "8b2e4f77-39c5-41a9-b63b-8d367350bfdf"
@@ -1621,14 +1623,14 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
 
     @Test
     public void given__instance__when__setTraits_empty__then__traitsEmpty() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("test");
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("https://dev.azure.com/lukeshan", "test");
         instance.setTraits(new SCMTrait[0]);
         assertThat(instance.getTraits(), is(Collections.<SCMTrait<?>>emptyList()));
     }
 
     @Test
     public void given__instance__when__setTraits__then__traitsSet() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("test");
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("https://dev.azure.com/lukeshan", "test");
         instance.setTraits(Arrays.<SCMTrait<? extends SCMTrait<?>>>asList(new BranchDiscoveryTrait(1),
                 new SSHCheckoutTrait(null)));
         assertThat(instance.getTraits(),
@@ -1648,49 +1650,49 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
 
     @Test
     public void given__instance__when__setCredentials_empty__then__credentials_null() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("test");
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("https://dev.azure.com/lukeshan", "test");
         instance.setCredentialsId("");
         assertThat(instance.getCredentialsId(), is(nullValue()));
     }
 
     @Test
     public void given__instance__when__setCredentials_null__then__credentials_null() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("test");
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("https://dev.azure.com/lukeshan", "test");
         instance.setCredentialsId("");
         assertThat(instance.getCredentialsId(), is(nullValue()));
     }
 
     @Test
     public void given__instance__when__setCredentials__then__credentials_set() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("test");
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("https://dev.azure.com/lukeshan", "test");
         instance.setCredentialsId("test");
         assertThat(instance.getCredentialsId(), is("test"));
     }
 
     @Test
     public void given__instance__when__setApiUri_null__then__nullApplied() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("test");
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("https://dev.azure.com/lukeshan", "test");
         instance.setApiUri(null);
         assertThat(instance.getApiUri(), is(nullValue()));
     }
 
     @Test
     public void given__instance__when__setApiUri_value__then__valueApplied() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("test");
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("https://dev.azure.com/lukeshan", "test");
         instance.setApiUri("https://azuredevopsrepo.test");
         assertThat(instance.getApiUri(), is("https://azuredevopsrepo.test"));
     }
 
     @Test
     public void given__instance__when__setApiUri_cloudUrl__then__valueApplied() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("test");
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("https://dev.azure.com/lukeshan", "test");
         instance.setApiUri("https://github.com");
         assertThat(instance.getApiUri(), is("https://github.com"));
     }
 
     @Test
     public void given__legacyCode__when__setPattern_default__then__patternSetAndTraitRemoved() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("test");
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("https://dev.azure.com/lukeshan", "test");
         instance.setTraits(Arrays.<SCMTrait<? extends SCMTrait<?>>>asList(new BranchDiscoveryTrait(true, false), new RegexSCMSourceFilterTrait("job.*"),
                 new SSHCheckoutTrait("dummy")));
         assertThat(instance.getPattern(), is("job.*"));
@@ -1704,7 +1706,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
 
     @Test
     public void given__legacyCode__when__setPattern_custom__then__patternSetAndTraitAdded() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("test");
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("https://dev.azure.com/lukeshan", "test");
         instance.setTraits(
                 Arrays.<SCMTrait<? extends SCMTrait<?>>>asList(new BranchDiscoveryTrait(true, false), new SSHCheckoutTrait("dummy")));
         assertThat(instance.getPattern(), is(".*"));
@@ -1719,7 +1721,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
 
     @Test
     public void given__legacyCode__when__setPattern_custom__then__patternSetAndTraitUpdated() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("test");
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("https://dev.azure.com/lukeshan", "test");
         instance.setTraits(new SCMTrait[]{new BranchDiscoveryTrait(true, false), new RegexSCMSourceFilterTrait("job.*"),
                 new SSHCheckoutTrait("dummy")});
         assertThat(instance.getPattern(), is("job.*"));
@@ -1735,14 +1737,14 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
 
     @Test
     public void given__legacyCode__when__checkoutCredentials_SAME__then__noTraitAdded() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator(null, "test", "scan", AzureDevOpsRepoSCMSource.DescriptorImpl.SAME);
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator(null, "https://dev.azure.com/lukeshan", "test", "scan", AzureDevOpsRepoSCMSource.DescriptorImpl.SAME);
         assertThat(instance.getCheckoutCredentialsId(), is(AzureDevOpsRepoSCMNavigator.DescriptorImpl.SAME));
         assertThat(instance.getTraits(), not(Matchers.<SCMTrait<?>>hasItem(instanceOf(SSHCheckoutTrait.class))));
     }
 
     @Test
     public void given__legacyCode__when__checkoutCredentials_null__then__traitAdded_ANONYMOUS() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator(null, "test", "scan", null);
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator(null, "https://dev.azure.com/lukeshan", "test", "scan", null);
         assertThat(instance.getCheckoutCredentialsId(), is(AzureDevOpsRepoSCMSource.DescriptorImpl.ANONYMOUS));
         assertThat(instance.getTraits(), Matchers.<SCMTrait<?>>hasItem(allOf(
                 instanceOf(SSHCheckoutTrait.class),
@@ -1752,7 +1754,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
 
     @Test
     public void given__legacyCode__when__checkoutCredentials_value__then__traitAdded() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator(null, "test", "scan", "value");
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator(null, "https://dev.azure.com/lukeshan", "test", "scan", "value");
         assertThat(instance.getCheckoutCredentialsId(), is("value"));
         assertThat(instance.getTraits(), Matchers.<SCMTrait<?>>hasItem(allOf(
                 instanceOf(SSHCheckoutTrait.class),
@@ -1762,7 +1764,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
 
     @Test
     public void given__legacyCode__when__checkoutCredentials_ANONYMOUS__then__traitAdded() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator(null, "test", "scan",
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator(null, "https://dev.azure.com/lukeshan", "test", "scan",
                 AzureDevOpsRepoSCMSource.DescriptorImpl.ANONYMOUS);
         assertThat(instance.getCheckoutCredentialsId(), is(AzureDevOpsRepoSCMSource.DescriptorImpl.ANONYMOUS));
         assertThat(instance.getTraits(), Matchers.<SCMTrait<?>>hasItem(allOf(
@@ -1773,7 +1775,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
 
     @Test
     public void given__legacyCode_withoutExcludes__when__setIncludes_default__then__traitRemoved() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("test");
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("https://dev.azure.com/lukeshan", "test");
         instance.setTraits(Arrays.<SCMTrait<? extends SCMTrait<?>>>asList(
                 new BranchDiscoveryTrait(true, false),
                 new RegexSCMSourceFilterTrait("job.*"),
@@ -1796,7 +1798,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
 
     @Test
     public void given__legacyCode_withoutExcludes__when__setIncludes_value__then__traitUpdated() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("test");
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("https://dev.azure.com/lukeshan", "test");
         instance.setTraits(new SCMTrait[]{
                 new BranchDiscoveryTrait(true, false),
                 new RegexSCMSourceFilterTrait("job.*"),
@@ -1821,7 +1823,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
 
     @Test
     public void given__legacyCode_withoutTrait__when__setIncludes_value__then__traitAdded() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("test");
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("https://dev.azure.com/lukeshan", "test");
         instance.setTraits(Arrays.<SCMTrait<? extends SCMTrait<?>>>asList(
                 new BranchDiscoveryTrait(true, false),
                 new RegexSCMSourceFilterTrait("job.*")
@@ -1843,7 +1845,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
 
     @Test
     public void given__legacyCode_withExcludes__when__setIncludes_default__then__traitUpdated() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("test");
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("https://dev.azure.com/lukeshan", "test");
         instance.setTraits(Arrays.<SCMTrait<? extends SCMTrait<?>>>asList(
                 new BranchDiscoveryTrait(true, false),
                 new RegexSCMSourceFilterTrait("job.*"),
@@ -1868,7 +1870,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
 
     @Test
     public void given__legacyCode_withExcludes__when__setIncludes_value__then__traitUpdated() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("test");
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("https://dev.azure.com/lukeshan", "test");
         instance.setTraits(new SCMTrait[]{
                 new BranchDiscoveryTrait(true, false),
                 new RegexSCMSourceFilterTrait("job.*"),
@@ -1893,7 +1895,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
 
     @Test
     public void given__legacyCode_withoutIncludes__when__setExcludes_default__then__traitRemoved() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("test");
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("https://dev.azure.com/lukeshan", "test");
         instance.setTraits(Arrays.<SCMTrait<? extends SCMTrait<?>>>asList(
                 new BranchDiscoveryTrait(true, false),
                 new RegexSCMSourceFilterTrait("job.*"),
@@ -1916,7 +1918,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
 
     @Test
     public void given__legacyCode_withoutIncludes__when__setExcludes_value__then__traitUpdated() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("test");
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("https://dev.azure.com/lukeshan", "test");
         instance.setTraits(Arrays.<SCMTrait<? extends SCMTrait<?>>>asList(
                 new BranchDiscoveryTrait(true, false),
                 new RegexSCMSourceFilterTrait("job.*"),
@@ -1941,7 +1943,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
 
     @Test
     public void given__legacyCode_withoutTrait__when__setExcludes_value__then__traitAdded() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("test");
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("https://dev.azure.com/lukeshan", "test");
         instance.setTraits(Arrays.<SCMTrait<? extends SCMTrait<?>>>asList(
                 new BranchDiscoveryTrait(true, false),
                 new RegexSCMSourceFilterTrait("job.*")
@@ -1963,7 +1965,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
 
     @Test
     public void given__legacyCode_withIncludes__when__setExcludes_default__then__traitUpdated() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("test");
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("https://dev.azure.com/lukeshan", "test");
         instance.setTraits(Arrays.<SCMTrait<? extends SCMTrait<?>>>asList(
                 new BranchDiscoveryTrait(true, false),
                 new RegexSCMSourceFilterTrait("job.*"),
@@ -1988,7 +1990,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
 
     @Test
     public void given__legacyCode_withIncludes__when__setExcludes_value__then__traitUpdated() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("test");
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("https://dev.azure.com/lukeshan", "test");
         instance.setTraits(Arrays.<SCMTrait<? extends SCMTrait<?>>>asList(
                 new BranchDiscoveryTrait(true, false),
                 new RegexSCMSourceFilterTrait("job.*"),
@@ -2013,7 +2015,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
 
     @Test
     public void given__legacyCode__when__setBuildOriginBranch__then__traitsMaintained() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("test");
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("https://dev.azure.com/lukeshan", "test");
         instance.setTraits(Collections.<SCMTrait<? extends SCMTrait<?>>>emptyList());
         assertThat(instance.getTraits(), is(Collections.<SCMTrait<?>>emptyList()));
         instance.setBuildOriginBranch(true);

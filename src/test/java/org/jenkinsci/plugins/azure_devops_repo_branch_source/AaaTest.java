@@ -1,0 +1,20 @@
+package org.jenkinsci.plugins.azure_devops_repo_branch_source;
+
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.ListProjectsRequest;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.Projects;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support.OkHttp2Helper;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support.Result;
+import org.junit.Test;
+
+public class AaaTest {
+//    @ClassRule
+//    public static JenkinsRule j = new JenkinsRule();
+
+    @Test
+    public void aTest() throws Exception {
+        ListProjectsRequest listProjectsRequest = new ListProjectsRequest("https://dev.azure.com/lukeshan", "zus3crtwlto6asnshsuhhraqhqmkiguzn5ocxirp33purukjy6eq");
+        OkHttp2Helper.INSTANCE.setDebugMode(true);
+        Result<Projects, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(listProjectsRequest, Projects.class, Object.class);
+        //assertThat(result.getGoodValueOrNull(), is((Projects) null));
+    }
+}

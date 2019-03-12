@@ -26,7 +26,9 @@ import java.util.logging.Level
 import java.util.logging.Logger
 
 object AzureConnector {
+
     private val LOGGER = Logger.getLogger(AzureConnector::class.java.name)
+
     fun checkScanCredentials(context: SCMSourceOwner?, apiUri: String, scanCredentialsId: String): FormValidation {
         return checkScanCredentials(context as Item?, apiUri, scanCredentialsId)
     }
@@ -39,60 +41,54 @@ object AzureConnector {
      * @param scanCredentialsId the credentials ID.
      * @return the [FormValidation] results.
      */
-    fun checkScanCredentials(context: Item?, apiUri: String, scanCredentialsId: String): FormValidation {
+    fun checkScanCredentials(context: Item?, collectionUrl: String?, scanCredentialsId: String): FormValidation {
         if (context == null && !Jenkins.get().hasPermission(Jenkins.ADMINISTER) || context != null && !context.hasPermission(Item.EXTENDED_READ)) {
             return FormValidation.ok()
         }
-        if (!scanCredentialsId.isEmpty()) {
-            val options = AzureConnector.listScanCredentials(context, apiUri)
-            var found = false
-            for (b in options) {
-                if (scanCredentialsId == b.value) {
-                    found = true
-                    break
-                }
-            }
-            if (!found) {
-                return FormValidation.error("Credentials not found")
-            }
-            if (context != null && !context.hasPermission(CredentialsProvider.USE_ITEM)) {
-                return FormValidation.ok("Credentials found")
-            }
-            val credentials = AzureConnector.lookupScanCredentials(context, apiUri, scanCredentialsId)
-            return if (credentials == null) {
-                FormValidation.error("Credentials not found")
-            } else {
-                try {
-                    val dummyResult = listProjects("", credentials)
-                    val goodValue = dummyResult.getGoodValueOrNull()
-                    if (goodValue != null) {
-                        FormValidation.ok("%d projects found", goodValue.count)
-                    } else {
-                        FormValidation.error("Invalid credentials")
-                    }
-                    //val connector = AzureConnector.connect(apiUri, credentials)
-//                    try {
-//                        try {
-//                            FormValidation.ok("User %s", connector.myself.login)
-//                        } catch (e: IOException) {
-//                            FormValidation.error("Invalid credentials")
-//                        }
-//                    } finally {
-//                        AzureConnector.release(connector)
-//                    }
-                } catch (e: IOException) {
-                    // ignore, never thrown
-                    LOGGER.log(Level.WARNING, "Exception validating credentials {0} on {1}", arrayOf<Any>(CredentialsNameProvider.name(credentials), apiUri))
-                    FormValidation.error("Exception validating credentials")
-                }
-
-            }
+        if (collectionUrl == null || collectionUrl.isEmpty()) {
+            return FormValidation.error("Collection URL is empty")
         } else {
-            return FormValidation.warning("Credentials are recommended")
+            if (!scanCredentialsId.isEmpty()) {
+                val options = AzureConnector.listScanCredentials(context, collectionUrl)
+                var found = false
+                for (b in options) {
+                    if (scanCredentialsId == b.value) {
+                        found = true
+                        break
+                    }
+                }
+                if (!found) {
+                    return FormValidation.error("Credentials not found")
+                }
+                if (context != null && !context.hasPermission(CredentialsProvider.USE_ITEM)) {
+                    return FormValidation.ok("Credentials found")
+                }
+                val credentials = AzureConnector.lookupScanCredentials(context, collectionUrl, scanCredentialsId)
+                return if (credentials == null) {
+                    FormValidation.error("Credentials not found")
+                } else {
+                    try {
+                        val dummyResult = listProjects(collectionUrl, credentials)
+                        val goodValue = dummyResult.getGoodValueOrNull()
+                        if (goodValue != null) {
+                            FormValidation.ok("%d projects found", goodValue.count)
+                        } else {
+                            FormValidation.error("Invalid credentials")
+                        }
+                    } catch (e: IOException) {
+                        // ignore, never thrown
+                        LOGGER.log(Level.WARNING, "Exception validating credentials {0} on {1}", arrayOf<Any>(CredentialsNameProvider.name(credentials), collectionUrl))
+                        FormValidation.error("Exception validating credentials")
+                    }
+
+                }
+            } else {
+                return FormValidation.warning("Credentials are recommended")
+            }
         }
     }
 
-    fun listScanCredentials(context: Item?, apiUri: String): ListBoxModel {
+    fun listScanCredentials(context: Item?, collectionUrl: String): ListBoxModel {
         return StandardListBoxModel()
                 .includeEmptyValue()
                 .includeMatchingAs(
@@ -102,13 +98,12 @@ object AzureConnector {
                             ACL.SYSTEM,
                         context,
                         StandardUsernameCredentials::class.java,
-                        azureDomainRequirements(apiUri),
+                        azureDomainRequirements(collectionUrl),
                         azureScanCredentialsMatcher()
                 )
     }
 
     private fun azureScanCredentialsMatcher(): CredentialsMatcher {
-        // TODO OAuth credentials
         return CredentialsMatchers.anyOf(CredentialsMatchers.instanceOf(StandardUsernamePasswordCredentials::class.java))
     }
 
@@ -118,7 +113,7 @@ object AzureConnector {
     }
 
     fun lookupScanCredentials(context: Item?,
-                              apiUri: String?,
+                              collectionUrl: String?,
                               scanCredentialsId: String?): StandardCredentials? {
         return if (Util.fixEmpty(scanCredentialsId) == null) {
             null
@@ -131,17 +126,17 @@ object AzureConnector {
                                 Tasks.getDefaultAuthenticationOf((context as Queue.Task?)!!)
                             else
                                 ACL.SYSTEM,
-                            azureDomainRequirements(apiUri)
+                            azureDomainRequirements(collectionUrl)
                     ),
                     CredentialsMatchers.allOf(CredentialsMatchers.withId(scanCredentialsId!!), azureScanCredentialsMatcher())
             )
         }
     }
 
-    fun listProjects(apiUri: String?, credentials: StandardCredentials?): Result<Projects, Any> {
-        var apiUrl = Util.fixEmptyAndTrim(apiUri)
+    fun listProjects(collectionUrl: String, credentials: StandardCredentials?): Result<Projects, Any> {
+        val fixedCollectionUrl = Util.fixEmptyAndTrim(collectionUrl)!!
         val pat = (credentials as StandardUsernamePasswordCredentials).password.plainText
-        val listProjectsRequest = ListProjectsRequest(pat, "lukeshan")
+        val listProjectsRequest = ListProjectsRequest(fixedCollectionUrl, pat)
         OkHttp2Helper.setDebugMode(true)
         return OkHttp2Helper.executeRequest(listProjectsRequest)
     }

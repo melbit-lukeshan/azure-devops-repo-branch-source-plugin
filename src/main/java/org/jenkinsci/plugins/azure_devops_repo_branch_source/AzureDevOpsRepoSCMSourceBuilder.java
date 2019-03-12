@@ -44,6 +44,11 @@ public class AzureDevOpsRepoSCMSourceBuilder extends SCMSourceBuilder<AzureDevOp
     @CheckForNull
     private final String apiUri;
     /**
+     * The Azure DevOps collection URL.
+     */
+    @NonNull
+    private final String collectionUrl;
+    /**
      * The credentials id or {@code null} to use anonymous scanning.
      */
     @CheckForNull
@@ -64,11 +69,12 @@ public class AzureDevOpsRepoSCMSourceBuilder extends SCMSourceBuilder<AzureDevOp
      * @param repoName      the project name.
      */
     public AzureDevOpsRepoSCMSourceBuilder(@CheckForNull String id, @CheckForNull String apiUri,
-                                           @CheckForNull String credentialsId, @NonNull String repoOwner,
+                                           @CheckForNull String credentialsId, @NonNull String collectionUrl, @NonNull String repoOwner,
                                            @NonNull String repoName) {
         super(AzureDevOpsRepoSCMSource.class, repoName);
         this.id = id;
         this.apiUri = apiUri;
+        this.collectionUrl = collectionUrl;
         this.repoOwner = repoOwner;
         this.credentialsId = credentialsId;
     }
@@ -90,6 +96,16 @@ public class AzureDevOpsRepoSCMSourceBuilder extends SCMSourceBuilder<AzureDevOp
     @CheckForNull
     public final String apiUri() {
         return apiUri;
+    }
+
+    /**
+     * The Azure DevOps collection url that the {@link AzureDevOpsRepoSCMSource} will be configured to use.
+     *
+     * @return the Azure DevOps collection url that the {@link AzureDevOpsRepoSCMSource} will be configured to use.
+     */
+    @NonNull
+    public final String collectionUrl() {
+        return collectionUrl;
     }
 
     /**
@@ -118,7 +134,7 @@ public class AzureDevOpsRepoSCMSourceBuilder extends SCMSourceBuilder<AzureDevOp
     @NonNull
     @Override
     public AzureDevOpsRepoSCMSource build() {
-        AzureDevOpsRepoSCMSource result = new AzureDevOpsRepoSCMSource(repoOwner, projectName());
+        AzureDevOpsRepoSCMSource result = new AzureDevOpsRepoSCMSource(collectionUrl, repoOwner, projectName());
         result.setId(id());
         result.setApiUri(apiUri());
         result.setCredentialsId(credentialsId());

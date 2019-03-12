@@ -83,6 +83,12 @@ import static org.jenkinsci.plugins.azure_devops_repo_branch_source.Connector.is
 public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
 
     /**
+     * The Azure DevOps collection url to navigate.
+     */
+    @NonNull
+    private final String collectionUrl;
+
+    /**
      * The owner of the repositories to navigate.
      */
     @NonNull
@@ -188,7 +194,8 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
      * @since 2.2.0
      */
     @DataBoundConstructor
-    public AzureDevOpsRepoSCMNavigator(String repoOwner) {
+    public AzureDevOpsRepoSCMNavigator(String collectionUrl, String repoOwner) {
+        this.collectionUrl = StringUtils.defaultString(collectionUrl);
         this.repoOwner = StringUtils.defaultString(repoOwner);
         this.traits = new ArrayList<>();
     }
@@ -207,8 +214,8 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
     @Deprecated
     @Restricted(DoNotUse.class)
     @RestrictedSince("2.2.0")
-    public AzureDevOpsRepoSCMNavigator(String apiUri, String repoOwner, String scanCredentialsId, String checkoutCredentialsId) {
-        this(repoOwner);
+    public AzureDevOpsRepoSCMNavigator(String apiUri, String collectionUrl, String repoOwner, String scanCredentialsId, String checkoutCredentialsId) {
+        this(collectionUrl, repoOwner);
         setCredentialsId(scanCredentialsId);
         setApiUri(apiUri);
         // legacy constructor means legacy defaults
@@ -267,6 +274,16 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
     @DataBoundSetter
     public void setCredentialsId(@CheckForNull String credentialsId) {
         this.credentialsId = Util.fixEmpty(credentialsId);
+    }
+
+    /**
+     * Gets the Azure DevOps collection url who's repositories will be navigated.
+     *
+     * @return the Azure DevOps collection url who's repositories will be navigated.
+     */
+    @NonNull
+    public String getCollectionUrl() {
+        return collectionUrl;
     }
 
     /**
@@ -1350,7 +1367,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
         @SuppressWarnings("unchecked")
         @Override
         public SCMNavigator newInstance(String name) {
-            AzureDevOpsRepoSCMNavigator navigator = new AzureDevOpsRepoSCMNavigator(name);
+            AzureDevOpsRepoSCMNavigator navigator = new AzureDevOpsRepoSCMNavigator("", name);
             navigator.setTraits((List) getTraitsDefaults());
             return navigator;
         }
@@ -1562,7 +1579,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
         @NonNull
         @Override
         public SCMSource create(@NonNull String name) {
-            return new AzureDevOpsRepoSCMSourceBuilder(getId() + "::" + name, apiUri, credentialsId, repoOwner, name)
+            return new AzureDevOpsRepoSCMSourceBuilder(getId() + "::" + name, apiUri, credentialsId, collectionUrl, repoOwner, name)
                     .withRequest(request)
                     .build();
         }
