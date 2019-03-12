@@ -1769,18 +1769,18 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         @RequirePOST
         @Restricted(NoExternalUse.class)
         public FormValidation doCheckScanCredentialsId(@CheckForNull @AncestorInPath Item context,
-                                                       @QueryParameter String apiUri,
+                                                       @QueryParameter String collectionUrl,
                                                        @QueryParameter String scanCredentialsId) {
-            return doCheckCredentialsId(context, apiUri, scanCredentialsId);
+            return doCheckCredentialsId(context, collectionUrl, scanCredentialsId);
         }
 
         @RequirePOST
         @Restricted(NoExternalUse.class)
         public FormValidation doCheckCredentialsId(@CheckForNull @AncestorInPath Item context,
-                                                   @QueryParameter String apiUri,
+                                                   @QueryParameter String collectionUrl,
                                                    @QueryParameter String value) {
             //return Connector.checkScanCredentials(context, apiUri, value);
-            return AzureConnector.INSTANCE.checkScanCredentials(context, apiUri, value);
+            return AzureConnector.INSTANCE.checkScanCredentials(context, collectionUrl, value);
         }
 
         @Restricted(NoExternalUse.class)
