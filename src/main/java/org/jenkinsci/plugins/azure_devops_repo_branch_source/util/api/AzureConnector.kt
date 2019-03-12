@@ -73,7 +73,16 @@ object AzureConnector {
                         if (goodValue != null) {
                             FormValidation.ok("%d projects found", goodValue.count)
                         } else {
-                            FormValidation.error("Invalid credentials")
+                            val httpErrorStatus = dummyResult.getHttpErrorStatusOrNull()
+                            if (httpErrorStatus != null) {
+                                when (httpErrorStatus.code) {
+                                    Result.HttpStatus.NOT_FOUND -> FormValidation.error("Invalid collection url")
+                                    Result.HttpStatus.UNAUTHORIZED, Result.HttpStatus.NON_AUTHORITATIVE_INFORMATION -> FormValidation.error("Invalid credentials")
+                                    else -> FormValidation.error("Invalid collection url or credentials")
+                                }
+                            } else {
+                                FormValidation.error("Invalid collection url or credentials")
+                            }
                         }
                     } catch (e: IOException) {
                         // ignore, never thrown

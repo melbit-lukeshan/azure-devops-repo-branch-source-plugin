@@ -25,7 +25,7 @@ sealed class Result<out T : Any, out R : Any> {
     }
 
     data class IoError(val exception: Throwable) : Result<Nothing, Nothing>() {
-        val isTimeout = exception is SocketTimeoutException
+        private val isTimeout = exception is SocketTimeoutException
         override fun toString() = "Result.IoError{exception=$exception, isTimeout=$isTimeout}"
     }
 
@@ -37,10 +37,14 @@ sealed class Result<out T : Any, out R : Any> {
 
     fun getHttpErrorValueOrNull(): R? = (this as? HttpError)?.value
 
+    fun getHttpErrorStatusOrNull(): HttpStatus? = (this as? HttpError)?.httpStatus
+
     data class HttpStatus(val code: Int, private val _message: String? = null) {
+
         companion object {
             const val OK = 200
             const val CREATED = 201
+            const val NON_AUTHORITATIVE_INFORMATION = 203
             const val NO_CONTENT = 204
             const val NOT_MODIFIED = 304
             const val BAD_REQUEST = 400
@@ -59,6 +63,7 @@ sealed class Result<out T : Any, out R : Any> {
         val message: String = _message?.takeIf { it.isNotBlank() } ?: when (code) {
             OK -> "OK"
             CREATED -> "Created"
+            NON_AUTHORITATIVE_INFORMATION -> "Non-Authoritative Information"
             NO_CONTENT -> "No Content"
             NOT_MODIFIED -> "Not Modified"
             BAD_REQUEST -> "Bad Request"
