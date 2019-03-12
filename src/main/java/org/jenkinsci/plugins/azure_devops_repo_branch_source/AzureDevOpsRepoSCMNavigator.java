@@ -89,6 +89,12 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
     private final String collectionUrl;
 
     /**
+     * The Azure DevOps project name to navigate.
+     */
+    @NonNull
+    private final String azureProjectName;
+
+    /**
      * The owner of the repositories to navigate.
      */
     @NonNull
@@ -194,7 +200,8 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
      * @since 2.2.0
      */
     @DataBoundConstructor
-    public AzureDevOpsRepoSCMNavigator(String collectionUrl, String repoOwner) {
+    public AzureDevOpsRepoSCMNavigator(String azureProjectName, String collectionUrl, String repoOwner) {
+        this.azureProjectName = StringUtils.defaultString(azureProjectName);
         this.collectionUrl = StringUtils.defaultString(collectionUrl);
         this.repoOwner = StringUtils.defaultString(repoOwner);
         this.traits = new ArrayList<>();
@@ -208,14 +215,13 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
      * @param scanCredentialsId     the credentials to use when accessing {@link #apiUri} (and also the default
      *                              credentials to use for checking out).
      * @param checkoutCredentialsId the credentials to use when checking out.
-     * @deprecated use {@link #AzureDevOpsRepoSCMNavigator(String)}, {@link #setApiUri(String)},
-     * {@link #setCredentialsId(String)} and {@link SSHCheckoutTrait}
+     *                              {@link #setCredentialsId(String)} and {@link SSHCheckoutTrait}
      */
     @Deprecated
     @Restricted(DoNotUse.class)
     @RestrictedSince("2.2.0")
-    public AzureDevOpsRepoSCMNavigator(String apiUri, String collectionUrl, String repoOwner, String scanCredentialsId, String checkoutCredentialsId) {
-        this(collectionUrl, repoOwner);
+    public AzureDevOpsRepoSCMNavigator(String apiUri, String azureProjectName, String collectionUrl, String repoOwner, String scanCredentialsId, String checkoutCredentialsId) {
+        this(azureProjectName, collectionUrl, repoOwner);
         setCredentialsId(scanCredentialsId);
         setApiUri(apiUri);
         // legacy constructor means legacy defaults
@@ -1367,7 +1373,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
         @SuppressWarnings("unchecked")
         @Override
         public SCMNavigator newInstance(String name) {
-            AzureDevOpsRepoSCMNavigator navigator = new AzureDevOpsRepoSCMNavigator("", name);
+            AzureDevOpsRepoSCMNavigator navigator = new AzureDevOpsRepoSCMNavigator("", "", name);
             navigator.setTraits((List) getTraitsDefaults());
             return navigator;
         }
@@ -1579,7 +1585,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
         @NonNull
         @Override
         public SCMSource create(@NonNull String name) {
-            return new AzureDevOpsRepoSCMSourceBuilder(getId() + "::" + name, apiUri, credentialsId, collectionUrl, repoOwner, name)
+            return new AzureDevOpsRepoSCMSourceBuilder(getId() + "::" + name, apiUri, credentialsId, collectionUrl, repoOwner, name, azureProjectName)
                     .withRequest(request)
                     .build();
         }

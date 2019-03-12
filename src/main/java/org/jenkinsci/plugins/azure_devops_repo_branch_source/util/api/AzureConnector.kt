@@ -29,15 +29,15 @@ object AzureConnector {
 
     private val LOGGER = Logger.getLogger(AzureConnector::class.java.name)
 
-    fun checkScanCredentials(context: SCMSourceOwner?, apiUri: String, scanCredentialsId: String): FormValidation {
-        return checkScanCredentials(context as Item?, apiUri, scanCredentialsId)
+    fun checkScanCredentials(context: SCMSourceOwner?, collectionUrl: String, scanCredentialsId: String): FormValidation {
+        return checkScanCredentials(context as Item?, collectionUrl, scanCredentialsId)
     }
 
     /**
      * Checks the credential ID for use as scan credentials in the supplied context against the supplied API endpoint.
      *
      * @param context           the context.
-     * @param apiUri            the api endpoint.
+     * @param collectionUrl     the Azure DevOps collection url.
      * @param scanCredentialsId the credentials ID.
      * @return the [FormValidation] results.
      */
@@ -97,21 +97,6 @@ object AzureConnector {
         }
     }
 
-    fun listScanCredentials(context: Item?, collectionUrl: String): ListBoxModel {
-        return StandardListBoxModel()
-                .includeEmptyValue()
-                .includeMatchingAs(
-                        if (context is Queue.Task)
-                            Tasks.getDefaultAuthenticationOf((context as Queue.Task?)!!)
-                        else
-                            ACL.SYSTEM,
-                        context,
-                        StandardUsernameCredentials::class.java,
-                        azureDomainRequirements(collectionUrl),
-                        azureScanCredentialsMatcher()
-                )
-    }
-
     private fun azureScanCredentialsMatcher(): CredentialsMatcher {
         return CredentialsMatchers.anyOf(CredentialsMatchers.instanceOf(StandardUsernamePasswordCredentials::class.java))
     }
@@ -121,9 +106,9 @@ object AzureConnector {
         return URIRequirementBuilder.create().build()
     }
 
-    fun lookupScanCredentials(context: Item?,
-                              collectionUrl: String?,
-                              scanCredentialsId: String?): StandardCredentials? {
+    private fun lookupScanCredentials(context: Item?,
+                                      collectionUrl: String?,
+                                      scanCredentialsId: String?): StandardCredentials? {
         return if (Util.fixEmpty(scanCredentialsId) == null) {
             null
         } else {
@@ -142,11 +127,38 @@ object AzureConnector {
         }
     }
 
-    fun listProjects(collectionUrl: String, credentials: StandardCredentials?): Result<Projects, Any> {
+    private fun listProjects(collectionUrl: String, credentials: StandardCredentials): Result<Projects, Any> {
         val fixedCollectionUrl = Util.fixEmptyAndTrim(collectionUrl)!!
         val pat = (credentials as StandardUsernamePasswordCredentials).password.plainText
         val listProjectsRequest = ListProjectsRequest(fixedCollectionUrl, pat)
         OkHttp2Helper.setDebugMode(true)
         return OkHttp2Helper.executeRequest(listProjectsRequest)
+    }
+
+    fun listScanCredentials(context: Item?, collectionUrl: String): ListBoxModel {
+        return StandardListBoxModel()
+                .includeEmptyValue()
+                .includeMatchingAs(
+                        if (context is Queue.Task)
+                            Tasks.getDefaultAuthenticationOf((context as Queue.Task?)!!)
+                        else
+                            ACL.SYSTEM,
+                        context,
+                        StandardUsernameCredentials::class.java,
+                        azureDomainRequirements(collectionUrl),
+                        azureScanCredentialsMatcher()
+                )
+    }
+
+    fun getProjectNames(context: Item?, collectionUrl: String, credentialsId: String): List<String> {
+        val credentials = AzureConnector.lookupScanCredentials(context, collectionUrl, credentialsId)!!
+        val result = listProjects(collectionUrl, credentials)
+        val projectNameList: ArrayList<String> = arrayListOf()
+        result.getGoodValueOrNull()?.let {
+            for (project in it.value) {
+                projectNameList.add(project.name)
+            }
+        }
+        return projectNameList
     }
 }

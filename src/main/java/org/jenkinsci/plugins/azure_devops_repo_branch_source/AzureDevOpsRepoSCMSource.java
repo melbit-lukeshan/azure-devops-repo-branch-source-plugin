@@ -160,6 +160,12 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     private final String repoOwner;
 
     /**
+     * The project name
+     */
+    @NonNull
+    private final String projectName;
+
+    /**
      * The repository
      */
     @NonNull
@@ -279,10 +285,11 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
      * @since 2.2.0
      */
     @DataBoundConstructor
-    public AzureDevOpsRepoSCMSource(@NonNull String collectionUrl, @NonNull String repoOwner, @NonNull String repository) {
+    public AzureDevOpsRepoSCMSource(@NonNull String collectionUrl, @NonNull String repoOwner, @NonNull String repository, @NonNull String projectName) {
         this.collectionUrl = collectionUrl;
         this.repoOwner = repoOwner;
         this.repository = repository;
+        this.projectName = projectName;
         pullRequestMetadataCache = new ConcurrentHashMap<>();
         pullRequestContributorCache = new ConcurrentHashMap<>();
         this.traits = new ArrayList<>();
@@ -302,8 +309,8 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     @Deprecated
     public AzureDevOpsRepoSCMSource(@CheckForNull String id, @CheckForNull String apiUri, @NonNull String checkoutCredentialsId,
                                     @CheckForNull String scanCredentialsId, @NonNull String collectionUrl, @NonNull String repoOwner,
-                                    @NonNull String repository) {
-        this(collectionUrl, repoOwner, repository);
+                                    @NonNull String repository, @NonNull String projectName) {
+        this(collectionUrl, repoOwner, repository, projectName);
         setId(id);
         setApiUri(apiUri);
         setCredentialsId(scanCredentialsId);
@@ -404,6 +411,17 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     @NonNull
     public String getRepository() {
         return repository;
+    }
+
+    /**
+     * Gets the project name.
+     *
+     * @return the project name.
+     */
+    @Exported
+    @NonNull
+    public String getProjectName() {
+        return projectName;
     }
 
     /**
@@ -1743,14 +1761,15 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         }
 
         public ListBoxModel doFillCredentialsIdItems(@CheckForNull @AncestorInPath Item context,
-                                                     @QueryParameter String apiUri,
+                                                     @QueryParameter String collectionUrl,
                                                      @QueryParameter String credentialsId) {
             if (context == null
-                    ? !Jenkins.getActiveInstance().hasPermission(Jenkins.ADMINISTER)
+                    ? !Jenkins.get().hasPermission(Jenkins.ADMINISTER)
                     : !context.hasPermission(Item.EXTENDED_READ)) {
                 return new StandardListBoxModel().includeCurrentValue(credentialsId);
             }
-            return Connector.listScanCredentials(context, apiUri);
+            //return Connector.listScanCredentials(context, apiUrl);
+            return AzureConnector.INSTANCE.listScanCredentials(context, collectionUrl);
         }
 
         @Override
@@ -1808,6 +1827,18 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                 return FormValidation.warning("If you are not building any PRs, all origin branches will be built.");
             }
             return FormValidation.ok();
+        }
+
+        @RequirePOST
+        public ListBoxModel doFillProjectNameItems(@CheckForNull @AncestorInPath Item context, @QueryParameter String collectionUrl,
+                                                   @QueryParameter String credentialsId) throws IOException {
+            ListBoxModel result = new ListBoxModel();
+            result.add("Azure DevOps Repo", "");
+            List<String> projectNameList = AzureConnector.INSTANCE.getProjectNames(context, collectionUrl, credentialsId);
+            for (String projectName : projectNameList) {
+                result.add(projectName, projectName);
+            }
+            return result;
         }
 
         public ListBoxModel doFillApiUriItems() {
