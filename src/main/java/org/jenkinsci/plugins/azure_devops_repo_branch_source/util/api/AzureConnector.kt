@@ -135,6 +135,14 @@ object AzureConnector {
         return OkHttp2Helper.executeRequest(listProjectsRequest)
     }
 
+    private fun listRepositories(collectionUrl: String, credentials: StandardCredentials, projectName: String): Result<Repositories, Any> {
+        val fixedCollectionUrl = Util.fixEmptyAndTrim(collectionUrl)!!
+        val pat = (credentials as StandardUsernamePasswordCredentials).password.plainText
+        val listRepositoriesRequest = ListRepositoriesRequest(fixedCollectionUrl, pat, projectName)
+        OkHttp2Helper.setDebugMode(true)
+        return OkHttp2Helper.executeRequest(listRepositoriesRequest)
+    }
+
     fun listScanCredentials(context: Item?, collectionUrl: String): ListBoxModel {
         return StandardListBoxModel()
                 .includeEmptyValue()
@@ -160,5 +168,17 @@ object AzureConnector {
             }
         }
         return projectNameList
+    }
+
+    fun getRepositoryNames(context: Item?, collectionUrl: String, credentialsId: String, projectName: String): List<String> {
+        val credentials = AzureConnector.lookupScanCredentials(context, collectionUrl, credentialsId)!!
+        val result = listRepositories(collectionUrl, credentials, projectName)
+        val repositoryNameList: ArrayList<String> = arrayListOf()
+        result.getGoodValueOrNull()?.let {
+            for (repository in it.value) {
+                repositoryNameList.add(repository.name)
+            }
+        }
+        return repositoryNameList
     }
 }
