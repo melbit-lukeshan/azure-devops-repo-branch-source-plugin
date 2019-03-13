@@ -41,7 +41,7 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
 
     @Test
     public void given__configuredInstance__when__uninstantiating__then__deprecatedFieldsIgnored() throws Exception {
-        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "repo-owner", "repo");
+        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "repo-owner", "repo", "spring");
         instance.setId("test");
         assertThat(DescribableModel.uninstantiate2_(instance).toString(),
                 is("@github(id=test,repoOwner=repo-owner,repository=repo)")
@@ -385,7 +385,7 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
     @Test
     public void given__legacyCode__when__constructor_cloud__then__discoveryTraitDefaults() throws Exception {
         AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("preserve-id", null, "SAME",
-                "e4d8c11a-0d24-472f-b86b-4b017c160e9a", "https://dev.azure.com/lukeshan", "cloudbeers", "stunning-adventure");
+                "e4d8c11a-0d24-472f-b86b-4b017c160e9a", "https://dev.azure.com/lukeshan", "cloudbeers", "stunning-adventure", "spring");
         assertThat(instance.getId(), is("preserve-id"));
         assertThat(instance.getApiUri(), is(nullValue()));
         assertThat(instance.getRepoOwner(), is("cloudbeers"));
@@ -421,7 +421,7 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
     public void given__legacyCode__when__constructor_server__then__discoveryTraitDefaults() throws Exception {
         AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource(null, "https://azuredevopsrepo.test/api/v3",
                 "8b2e4f77-39c5-41a9-b63b-8d367350bfdf", "e4d8c11a-0d24-472f-b86b-4b017c160e9a",
-                "https://dev.azure.com/lukeshan", "cloudbeers", "stunning-adventure");
+                "https://dev.azure.com/lukeshan", "cloudbeers", "stunning-adventure", "spring");
         assertThat(instance.getId(), is(notNullValue()));
         assertThat(instance.getApiUri(), is("https://azuredevopsrepo.test/api/v3"));
         assertThat(instance.getRepoOwner(), is("cloudbeers"));
@@ -459,14 +459,14 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
 
     @Test
     public void given__instance__when__setTraits_empty__then__traitsEmpty() {
-        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo");
+        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo", "spring");
         instance.setTraits(Collections.<SCMSourceTrait>emptyList());
         assertThat(instance.getTraits(), is(Collections.<SCMSourceTrait>emptyList()));
     }
 
     @Test
     public void given__legacyCode__when__setBuildOriginBranch__then__traitsMaintained() {
-        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo");
+        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo", "spring");
         instance.setTraits(Collections.<SCMSourceTrait>emptyList());
         assertThat(instance.getTraits(), is(Collections.<SCMSourceTrait>emptyList()));
         instance.setBuildOriginBranch(true);
@@ -498,7 +498,7 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
 
     @Test
     public void given__instance__when__setTraits__then__traitsSet() {
-        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo");
+        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo", "spring");
         instance.setTraits(Arrays.asList(new BranchDiscoveryTrait(1),
                 new SSHCheckoutTrait("value")));
         assertThat(instance.getTraits(),
@@ -518,7 +518,7 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
 
     @Test
     public void given__instance__when__setApiUri__then__valueSet() {
-        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo");
+        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo", "spring");
         assertThat("initial default", instance.getApiUri(), is(nullValue()));
         instance.setApiUri("https://azuredevopsrepo.test/api/v3");
         assertThat(instance.getApiUri(), is("https://azuredevopsrepo.test/api/v3"));
@@ -528,28 +528,28 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
 
     @Test
     public void given__instance__when__setCredentials_empty__then__credentials_null() {
-        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo");
+        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo", "spring");
         instance.setCredentialsId("");
         assertThat(instance.getCredentialsId(), is(nullValue()));
     }
 
     @Test
     public void given__instance__when__setCredentials_null__then__credentials_null() {
-        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo");
+        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo", "spring");
         instance.setCredentialsId("");
         assertThat(instance.getCredentialsId(), is(nullValue()));
     }
 
     @Test
     public void given__instance__when__setCredentials__then__credentials_set() {
-        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo");
+        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo", "spring");
         instance.setCredentialsId("test");
         assertThat(instance.getCredentialsId(), is("test"));
     }
 
     @Test
     public void given__legacyCode_withoutExcludes__when__setIncludes_default__then__traitRemoved() {
-        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo");
+        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo", "spring");
         instance.setTraits(Arrays.asList(
                 new BranchDiscoveryTrait(true, false),
                 new WildcardSCMHeadFilterTrait("feature/*", "")
@@ -571,7 +571,7 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
 
     @Test
     public void given__legacyCode_withoutExcludes__when__setIncludes_value__then__traitUpdated() {
-        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo");
+        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo", "spring");
         instance.setTraits(Arrays.asList(
                 new BranchDiscoveryTrait(true, false),
                 new WildcardSCMHeadFilterTrait("feature/*", "")
@@ -595,7 +595,7 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
 
     @Test
     public void given__legacyCode_withoutTrait__when__setIncludes_value__then__traitAdded() {
-        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo");
+        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo", "spring");
         instance.setTraits(Arrays.asList(
                 new BranchDiscoveryTrait(true, false),
                 new SSHCheckoutTrait("someValue")
@@ -617,7 +617,7 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
 
     @Test
     public void given__legacyCode_withExcludes__when__setIncludes_default__then__traitUpdated() {
-        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo");
+        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo", "spring");
         instance.setTraits(Arrays.asList(
                 new BranchDiscoveryTrait(true, false),
                 new WildcardSCMHeadFilterTrait("feature/*", "feature/ignore"),
@@ -642,7 +642,7 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
 
     @Test
     public void given__legacyCode_withExcludes__when__setIncludes_value__then__traitUpdated() {
-        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo");
+        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo", "spring");
         instance.setTraits(Arrays.asList(
                 new BranchDiscoveryTrait(true, false),
                 new WildcardSCMHeadFilterTrait("feature/*", "feature/ignore"),
@@ -667,7 +667,7 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
 
     @Test
     public void given__legacyCode_withoutIncludes__when__setExcludes_default__then__traitRemoved() {
-        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo");
+        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo", "spring");
         instance.setTraits(Arrays.asList(
                 new BranchDiscoveryTrait(true, false),
                 new WildcardSCMHeadFilterTrait("*", "feature/ignore"),
@@ -690,7 +690,7 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
 
     @Test
     public void given__legacyCode_withoutIncludes__when__setExcludes_value__then__traitUpdated() {
-        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo");
+        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo", "spring");
         instance.setTraits(Arrays.asList(
                 new BranchDiscoveryTrait(true, false),
                 new WildcardSCMHeadFilterTrait("*", "feature/ignore"),
@@ -715,7 +715,7 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
 
     @Test
     public void given__legacyCode_withoutTrait__when__setExcludes_value__then__traitAdded() {
-        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo");
+        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo", "spring");
         instance.setTraits(Arrays.asList(
                 new BranchDiscoveryTrait(true, false),
                 new SSHCheckoutTrait("someValue")
@@ -737,7 +737,7 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
 
     @Test
     public void given__legacyCode_withIncludes__when__setExcludes_default__then__traitUpdated() {
-        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo");
+        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo", "spring");
         instance.setTraits(Arrays.asList(
                 new BranchDiscoveryTrait(true, false),
                 new WildcardSCMHeadFilterTrait("feature/*", "feature/ignore"),
@@ -762,7 +762,7 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
 
     @Test
     public void given__legacyCode_withIncludes__when__setExcludes_value__then__traitUpdated() {
-        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo");
+        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo", "spring");
         instance.setTraits(Arrays.asList(
                 new BranchDiscoveryTrait(true, false),
                 new WildcardSCMHeadFilterTrait("feature/*", ""),

@@ -1833,7 +1833,6 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         public ListBoxModel doFillProjectNameItems(@CheckForNull @AncestorInPath Item context, @QueryParameter String collectionUrl,
                                                    @QueryParameter String credentialsId) throws IOException {
             ListBoxModel result = new ListBoxModel();
-            result.add("Azure DevOps Repo", "");
             List<String> projectNameList = AzureConnector.INSTANCE.getProjectNames(context, collectionUrl, credentialsId);
             for (String projectName : projectNameList) {
                 result.add(projectName, projectName);

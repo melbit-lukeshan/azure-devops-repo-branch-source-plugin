@@ -48,7 +48,7 @@ public class DefaultGitHubNotificationStrategyTest {
     @Test
     public void given_basicJob_then_singleNotification() throws Exception {
         FreeStyleProject job = j.createFreeStyleProject();
-        AzureDevOpsRepoSCMSource src = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "exmaple", "test");
+        AzureDevOpsRepoSCMSource src = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "exmaple", "test", "spring");
         FreeStyleBuild run = j.buildAndAssertSuccess(job);
         DefaultGitHubNotificationStrategy instance = new DefaultGitHubNotificationStrategy();
         List<AzureDevOpsRepoNotificationRequest> notifications =
@@ -61,7 +61,7 @@ public class DefaultGitHubNotificationStrategyTest {
     @Test
     public void given_differentSCMheads_then_distinctNotifications() throws Exception {
         FreeStyleProject job = j.createFreeStyleProject();
-        AzureDevOpsRepoSCMSource src = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "example", "test");
+        AzureDevOpsRepoSCMSource src = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "example", "test", "spring");
         FreeStyleBuild run = j.buildAndAssertSuccess(job);
         DefaultGitHubNotificationStrategy instance = new DefaultGitHubNotificationStrategy();
         BranchSCMHead testBranch = new BranchSCMHead("master");
@@ -86,7 +86,7 @@ public class DefaultGitHubNotificationStrategyTest {
     @Test
     public void given_jobOrRun_then_differentURLs() throws Exception {
         FreeStyleProject job = j.createFreeStyleProject();
-        AzureDevOpsRepoSCMSource src = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "example", "test");
+        AzureDevOpsRepoSCMSource src = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "example", "test", "spring");
         FreeStyleBuild run = j.buildAndAssertSuccess(job);
         DefaultGitHubNotificationStrategy instance = new DefaultGitHubNotificationStrategy();
         String urlA = instance.notifications(AzureDevOpsRepoNotificationContext.build(null, run, src, new BranchSCMHead("master")),

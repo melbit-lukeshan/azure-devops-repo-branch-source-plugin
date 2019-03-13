@@ -132,7 +132,7 @@ public class AzureDevOpsRepoSCMNavigatorTest {
                 get(urlMatching(".*")).atPriority(10).willReturn(aResponse().proxiedFrom("https://api.github.com/")));
         githubRaw.stubFor(get(urlMatching(".*")).atPriority(10)
                 .willReturn(aResponse().proxiedFrom("https://raw.githubusercontent.com/")));
-        navigator = new AzureDevOpsRepoSCMNavigator("http://localhost:" + githubApi.port(), "https://dev.azure.com/lukeshan", "cloudbeers", null, null);
+        navigator = new AzureDevOpsRepoSCMNavigator("http://localhost:" + githubApi.port(), "spring", "https://dev.azure.com/lukeshan", "cloudbeers", null, null);
     }
 
     @Test

@@ -134,7 +134,7 @@ public class AzureDevOpsRepoSCMFileSystemTest {
                 get(urlMatching(".*")).atPriority(10).willReturn(aResponse().proxiedFrom("https://api.github.com/")));
         githubRaw.stubFor(get(urlMatching(".*")).atPriority(10)
                 .willReturn(aResponse().proxiedFrom("https://raw.githubusercontent.com/")));
-        source = new AzureDevOpsRepoSCMSource(null, "http://localhost:" + githubApi.port(), AzureDevOpsRepoSCMSource.DescriptorImpl.SAME, null, "https://dev.azure.com/lukeshan", "cloudbeers", "yolo");
+        source = new AzureDevOpsRepoSCMSource(null, "http://localhost:" + githubApi.port(), AzureDevOpsRepoSCMSource.DescriptorImpl.SAME, null, "https://dev.azure.com/lukeshan", "cloudbeers", "yolo", "spring");
     }
 
     @Test

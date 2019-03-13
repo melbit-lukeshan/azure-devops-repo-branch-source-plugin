@@ -55,7 +55,7 @@ public class ForkPullRequestDiscoveryTrait2Test {
     }
 
     private void assertRoundTrip(WorkflowMultiBranchProject p, SCMHeadAuthority<? super AzureDevOpsRepoSCMSourceRequest, ? extends ChangeRequestSCMHead2, ? extends SCMRevision> trust) throws Exception {
-        AzureDevOpsRepoSCMSource s = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "nobody", "nowhere");
+        AzureDevOpsRepoSCMSource s = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "nobody", "nowhere", "spring");
         p.setSourcesList(Collections.singletonList(new BranchSource(s)));
         s.setTraits(Collections.<SCMSourceTrait>singletonList(new ForkPullRequestDiscoveryTrait(0, trust)));
         //TODO Below line will cause failure but I don't know why yet. Temporarily comment it out to generate plugin
