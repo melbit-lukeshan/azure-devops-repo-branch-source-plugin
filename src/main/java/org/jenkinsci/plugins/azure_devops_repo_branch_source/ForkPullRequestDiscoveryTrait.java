@@ -36,9 +36,9 @@ import jenkins.scm.api.trait.*;
 import jenkins.scm.impl.ChangeRequestSCMHeadCategory;
 import jenkins.scm.impl.trait.Discovery;
 import org.jenkinsci.Symbol;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzurePermissionType;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.github.GHPermissionType;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
@@ -337,7 +337,7 @@ public class ForkPullRequestDiscoveryTrait extends SCMSourceTrait {
         protected boolean checkTrusted(@NonNull AzureDevOpsRepoSCMSourceRequest request, @NonNull PullRequestSCMHead head)
                 throws IOException, InterruptedException {
             if (!head.getOrigin().equals(SCMHeadOrigin.DEFAULT)) {
-                GHPermissionType permission = request.getPermissions(head.getSourceOwner());
+                AzurePermissionType permission = request.getPermissions(head.getSourceOwner());
                 switch (permission) {
                     case ADMIN:
                     case WRITE:

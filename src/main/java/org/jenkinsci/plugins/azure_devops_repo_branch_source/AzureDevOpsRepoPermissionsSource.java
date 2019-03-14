@@ -24,7 +24,7 @@
 
 package org.jenkinsci.plugins.azure_devops_repo_branch_source;
 
-import org.kohsuke.github.GHPermissionType;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzurePermissionType;
 
 import java.io.IOException;
 
@@ -42,5 +42,5 @@ public abstract class AzureDevOpsRepoPermissionsSource {
      * @throws IOException          if there was an IO error.
      * @throws InterruptedException if interrupted.
      */
-    public abstract GHPermissionType fetch(String username) throws IOException, InterruptedException;
+    public abstract AzurePermissionType fetch(String username) throws IOException, InterruptedException;
 }

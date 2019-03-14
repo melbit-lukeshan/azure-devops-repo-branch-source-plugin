@@ -33,6 +33,7 @@ import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
 import jenkins.scm.api.trait.SCMSourceRequest;
 import net.jcip.annotations.GuardedBy;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzurePermissionType;
 import org.kohsuke.github.*;
 
 import java.io.Closeable;
@@ -40,7 +41,7 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * The {@link SCMSourceRequest} for GitHub.
+ * The {@link SCMSourceRequest} for Azure DevOps.
  *
  * @since 2.2.0
  */
@@ -121,7 +122,7 @@ public class AzureDevOpsRepoSCMSourceRequest extends SCMSourceRequest {
      */
     @NonNull
     @GuardedBy("self")
-    private final Map<String, GHPermissionType> permissions = new HashMap<>();
+    private final Map<String, AzurePermissionType> permissions = new HashMap<>();
     /**
      * A deferred lookup of the permissions.
      */
@@ -454,26 +455,26 @@ public class AzureDevOpsRepoSCMSourceRequest extends SCMSourceRequest {
      * @throws IOException if the permissions could not be retrieved.
      * @throws InterruptedException if interrupted while retrieving the permissions.
      */
-    public GHPermissionType getPermissions(String username) throws IOException, InterruptedException {
+    public AzurePermissionType getPermissions(String username) throws IOException, InterruptedException {
         synchronized (permissions) {
             if (permissions.containsKey(username)) {
                 return permissions.get(username);
             }
         }
         if (permissionsSource != null) {
-            GHPermissionType result = permissionsSource.fetch(username);
+            AzurePermissionType result = permissionsSource.fetch(username);
             synchronized (permissions) {
                 permissions.put(username, result);
             }
             return result;
         }
         if (repository != null && username.equalsIgnoreCase(repository.getOwnerName())) {
-            return GHPermissionType.ADMIN;
+            return AzurePermissionType.ADMIN;
         }
         if (collaboratorNames != null && collaboratorNames.contains(username)) {
-            return GHPermissionType.WRITE;
+            return AzurePermissionType.WRITE;
         }
-        return GHPermissionType.NONE;
+        return AzurePermissionType.NONE;
     }
 
     /**

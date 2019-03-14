@@ -73,6 +73,7 @@ import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.lib.Constants;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzurePermissionType;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureRepository;
 import org.jenkinsci.plugins.github.config.GitHubServerConfig;
 import org.kohsuke.accmod.Restricted;
@@ -751,8 +752,9 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                     request.setCollaboratorNames(new LazyContributorNames(request, listener, github, ghRepository, credentials));
                     request.setPermissionsSource(new AzureDevOpsRepoPermissionsSource() {
                         @Override
-                        public GHPermissionType fetch(String username) throws IOException, InterruptedException {
-                            return ghRepository.getPermission(username);
+                        public AzurePermissionType fetch(String username) throws IOException, InterruptedException {
+                            //return ghRepository.getPermission(username);
+                            return AzurePermissionType.ADMIN;
                         }
                     });
 
@@ -2245,35 +2247,34 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     private class DeferredPermissionsSource extends AzureDevOpsRepoPermissionsSource implements Closeable {
 
         private final TaskListener listener;
-        private GitHub github;
-        private GHRepository repo;
+        //private GitHub github;
+        //private GHRepository repo;
+        private AzureRepository repo;
 
         public DeferredPermissionsSource(TaskListener listener) {
             this.listener = listener;
         }
 
         @Override
-        public GHPermissionType fetch(String username) throws IOException, InterruptedException {
+        public AzurePermissionType fetch(String username) throws IOException, InterruptedException {
             if (repo == null) {
-                listener.getLogger().format("Connecting to %s to check permissions of obtain list of %s for %s/%s%n",
-                        collectionUrl == null ? GITHUB_URL : collectionUrl, username, projectName, repository);
-                StandardCredentials credentials = Connector.lookupScanCredentials(
-                        (Item) getOwner(), collectionUrl, credentialsId
-                );
-                github = Connector.connect(collectionUrl, credentials);
+                listener.getLogger().format("Connecting to %s to check permissions of obtain list of %s for %s/%s%n", collectionUrl, username, projectName, repository);
+                StandardCredentials credentials = AzureConnector.INSTANCE.lookupScanCredentials(getOwner(), collectionUrl, credentialsId);
+                //github = Connector.connect(collectionUrl, credentials);
                 String fullName = projectName + "/" + repository;
-                repo = github.getRepository(fullName);
+                //repo = github.getRepository(fullName);
             }
-            return repo.getPermission(username);
+            //return repo.getPermission(username);
+            return AzurePermissionType.ADMIN;
         }
 
         @Override
         public void close() throws IOException {
-            if (github != null) {
-                Connector.release(github);
-                github = null;
-                repo = null;
-            }
+//            if (github != null) {
+//                Connector.release(github);
+//                github = null;
+//                repo = null;
+//            }
         }
     }
 }
