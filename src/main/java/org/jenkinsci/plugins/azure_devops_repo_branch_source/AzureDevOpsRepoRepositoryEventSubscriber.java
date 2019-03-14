@@ -145,15 +145,15 @@ public class AzureDevOpsRepoRepositoryEventSubscriber extends GHEventsSubscriber
         @Override
         public boolean isMatch(@NonNull SCMNavigator navigator) {
             return navigator instanceof AzureDevOpsRepoSCMNavigator
-                    && isApiMatch(((AzureDevOpsRepoSCMNavigator) navigator).getApiUri())
+                    && isApiMatch(((AzureDevOpsRepoSCMNavigator) navigator).getCollectionUrl())
                     && repoOwner.equalsIgnoreCase(((AzureDevOpsRepoSCMNavigator) navigator).getRepoOwner());
         }
 
         @Override
         public boolean isMatch(@NonNull SCMSource source) {
             return source instanceof AzureDevOpsRepoSCMSource
-                    && isApiMatch(((AzureDevOpsRepoSCMSource) source).getApiUri())
-                    && repoOwner.equalsIgnoreCase(((AzureDevOpsRepoSCMSource) source).getRepoOwner())
+                    && isApiMatch(((AzureDevOpsRepoSCMSource) source).getCollectionUrl())
+                    && repoOwner.equalsIgnoreCase(((AzureDevOpsRepoSCMSource) source).getProjectName())
                     && repository.equalsIgnoreCase(((AzureDevOpsRepoSCMSource) source).getRepository());
         }
 

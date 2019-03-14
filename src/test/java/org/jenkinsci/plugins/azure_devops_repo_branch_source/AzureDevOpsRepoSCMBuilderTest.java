@@ -706,7 +706,6 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__server_branch_rev_anon__when__build__then__scmBuilt() throws Exception {
-        source.setApiUri("https://github.test/api/v3");
         BranchSCMHead head = new BranchSCMHead("test-branch");
         AbstractGitSCMSource.SCMRevisionImpl revision =
                 new AbstractGitSCMSource.SCMRevisionImpl(head, "cafebabedeadbeefcafebabedeadbeefcafebabe");
@@ -761,7 +760,6 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__server_branch_rev_userpass__when__build__then__scmBuilt() throws Exception {
-        source.setApiUri("https://github.test/api/v3");
         BranchSCMHead head = new BranchSCMHead("test-branch");
         AbstractGitSCMSource.SCMRevisionImpl revision =
                 new AbstractGitSCMSource.SCMRevisionImpl(head, "cafebabedeadbeefcafebabedeadbeefcafebabe");
@@ -815,7 +813,6 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__server_branch_rev_userkey__when__build__then__scmBuilt() throws Exception {
-        source.setApiUri("https://github.test/api/v3");
         BranchSCMHead head = new BranchSCMHead("test-branch");
         AbstractGitSCMSource.SCMRevisionImpl revision =
                 new AbstractGitSCMSource.SCMRevisionImpl(head, "cafebabedeadbeefcafebabedeadbeefcafebabe");
@@ -869,7 +866,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__server_branch_norev_anon__when__build__then__scmBuilt() throws Exception {
-        source.setApiUri("https://github.test/api/v3");
+//        source.setApiUri("https://github.test/api/v3");
         BranchSCMHead head = new BranchSCMHead("test-branch");
         source.setCredentialsId(null);
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, null);
@@ -909,7 +906,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__server_branch_norev_userpass__when__build__then__scmBuilt() throws Exception {
-        source.setApiUri("https://github.test/api/v3");
+        //source.setApiUri("https://github.test/api/v3");
         BranchSCMHead head = new BranchSCMHead("test-branch");
         source.setCredentialsId("user-pass");
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, null);
@@ -949,7 +946,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__server_branch_norev_userkey__when__build__then__scmBuilt() throws Exception {
-        source.setApiUri("https://github.test/api/v3");
+//        source.setApiUri("https://github.test/api/v3");
         BranchSCMHead head = new BranchSCMHead("test-branch");
         source.setCredentialsId("user-key");
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, null);
@@ -1286,7 +1283,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__server_pullHead_rev_anon__when__build__then__scmBuilt() throws Exception {
-        source.setApiUri("https://github.test/api/v3");
+//        source.setApiUri("https://github.test/api/v3");
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
                 new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.HEAD);
@@ -1346,7 +1343,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__server_pullHead_rev_userpass__when__build__then__scmBuilt() throws Exception {
-        source.setApiUri("https://github.test/api/v3");
+//        source.setApiUri("https://github.test/api/v3");
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
                 new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.HEAD);
@@ -1405,7 +1402,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__server_pullHead_rev_userkey__when__build__then__scmBuilt() throws Exception {
-        source.setApiUri("https://github.test/api/v3");
+//        source.setApiUri("https://github.test/api/v3");
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
                 new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.HEAD);
@@ -1464,7 +1461,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__server_pullHead_norev_anon__when__build__then__scmBuilt() throws Exception {
-        source.setApiUri("https://github.test/api/v3");
+//        source.setApiUri("https://github.test/api/v3");
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
                 new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.HEAD);
@@ -1506,7 +1503,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__server_pullHead_norev_userpass__when__build__then__scmBuilt() throws Exception {
-        source.setApiUri("https://github.test/api/v3");
+//        source.setApiUri("https://github.test/api/v3");
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
                 new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.HEAD);
@@ -1548,7 +1545,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__server_pullHead_norev_userkey__when__build__then__scmBuilt() throws Exception {
-        source.setApiUri("https://github.test/api/v3");
+//        source.setApiUri("https://github.test/api/v3");
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
                 new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.HEAD);
@@ -1953,7 +1950,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__server_pullMerge_rev_anon__when__build__then__scmBuilt() throws Exception {
-        source.setApiUri("https://github.test/api/v3");
+//        source.setApiUri("https://github.test/api/v3");
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
                 new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.MERGE);
@@ -2024,7 +2021,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__server_pullMerge_rev_userpass__when__build__then__scmBuilt() throws Exception {
-        source.setApiUri("https://github.test/api/v3");
+//        source.setApiUri("https://github.test/api/v3");
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
                 new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.MERGE);
@@ -2094,7 +2091,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__server_pullMerge_rev_userkey__when__build__then__scmBuilt() throws Exception {
-        source.setApiUri("https://github.test/api/v3");
+//        source.setApiUri("https://github.test/api/v3");
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
                 new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.MERGE);
@@ -2164,7 +2161,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__server_pullMerge_norev_anon__when__build__then__scmBuilt() throws Exception {
-        source.setApiUri("https://github.test/api/v3");
+//        source.setApiUri("https://github.test/api/v3");
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
                 new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.MERGE);
@@ -2218,7 +2215,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__server_pullMerge_norev_userpass__when__build__then__scmBuilt() throws Exception {
-        source.setApiUri("https://github.test/api/v3");
+//        source.setApiUri("https://github.test/api/v3");
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
                 new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.MERGE);
@@ -2272,7 +2269,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__server_pullMerge_norev_userkey__when__build__then__scmBuilt() throws Exception {
-        source.setApiUri("https://github.test/api/v3");
+//        source.setApiUri("https://github.test/api/v3");
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
                 new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.MERGE);

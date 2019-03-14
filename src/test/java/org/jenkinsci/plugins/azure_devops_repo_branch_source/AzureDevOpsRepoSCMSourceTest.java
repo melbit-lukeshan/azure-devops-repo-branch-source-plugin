@@ -133,7 +133,6 @@ public class AzureDevOpsRepoSCMSourceTest {
         githubRaw.stubFor(get(urlMatching(".*")).atPriority(10)
                 .willReturn(aResponse().proxiedFrom("https://raw.githubusercontent.com/")));
         source = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "cloudbeers", "yolo", "spring");
-        source.setApiUri("http://localhost:" + githubApi.port());
         source.setTraits(Arrays.asList(new BranchDiscoveryTrait(true, true), new ForkPullRequestDiscoveryTrait(EnumSet.of(ChangeRequestCheckoutStrategy.MERGE), new ForkPullRequestDiscoveryTrait.TrustContributors())));
     }
 

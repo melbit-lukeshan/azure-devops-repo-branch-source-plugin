@@ -260,8 +260,8 @@ public class PushGHEventSubscriber extends GHEventsSubscriber {
         @Override
         public Map<SCMHead, SCMRevision> heads(@NonNull SCMSource source) {
             if (!(source instanceof AzureDevOpsRepoSCMSource
-                    && isApiMatch(((AzureDevOpsRepoSCMSource) source).getApiUri())
-                    && repoOwner.equalsIgnoreCase(((AzureDevOpsRepoSCMSource) source).getRepoOwner())
+                    && isApiMatch(((AzureDevOpsRepoSCMSource) source).getCollectionUrl())
+                    && repoOwner.equalsIgnoreCase(((AzureDevOpsRepoSCMSource) source).getProjectName())
                     && repository.equalsIgnoreCase(((AzureDevOpsRepoSCMSource) source).getRepository()))) {
                 return Collections.emptyMap();
             }

@@ -49,8 +49,8 @@ public class AzureDevOpsRepoSCMSourceRepositoryNameContributor extends GitHubRep
                 if (o instanceof AzureDevOpsRepoSCMSource) {
                     AzureDevOpsRepoSCMSource gitHubSCMSource = (AzureDevOpsRepoSCMSource) o;
                     result.add(new GitHubRepositoryName(
-                            RepositoryUriResolver.hostnameFromApiUri(gitHubSCMSource.getApiUri()),
-                            gitHubSCMSource.getRepoOwner(),
+                            RepositoryUriResolver.hostnameFromApiUri(gitHubSCMSource.getCollectionUrl()),
+                            gitHubSCMSource.getProjectName(),
                             gitHubSCMSource.getRepository()));
 
                 }

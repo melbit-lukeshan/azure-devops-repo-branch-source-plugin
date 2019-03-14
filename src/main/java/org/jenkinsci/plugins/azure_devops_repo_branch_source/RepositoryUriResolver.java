@@ -31,39 +31,36 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
- * Resolves the URI of a GitHub repositort from the API URI, owner and repository name.
+ * Resolves the URI of a GitHub repositort from the API URI and repository name.
  */
 public abstract class RepositoryUriResolver {
 
     /**
-     * Resolves the URI of a repository.
-     *
-     * @param apiUri     the API URL of the GitHub server.
-     * @param owner      the owner of the repository.
-     * @param repository the name of the repository.
-     * @return the GIT URL of the repository.
-     */
-    @NonNull
-    public abstract String getRepositoryUri(@NonNull String apiUri, @NonNull String owner, @NonNull String repository);
-
-    /**
      * Helper method that returns the hostname of a GitHub server from its API URL.
      *
-     * @param apiUri the API URL.
-     * @return the hostname of a GitHub server
+     * @param collectionUrl the Azure DevOps collection url.
+     * @return the hostname of a Azure DevOps server
      */
     @NonNull
-    public static String hostnameFromApiUri(@CheckForNull String apiUri) {
-        if (apiUri != null) {
+    public static String hostnameFromApiUri(@CheckForNull String collectionUrl) {
+        if (collectionUrl != null) {
             try {
-                URL endpoint = new URL(apiUri);
-                if (!"api.github.com".equals(endpoint.getHost())) {
-                    return endpoint.getHost();
-                }
+                URL endpoint = new URL(collectionUrl);
+                return endpoint.getHost();
             } catch (MalformedURLException e) {
                 // ignore
             }
         }
-        return "github.com";
+        return "dev.azure.com";
     }
+
+    /**
+     * Resolves the URI of a repository.
+     *
+     * @param collectionUrl the Azure DevOps collection url.
+     * @param repository    the name of the repository.
+     * @return the GIT URL of the repository.
+     */
+    @NonNull
+    public abstract String getRepositoryUri(@NonNull String collectionUrl, @NonNull String projectName, @NonNull String repository);
 }

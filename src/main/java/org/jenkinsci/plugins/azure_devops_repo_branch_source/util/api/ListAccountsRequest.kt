@@ -1,0 +1,7 @@
+package org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api
+
+class ListAccountsRequest(pat: String)
+    : AzureBaseRequest<Accounts, Any>("https://app.vssps.visualstudio.com", pat) {
+    override val method = Method.GET
+    override val path = "/_apis/accounts"
+}

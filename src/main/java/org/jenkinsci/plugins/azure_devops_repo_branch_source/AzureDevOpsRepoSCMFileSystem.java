@@ -237,18 +237,18 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
         public SCMFileSystem build(@NonNull SCMSource source, @NonNull SCMHead head, @CheckForNull SCMRevision rev)
                 throws IOException, InterruptedException {
             AzureDevOpsRepoSCMSource src = (AzureDevOpsRepoSCMSource) source;
-            String apiUri = src.getApiUri();
+            String collectionUrl = src.getCollectionUrl();
             StandardCredentials credentials =
-                    Connector.lookupScanCredentials((Item) src.getOwner(), apiUri, src.getScanCredentialsId());
+                    Connector.lookupScanCredentials((Item) src.getOwner(), collectionUrl, src.getScanCredentialsId());
 
             // Github client and validation
-            GitHub github = Connector.connect(apiUri, credentials);
+            GitHub github = Connector.connect(collectionUrl, credentials);
             try {
                 try {
                     Connector.checkApiUrlValidity(github, credentials);
                 } catch (HttpException e) {
                     String message = String.format("It seems %s is unreachable",
-                            apiUri == null ? AzureDevOpsRepoSCMSource.GITHUB_URL : apiUri);
+                            collectionUrl == null ? AzureDevOpsRepoSCMSource.GITHUB_URL : collectionUrl);
                     throw new IOException(message);
                 }
                 String refName;
@@ -287,7 +287,7 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
                     return null;
                 }
 
-                GHUser user = github.getUser(src.getRepoOwner());
+                GHUser user = github.getUser(src.getProjectName());
                 if (user == null) {
                     // we need to release here as we are not throwing an exception or transferring responsibility to FS
                     Connector.release(github);

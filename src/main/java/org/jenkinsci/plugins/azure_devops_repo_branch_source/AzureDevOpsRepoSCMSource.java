@@ -32,7 +32,6 @@ import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.RestrictedSince;
@@ -95,7 +94,6 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -133,11 +131,6 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     //////////////////////////////////////////////////////////////////////
     // Configuration fields
     //////////////////////////////////////////////////////////////////////
-    /**
-     * The Azure DevOps Repo end-point or {@code null} if {@link #GITHUB_URL} is implied.
-     */
-    @CheckForNull // TODO migrate to non-null with configuration of GITHUB_URL by default
-    private String apiUri;
 
     /**
      * The Azure DevOps collection URL.
@@ -152,12 +145,6 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
      */
     @CheckForNull
     private String credentialsId;
-
-    /**
-     * The repository owner.
-     */
-    @NonNull
-    private final String repoOwner;
 
     /**
      * The project name
@@ -178,61 +165,6 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
      */
     @NonNull
     private List<SCMSourceTrait> traits;
-
-    //////////////////////////////////////////////////////////////////////
-    // Legacy Configuration fields
-    //////////////////////////////////////////////////////////////////////
-
-    /**
-     * Legacy field.
-     */
-    @Deprecated
-    private transient String scanCredentialsId;
-    /**
-     * Legacy field.
-     */
-    @Deprecated
-    private transient String checkoutCredentialsId;
-    /**
-     * Legacy field.
-     */
-    @Deprecated
-    private String includes;
-    /**
-     * Legacy field.
-     */
-    @Deprecated
-    private String excludes;
-    /**
-     * Legacy field.
-     */
-    @Deprecated
-    private transient Boolean buildOriginBranch;
-    /**
-     * Legacy field.
-     */
-    @Deprecated
-    private transient Boolean buildOriginBranchWithPR;
-    /**
-     * Legacy field.
-     */
-    @Deprecated
-    private transient Boolean buildOriginPRMerge;
-    /**
-     * Legacy field.
-     */
-    @Deprecated
-    private transient Boolean buildOriginPRHead;
-    /**
-     * Legacy field.
-     */
-    @Deprecated
-    private transient Boolean buildForkPRMerge;
-    /**
-     * Legacy field.
-     */
-    @Deprecated
-    private transient Boolean buildForkPRHead;
 
     //////////////////////////////////////////////////////////////////////
     // Run-time cached state
@@ -280,14 +212,12 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
      * Constructor, defaults to {@link #GITHUB_URL} as the end-point, and anonymous access, does not default any
      * {@link SCMSourceTrait} behaviours.
      *
-     * @param repoOwner  the repository owner.
      * @param repository the repository name.
      * @since 2.2.0
      */
     @DataBoundConstructor
-    public AzureDevOpsRepoSCMSource(@NonNull String collectionUrl, @NonNull String repoOwner, @NonNull String repository, @NonNull String projectName) {
+    public AzureDevOpsRepoSCMSource(@NonNull String collectionUrl, @NonNull String repository, @NonNull String projectName) {
         this.collectionUrl = collectionUrl;
-        this.repoOwner = repoOwner;
         this.repository = repository;
         this.projectName = projectName;
         pullRequestMetadataCache = new ConcurrentHashMap<>();
@@ -299,20 +229,17 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
      * Legacy constructor.
      *
      * @param id                    the source id.
-     * @param apiUri                the Azure DevOps Repo endpoint.
      * @param checkoutCredentialsId the checkout credentials id or {@link DescriptorImpl#SAME} or
      *                              {@link DescriptorImpl#ANONYMOUS}.
      * @param scanCredentialsId     the scan credentials id or {@code null}.
-     * @param repoOwner             the repository owner.
      * @param repository            the repository name.
      */
     @Deprecated
-    public AzureDevOpsRepoSCMSource(@CheckForNull String id, @CheckForNull String apiUri, @NonNull String checkoutCredentialsId,
-                                    @CheckForNull String scanCredentialsId, @NonNull String collectionUrl, @NonNull String repoOwner,
+    public AzureDevOpsRepoSCMSource(@CheckForNull String id, @NonNull String checkoutCredentialsId,
+                                    @CheckForNull String scanCredentialsId, @NonNull String collectionUrl,
                                     @NonNull String repository, @NonNull String projectName) {
-        this(collectionUrl, repoOwner, repository, projectName);
+        this(collectionUrl, repository, projectName);
         setId(id);
-        setApiUri(apiUri);
         setCredentialsId(scanCredentialsId);
         // legacy constructor means legacy defaults
         this.traits = new ArrayList<>();
@@ -364,42 +291,12 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     }
 
     /**
-     * @return the Azure DevOps Repo API end-point or {@code null} if {@link #GITHUB_URL}.
-     */
-    @CheckForNull // TODO switch to NonNull
-    public String getApiUri() {
-        return apiUri;
-    }
-
-    /**
-     * Sets the Azure DevOps Repo API end-point.
-     *
-     * @param apiUri the Azure DevOps Repo API end-point or {@code null} if {@link #GITHUB_URL}.
-     * @since 2.2.0
-     */
-    @DataBoundSetter
-    public void setApiUri(@CheckForNull String apiUri) {
-        this.apiUri = AzureDevOpsRepoConfiguration.normalizeApiUri(Util.fixEmptyAndTrim(apiUri));
-    }
-
-    /**
      * @return the Azure DevOps collection url.
      */
     @Exported
     @NonNull
     public String getCollectionUrl() {
         return collectionUrl;
-    }
-
-    /**
-     * Gets the repository owner.
-     *
-     * @return the repository owner.
-     */
-    @Exported
-    @NonNull
-    public String getRepoOwner() {
-        return repoOwner;
     }
 
     /**
@@ -469,75 +366,12 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     }
 
     /**
-     * Use defaults for old settings.
-     */
-    @SuppressWarnings("ConstantConditions")
-    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", justification = "Only non-null after we set them here!")
-    private Object readResolve() {
-        if (scanCredentialsId != null) {
-            credentialsId = scanCredentialsId;
-        }
-        if (pullRequestMetadataCache == null) {
-            pullRequestMetadataCache = new ConcurrentHashMap<>();
-        }
-        if (pullRequestContributorCache == null) {
-            pullRequestContributorCache = new ConcurrentHashMap<>();
-        }
-        if (traits == null) {
-            boolean buildOriginBranch = this.buildOriginBranch == null || this.buildOriginBranch;
-            boolean buildOriginBranchWithPR = this.buildOriginBranchWithPR == null || this.buildOriginBranchWithPR;
-            boolean buildOriginPRMerge = this.buildOriginPRMerge != null && this.buildOriginPRMerge;
-            boolean buildOriginPRHead = this.buildOriginPRHead != null && this.buildOriginPRHead;
-            boolean buildForkPRMerge = this.buildForkPRMerge == null || this.buildForkPRMerge;
-            boolean buildForkPRHead = this.buildForkPRHead != null && this.buildForkPRHead;
-            List<SCMSourceTrait> traits = new ArrayList<>();
-            if (buildOriginBranch || buildOriginBranchWithPR) {
-                traits.add(new BranchDiscoveryTrait(buildOriginBranch, buildOriginBranchWithPR));
-            }
-            if (buildOriginPRMerge || buildOriginPRHead) {
-                EnumSet<ChangeRequestCheckoutStrategy> s = EnumSet.noneOf(ChangeRequestCheckoutStrategy.class);
-                if (buildOriginPRMerge) {
-                    s.add(ChangeRequestCheckoutStrategy.MERGE);
-                }
-                if (buildOriginPRHead) {
-                    s.add(ChangeRequestCheckoutStrategy.HEAD);
-                }
-                traits.add(new OriginPullRequestDiscoveryTrait(s));
-            }
-            if (buildForkPRMerge || buildForkPRHead) {
-                EnumSet<ChangeRequestCheckoutStrategy> s = EnumSet.noneOf(ChangeRequestCheckoutStrategy.class);
-                if (buildForkPRMerge) {
-                    s.add(ChangeRequestCheckoutStrategy.MERGE);
-                }
-                if (buildForkPRHead) {
-                    s.add(ChangeRequestCheckoutStrategy.HEAD);
-                }
-                traits.add(new ForkPullRequestDiscoveryTrait(s, new ForkPullRequestDiscoveryTrait.TrustPermission()));
-            }
-            if (!"*".equals(includes) || !"".equals(excludes)) {
-                traits.add(new WildcardSCMHeadFilterTrait(includes, excludes));
-            }
-            if (checkoutCredentialsId != null
-                    && !DescriptorImpl.SAME.equals(checkoutCredentialsId)
-                    && !checkoutCredentialsId.equals(scanCredentialsId)) {
-                traits.add(new SSHCheckoutTrait(checkoutCredentialsId));
-            }
-            this.traits = traits;
-        }
-        if (!StringUtils.equals(apiUri, AzureDevOpsRepoConfiguration.normalizeApiUri(apiUri))) {
-            setApiUri(apiUri);
-        }
-        return this;
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
     public String getRemote() {
-        String apiUri = StringUtils.defaultIfBlank(this.apiUri, GitHubServerConfig.GITHUB_URL);
-        return AzureDevOpsRepoSCMBuilder.uriResolver(getOwner(), apiUri, credentialsId)
-                .getRepositoryUri(apiUri, repoOwner, repository);
+        return AzureDevOpsRepoSCMBuilder.uriResolver(getOwner(), collectionUrl, credentialsId)
+                .getRepositoryUri(collectionUrl, projectName, repository);
     }
 
     /**
@@ -560,7 +394,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     public RepositoryUriResolver getUriResolver() {
         return AzureDevOpsRepoSCMBuilder.uriResolver(
                 getOwner(),
-                StringUtils.defaultIfBlank(apiUri, GitHubServerConfig.GITHUB_URL),
+                collectionUrl,
                 credentialsId
         );
     }
@@ -863,23 +697,23 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                                   @NonNull SCMHeadObserver observer,
                                   @CheckForNull SCMHeadEvent<?> event,
                                   @NonNull final TaskListener listener) throws IOException, InterruptedException {
-        StandardCredentials credentials = Connector.lookupScanCredentials((Item) getOwner(), apiUri, credentialsId);
+        StandardCredentials credentials = Connector.lookupScanCredentials((Item) getOwner(), collectionUrl, credentialsId);
         // Github client and validation
-        final GitHub github = Connector.connect(apiUri, credentials);
+        final GitHub github = Connector.connect(collectionUrl, credentials);
         try {
             checkApiUrlValidity(github, credentials);
             Connector.checkApiRateLimit(listener, github);
 
             try {
                 // Input data validation
-                Connector.checkConnectionValidity(apiUri, listener, credentials, github);
+                Connector.checkConnectionValidity(collectionUrl, listener, credentials, github);
 
                 // Input data validation
                 if (StringUtils.isBlank(repository)) {
                     throw new AbortException("No repository selected, skipping");
                 }
 
-                String fullName = repoOwner + "/" + repository;
+                String fullName = projectName + "/" + repository;
                 ghRepository = github.getRepository(fullName);
                 final GHRepository ghRepository = this.ghRepository;
                 listener.getLogger().format("Examining %s%n",
@@ -1087,9 +921,9 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     @NonNull
     @Override
     protected Set<String> retrieveRevisions(@NonNull TaskListener listener) throws IOException, InterruptedException {
-        StandardCredentials credentials = Connector.lookupScanCredentials((Item) getOwner(), apiUri, credentialsId);
+        StandardCredentials credentials = Connector.lookupScanCredentials((Item) getOwner(), collectionUrl, credentialsId);
         // Github client and validation
-        final GitHub github = Connector.connect(apiUri, credentials);
+        final GitHub github = Connector.connect(collectionUrl, credentials);
         try {
             checkApiUrlValidity(github, credentials);
             Connector.checkApiRateLimit(listener, github);
@@ -1097,14 +931,14 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
 
             try {
                 // Input data validation
-                Connector.checkConnectionValidity(apiUri, listener, credentials, github);
+                Connector.checkConnectionValidity(collectionUrl, listener, credentials, github);
 
                 // Input data validation
                 if (StringUtils.isBlank(repository)) {
                     throw new AbortException("No repository selected, skipping");
                 }
 
-                String fullName = repoOwner + "/" + repository;
+                String fullName = projectName + "/" + repository;
                 ghRepository = github.getRepository(fullName);
                 final GHRepository ghRepository = this.ghRepository;
                 listener.getLogger().format("Listing %s%n",
@@ -1180,9 +1014,9 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     @Override
     protected SCMRevision retrieve(@NonNull String headName, @NonNull TaskListener listener)
             throws IOException, InterruptedException {
-        StandardCredentials credentials = Connector.lookupScanCredentials((Item) getOwner(), apiUri, credentialsId);
+        StandardCredentials credentials = Connector.lookupScanCredentials((Item) getOwner(), collectionUrl, credentialsId);
         // Github client and validation
-        final GitHub github = Connector.connect(apiUri, credentials);
+        final GitHub github = Connector.connect(collectionUrl, credentials);
         try {
             checkApiUrlValidity(github, credentials);
             Connector.checkApiRateLimit(listener, github);
@@ -1191,7 +1025,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                 throw new AbortException("No repository selected, skipping");
             }
 
-            String fullName = repoOwner + "/" + repository;
+            String fullName = projectName + "/" + repository;
             ghRepository = github.getRepository(fullName);
             final GHRepository ghRepository = this.ghRepository;
             listener.getLogger().format("Examining %s%n",
@@ -1356,7 +1190,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     private Set<String> updateCollaboratorNames(@NonNull TaskListener listener, @CheckForNull StandardCredentials credentials,
                                                 @NonNull GHRepository ghRepository)
             throws IOException {
-        if (credentials == null && (apiUri == null || GITHUB_URL.equals(apiUri))) {
+        if (credentials == null && (collectionUrl == null || GITHUB_URL.equals(collectionUrl))) {
             // anonymous access to GitHub will never get list of collaborators and will
             // burn an API call, so no point in even trying
             listener.getLogger().println("Anonymous cannot query list of collaborators, assuming none");
@@ -1384,7 +1218,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         try {
             Connector.checkApiUrlValidity(github, credentials);
         } catch (HttpException e) {
-            String message = String.format("It seems %s is unreachable", apiUri == null ? GITHUB_URL : apiUri);
+            String message = String.format("It seems %s is unreachable", collectionUrl == null ? GITHUB_URL : collectionUrl);
             throw new IOException(message, e);
         }
     }
@@ -1414,11 +1248,11 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     @NonNull
     @Override
     protected SCMProbe createProbe(@NonNull SCMHead head, @CheckForNull final SCMRevision revision) throws IOException {
-        StandardCredentials credentials = Connector.lookupScanCredentials((Item) getOwner(), apiUri, credentialsId);
+        StandardCredentials credentials = Connector.lookupScanCredentials((Item) getOwner(), collectionUrl, credentialsId);
         // Github client and validation
-        GitHub github = Connector.connect(apiUri, credentials);
+        GitHub github = Connector.connect(collectionUrl, credentials);
         try {
-            String fullName = repoOwner + "/" + repository;
+            String fullName = projectName + "/" + repository;
             final GHRepository repo = github.getRepository(fullName);
             return new AzureDevOpsRepoSCMProbe(github, repo, head, revision);
         } catch (IOException | RuntimeException | Error e) {
@@ -1430,17 +1264,17 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     @Override
     @CheckForNull
     protected SCMRevision retrieve(SCMHead head, TaskListener listener) throws IOException, InterruptedException {
-        StandardCredentials credentials = Connector.lookupScanCredentials((Item) getOwner(), apiUri, credentialsId);
+        StandardCredentials credentials = Connector.lookupScanCredentials((Item) getOwner(), collectionUrl, credentialsId);
 
         // Github client and validation
-        GitHub github = Connector.connect(apiUri, credentials);
+        GitHub github = Connector.connect(collectionUrl, credentials);
         try {
             checkApiUrlValidity(github, credentials);
 
             try {
-                Connector.checkConnectionValidity(apiUri, listener, credentials, github);
+                Connector.checkConnectionValidity(collectionUrl, listener, credentials, github);
                 Connector.checkApiRateLimit(listener, github);
-                String fullName = repoOwner + "/" + repository;
+                String fullName = projectName + "/" + repository;
                 ghRepository = github.getRepository(fullName);
                 repositoryUrl = ghRepository.getHtmlUrl();
                 if (head instanceof PullRequestSCMHead) {
@@ -1499,13 +1333,13 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
             if (pullRequestSourceMap == null) {
                 this.pullRequestSourceMap = pullRequestSourceMap = new HashMap<>();
                 if (repository != null && !repository.isEmpty()) {
-                    String fullName = repoOwner + "/" + repository;
+                    String fullName = projectName + "/" + repository;
                     LOGGER.log(Level.INFO, "Getting remote pull requests from {0}", fullName);
                     StandardCredentials credentials =
-                            Connector.lookupScanCredentials((Item) getOwner(), apiUri, credentialsId);
+                            Connector.lookupScanCredentials((Item) getOwner(), collectionUrl, credentialsId);
                     LogTaskListener listener = new LogTaskListener(LOGGER, Level.INFO);
                     try {
-                        GitHub github = Connector.connect(apiUri, credentials);
+                        GitHub github = Connector.connect(collectionUrl, credentials);
                         try {
                             checkApiUrlValidity(github, credentials);
                             Connector.checkApiRateLimit(listener, github);
@@ -1583,8 +1417,8 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                 } catch (HttpException e) {
                     listener.getLogger()
                             .format("It seems %s is unreachable, assuming no trusted collaborators%n",
-                                    apiUri == null ? GITHUB_URL : apiUri);
-                    collaboratorNames = Collections.singleton(repoOwner);
+                                    collectionUrl == null ? GITHUB_URL : collectionUrl);
+                    collaboratorNames = Collections.singleton(projectName);
                 }
             }
             PullRequestSCMRevision rev = (PullRequestSCMRevision) revision;
@@ -1646,7 +1480,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
             }
             if (head instanceof BranchSCMHead) {
                 for (AzureDevOpsRepoDefaultBranch p : ((Actionable) owner).getActions(AzureDevOpsRepoDefaultBranch.class)) {
-                    if (StringUtils.equals(getRepoOwner(), p.getRepoOwner())
+                    if (StringUtils.equals(getProjectName(), p.getRepoOwner())
                             && StringUtils.equals(repository, p.getRepository())
                             && StringUtils.equals(p.getDefaultBranch(), head.getName())) {
                         result.add(new PrimaryInstanceMetadataAction());
@@ -1668,22 +1502,22 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         // TODO when we have support for trusted events, use the details from event if event was from trusted source
         List<Action> result = new ArrayList<>();
         result.add(new AzureDevOpsRepoRepoMetadataAction());
-        StandardCredentials credentials = Connector.lookupScanCredentials((Item) getOwner(), apiUri, credentialsId);
-        GitHub hub = Connector.connect(apiUri, credentials);
+        StandardCredentials credentials = Connector.lookupScanCredentials((Item) getOwner(), collectionUrl, credentialsId);
+        GitHub hub = Connector.connect(collectionUrl, credentials);
         try {
-            Connector.checkConnectionValidity(apiUri, listener, credentials, hub);
+            Connector.checkConnectionValidity(collectionUrl, listener, credentials, hub);
             try {
-                ghRepository = hub.getRepository(getRepoOwner() + '/' + repository);
+                ghRepository = hub.getRepository(getProjectName() + '/' + repository);
                 repositoryUrl = ghRepository.getHtmlUrl();
             } catch (FileNotFoundException e) {
                 throw new AbortException(
                         String.format("Invalid scan credentials when using %s to connect to %s/%s on %s",
-                                credentials == null ? "anonymous access" : CredentialsNameProvider.name(credentials), repoOwner, repository, apiUri == null ? GITHUB_URL : apiUri));
+                                credentials == null ? "anonymous access" : CredentialsNameProvider.name(credentials), projectName, repository, collectionUrl == null ? GITHUB_URL : collectionUrl));
             }
             result.add(new ObjectMetadataAction(null, ghRepository.getDescription(), Util.fixEmpty(ghRepository.getHomepage())));
             result.add(new AzureDevOpsRepoLink("icon-github-repo", ghRepository.getHtmlUrl()));
             if (StringUtils.isNotBlank(ghRepository.getDefaultBranch())) {
-                result.add(new AzureDevOpsRepoDefaultBranch(getRepoOwner(), repository, ghRepository.getDefaultBranch()));
+                result.add(new AzureDevOpsRepoDefaultBranch(getProjectName(), repository, ghRepository.getDefaultBranch()));
             }
             return result;
         } finally {
@@ -1905,121 +1739,24 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         }
 
         @RequirePOST
-        public ListBoxModel doFillRepositoryItems(@CheckForNull @AncestorInPath Item context, @QueryParameter String apiUri,
-                                                  @QueryParameter String credentialsId, @QueryParameter String repoOwner) throws IOException {
-
-            repoOwner = Util.fixEmptyAndTrim(repoOwner);
-            if (repoOwner == null) {
+        public ListBoxModel doFillRepositoryItems(@CheckForNull @AncestorInPath Item context, @QueryParameter String collectionUrl,
+                                                  @QueryParameter String credentialsId, @QueryParameter String projectName) throws IOException {
+            if (projectName == null || projectName.isEmpty()) {
                 return new ListBoxModel();
             }
-            if (context == null && !Jenkins.getActiveInstance().hasPermission(Jenkins.ADMINISTER) ||
+            if (context == null && !Jenkins.get().hasPermission(Jenkins.ADMINISTER) ||
                     context != null && !context.hasPermission(Item.EXTENDED_READ)) {
                 return new ListBoxModel(); // not supposed to be seeing this form
             }
             if (context != null && !context.hasPermission(CredentialsProvider.USE_ITEM)) {
                 return new ListBoxModel(); // not permitted to try connecting with these credentials
             }
-            try {
-                StandardCredentials credentials = Connector.lookupScanCredentials(context, apiUri, credentialsId);
-                GitHub github = Connector.connect(apiUri, credentials);
-                try {
-
-                    if (!github.isAnonymous()) {
-                        GHMyself myself;
-                        try {
-                            myself = github.getMyself();
-                        } catch (IllegalStateException e) {
-                            LOGGER.log(Level.WARNING, e.getMessage(), e);
-                            throw new FillErrorResponse(e.getMessage(), false);
-                        } catch (IOException e) {
-                            LogRecord lr = new LogRecord(Level.WARNING,
-                                    "Exception retrieving the repositories of the owner {0} on {1} with credentials {2}");
-                            lr.setThrown(e);
-                            lr.setParameters(new Object[]{
-                                    repoOwner, apiUri,
-                                    credentials == null
-                                            ? "anonymous access"
-                                            : CredentialsNameProvider.name(credentials)
-                            });
-                            LOGGER.log(lr);
-                            throw new FillErrorResponse(e.getMessage(), false);
-                        }
-                        if (myself != null && repoOwner.equalsIgnoreCase(myself.getLogin())) {
-                            Set<String> result = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-                            for (GHRepository repo : myself.listRepositories(100, GHMyself.RepositoryListFilter.OWNER)) {
-                                result.add(repo.getName());
-                            }
-                            return nameAndValueModel(result);
-                        }
-                    }
-
-                    GHOrganization org = null;
-                    try {
-                        org = github.getOrganization(repoOwner);
-                    } catch (FileNotFoundException fnf) {
-                        LOGGER.log(Level.FINE, "There is not any GH Organization named {0}", repoOwner);
-                    } catch (IOException e) {
-                        LogRecord lr = new LogRecord(Level.WARNING,
-                                "Exception retrieving the repositories of the organization {0} on {1} with credentials {2}");
-                        lr.setThrown(e);
-                        lr.setParameters(new Object[]{
-                                repoOwner, apiUri,
-                                credentials == null
-                                        ? "anonymous access"
-                                        : CredentialsNameProvider.name(credentials)
-                        });
-                        LOGGER.log(lr);
-                        throw new FillErrorResponse(e.getMessage(), false);
-                    }
-                    if (org != null && repoOwner.equalsIgnoreCase(org.getLogin())) {
-                        Set<String> result = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-                        LOGGER.log(Level.FINE, "as {0} looking for repositories in {1}",
-                                new Object[]{credentialsId, repoOwner});
-                        for (GHRepository repo : org.listRepositories(100)) {
-                            LOGGER.log(Level.FINE, "as {0} found {1}/{2}",
-                                    new Object[]{credentialsId, repoOwner, repo.getName()});
-                            result.add(repo.getName());
-                        }
-                        LOGGER.log(Level.FINE, "as {0} result of {1} is {2}",
-                                new Object[]{credentialsId, repoOwner, result});
-                        return nameAndValueModel(result);
-                    }
-
-                    GHUser user = null;
-                    try {
-                        user = github.getUser(repoOwner);
-                    } catch (FileNotFoundException fnf) {
-                        LOGGER.log(Level.FINE, "There is not any GH User named {0}", repoOwner);
-                    } catch (IOException e) {
-                        LogRecord lr = new LogRecord(Level.WARNING,
-                                "Exception retrieving the repositories of the user {0} on {1} with credentials {2}");
-                        lr.setThrown(e);
-                        lr.setParameters(new Object[]{
-                                repoOwner, apiUri,
-                                credentials == null
-                                        ? "anonymous access"
-                                        : CredentialsNameProvider.name(credentials)
-                        });
-                        LOGGER.log(lr);
-                        throw new FillErrorResponse(e.getMessage(), false);
-                    }
-                    if (user != null && repoOwner.equalsIgnoreCase(user.getLogin())) {
-                        Set<String> result = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-                        for (GHRepository repo : user.listRepositories(100)) {
-                            result.add(repo.getName());
-                        }
-                        return nameAndValueModel(result);
-                    }
-                } finally {
-                    Connector.release(github);
-                }
-            } catch (FillErrorResponse e) {
-                throw e;
-            } catch (Throwable e) {
-                LOGGER.log(Level.SEVERE, e.getMessage(), e);
-                throw new FillErrorResponse(e.getMessage(), false);
+            ListBoxModel result = new ListBoxModel();
+            List<String> repositoryNameList = AzureConnector.INSTANCE.getRepositoryNames(context, collectionUrl, credentialsId, projectName);
+            for (String repositoryName : repositoryNameList) {
+                result.add(repositoryName, repositoryName);
             }
-            throw new FillErrorResponse(Messages.AzureDevOpsRepoSCMSource_NoMatchingOwner(repoOwner), true);
+            return result;
         }
 
         public List<NamedArrayList<? extends SCMTraitDescriptor<?>>> getTraitsDescriptorLists() {
@@ -2433,19 +2170,19 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                 return collaboratorNames;
             }
             listener.getLogger().format("Connecting to %s to obtain list of collaborators for %s/%s%n",
-                    apiUri == null ? GITHUB_URL : apiUri, repoOwner, repository);
+                    collectionUrl == null ? GITHUB_URL : collectionUrl, projectName, repository);
             StandardCredentials credentials = Connector.lookupScanCredentials(
-                    (Item) getOwner(), apiUri, credentialsId
+                    (Item) getOwner(), collectionUrl, credentialsId
             );
             // Github client and validation
             try {
-                GitHub github = Connector.connect(apiUri, credentials);
+                GitHub github = Connector.connect(collectionUrl, credentials);
                 try {
                     checkApiUrlValidity(github, credentials);
                     Connector.checkApiRateLimit(listener, github);
 
                     // Input data validation
-                    Connector.checkConnectionValidity(apiUri, listener, credentials, github);
+                    Connector.checkConnectionValidity(collectionUrl, listener, credentials, github);
                     // Input data validation
                     String credentialsName =
                             credentials == null
@@ -2454,26 +2191,26 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                     if (credentials != null && !isCredentialValid(github)) {
                         listener.getLogger().format("Invalid scan credentials %s to connect to %s, "
                                         + "assuming no trusted collaborators%n",
-                                credentialsName, apiUri == null ? GITHUB_URL : apiUri);
-                        collaboratorNames = Collections.singleton(repoOwner);
+                                credentialsName, collectionUrl == null ? GITHUB_URL : collectionUrl);
+                        collaboratorNames = Collections.singleton(projectName);
                     } else {
                         if (!github.isAnonymous()) {
                             listener.getLogger()
                                     .format("Connecting to %s using %s%n",
-                                            apiUri == null ? GITHUB_URL : apiUri,
+                                            collectionUrl == null ? GITHUB_URL : collectionUrl,
                                             credentialsName);
                         } else {
                             listener.getLogger()
                                     .format("Connecting to %s with no credentials, anonymous access%n",
-                                            apiUri == null ? GITHUB_URL : apiUri);
+                                            collectionUrl == null ? GITHUB_URL : collectionUrl);
                         }
 
                         // Input data validation
                         if (repository == null || repository.isEmpty()) {
-                            collaboratorNames = Collections.singleton(repoOwner);
+                            collaboratorNames = Collections.singleton(projectName);
                         } else {
                             request.checkApiRateLimit();
-                            String fullName = repoOwner + "/" + repository;
+                            String fullName = projectName + "/" + repository;
                             ghRepository = github.getRepository(fullName);
                             repositoryUrl = ghRepository.getHtmlUrl();
                             return new LazyContributorNames(request, listener, github, ghRepository, credentials);
@@ -2503,12 +2240,12 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         public GHPermissionType fetch(String username) throws IOException, InterruptedException {
             if (repo == null) {
                 listener.getLogger().format("Connecting to %s to check permissions of obtain list of %s for %s/%s%n",
-                        apiUri == null ? GITHUB_URL : apiUri, username, repoOwner, repository);
+                        collectionUrl == null ? GITHUB_URL : collectionUrl, username, projectName, repository);
                 StandardCredentials credentials = Connector.lookupScanCredentials(
-                        (Item) getOwner(), apiUri, credentialsId
+                        (Item) getOwner(), collectionUrl, credentialsId
                 );
-                github = Connector.connect(apiUri, credentials);
-                String fullName = repoOwner + "/" + repository;
+                github = Connector.connect(collectionUrl, credentials);
+                String fullName = projectName + "/" + repository;
                 repo = github.getRepository(fullName);
             }
             return repo.getPermission(username);

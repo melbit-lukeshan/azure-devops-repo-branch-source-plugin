@@ -75,7 +75,7 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
     public void modern() throws Exception {
         AzureDevOpsRepoSCMSource instance = load();
         assertThat(instance.getId(), is("e4d8c11a-0d24-472f-b86b-4b017c160e9a"));
-        assertThat(instance.getApiUri(), is(nullValue()));
+//        assertThat(instance.getApiUri(), is(nullValue()));
         assertThat(instance.getRepoOwner(), is("cloudbeers"));
         assertThat(instance.getRepository(), is("stunning-adventure"));
         assertThat(instance.getCredentialsId(), is(nullValue()));
@@ -99,7 +99,7 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
                 + "::https://api.AzureDevOpsRepo.com"
                 + "::cloudbeers"
                 + "::stunning-adventure"));
-        assertThat(instance.getApiUri(), is(nullValue()));
+//        assertThat(instance.getApiUri(), is(nullValue()));
         assertThat(instance.getRepoOwner(), is("cloudbeers"));
         assertThat(instance.getRepository(), is("stunning-adventure"));
         assertThat(instance.getCredentialsId(), is("e4d8c11a-0d24-472f-b86b-4b017c160e9a"));
@@ -136,7 +136,7 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
                 + "::https://AzureDevOpsRepo.test/api/v3"
                 + "::cloudbeers"
                 + "::stunning-adventure"));
-        assertThat(instance.getApiUri(), is("https://azuredevopsrepo.test/api/v3"));
+//        assertThat(instance.getApiUri(), is("https://azuredevopsrepo.test/api/v3"));
         assertThat(instance.getRepoOwner(), is("cloudbeers"));
         assertThat(instance.getRepository(), is("stunning-adventure"));
         assertThat(instance.getCredentialsId(), is("e4d8c11a-0d24-472f-b86b-4b017c160e9a"));
@@ -177,7 +177,7 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
                 + "::https://AzureDevOpsRepo.test/api/v3"
                 + "::cloudbeers"
                 + "::stunning-adventure"));
-        assertThat(instance.getApiUri(), is("https://azuredevopsrepo.test/api/v3"));
+//        assertThat(instance.getApiUri(), is("https://azuredevopsrepo.test/api/v3"));
         assertThat(instance.getRepoOwner(), is("cloudbeers"));
         assertThat(instance.getRepository(), is("stunning-adventure"));
         assertThat(instance.getCredentialsId(), is("e4d8c11a-0d24-472f-b86b-4b017c160e9a"));
@@ -223,7 +223,7 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
                 + "::https://AzureDevOpsRepo.test/api/v3"
                 + "::cloudbeers"
                 + "::stunning-adventure"));
-        assertThat(instance.getApiUri(), is("https://azuredevopsrepo.test/api/v3"));
+//        assertThat(instance.getApiUri(), is("https://azuredevopsrepo.test/api/v3"));
         assertThat(instance.getRepoOwner(), is("cloudbeers"));
         assertThat(instance.getRepository(), is("stunning-adventure"));
         assertThat(instance.getCredentialsId(), is("e4d8c11a-0d24-472f-b86b-4b017c160e9a"));
@@ -264,7 +264,7 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
                 + "::https://api.AzureDevOpsRepo.com"
                 + "::cloudbeers"
                 + "::stunning-adventure"));
-        assertThat(instance.getApiUri(), is(nullValue()));
+//        assertThat(instance.getApiUri(), is(nullValue()));
         assertThat(instance.getRepoOwner(), is("cloudbeers"));
         assertThat(instance.getRepository(), is("stunning-adventure"));
         assertThat(instance.getCredentialsId(), is("e4d8c11a-0d24-472f-b86b-4b017c160e9a"));
@@ -306,7 +306,7 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
                 + "::https://api.AzureDevOpsRepo.com"
                 + "::cloudbeers"
                 + "::stunning-adventure"));
-        assertThat(instance.getApiUri(), is(nullValue()));
+//        assertThat(instance.getApiUri(), is(nullValue()));
         assertThat(instance.getRepoOwner(), is("cloudbeers"));
         assertThat(instance.getRepository(), is("stunning-adventure"));
         assertThat(instance.getCredentialsId(), is("e4d8c11a-0d24-472f-b86b-4b017c160e9a"));
@@ -348,7 +348,7 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
                 + "::https://api.AzureDevOpsRepo.com"
                 + "::cloudbeers"
                 + "::stunning-adventure"));
-        assertThat(instance.getApiUri(), is(nullValue()));
+//        assertThat(instance.getApiUri(), is(nullValue()));
         assertThat(instance.getRepoOwner(), is("cloudbeers"));
         assertThat(instance.getRepository(), is("stunning-adventure"));
         assertThat(instance.getCredentialsId(), is("e4d8c11a-0d24-472f-b86b-4b017c160e9a"));
@@ -384,10 +384,10 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
 
     @Test
     public void given__legacyCode__when__constructor_cloud__then__discoveryTraitDefaults() throws Exception {
-        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("preserve-id", null, "SAME",
+        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("preserve-id", "SAME",
                 "e4d8c11a-0d24-472f-b86b-4b017c160e9a", "https://dev.azure.com/lukeshan", "cloudbeers", "stunning-adventure", "spring");
         assertThat(instance.getId(), is("preserve-id"));
-        assertThat(instance.getApiUri(), is(nullValue()));
+//        assertThat(instance.getApiUri(), is(nullValue()));
         assertThat(instance.getRepoOwner(), is("cloudbeers"));
         assertThat(instance.getRepository(), is("stunning-adventure"));
         assertThat(instance.getCredentialsId(), is("e4d8c11a-0d24-472f-b86b-4b017c160e9a"));
@@ -419,11 +419,11 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
 
     @Test
     public void given__legacyCode__when__constructor_server__then__discoveryTraitDefaults() throws Exception {
-        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource(null, "https://azuredevopsrepo.test/api/v3",
+        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource(null,
                 "8b2e4f77-39c5-41a9-b63b-8d367350bfdf", "e4d8c11a-0d24-472f-b86b-4b017c160e9a",
                 "https://dev.azure.com/lukeshan", "cloudbeers", "stunning-adventure", "spring");
         assertThat(instance.getId(), is(notNullValue()));
-        assertThat(instance.getApiUri(), is("https://azuredevopsrepo.test/api/v3"));
+//        assertThat(instance.getApiUri(), is("https://azuredevopsrepo.test/api/v3"));
         assertThat(instance.getRepoOwner(), is("cloudbeers"));
         assertThat(instance.getRepository(), is("stunning-adventure"));
         assertThat(instance.getCredentialsId(), is("e4d8c11a-0d24-472f-b86b-4b017c160e9a"));
@@ -514,16 +514,6 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
                         )
                 )
         );
-    }
-
-    @Test
-    public void given__instance__when__setApiUri__then__valueSet() {
-        AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "testing", "test-repo", "spring");
-        assertThat("initial default", instance.getApiUri(), is(nullValue()));
-        instance.setApiUri("https://azuredevopsrepo.test/api/v3");
-        assertThat(instance.getApiUri(), is("https://azuredevopsrepo.test/api/v3"));
-        instance.setApiUri(null);
-        assertThat(instance.getApiUri(), is(nullValue()));
     }
 
     @Test

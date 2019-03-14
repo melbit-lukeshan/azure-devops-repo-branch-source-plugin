@@ -60,7 +60,6 @@ import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
-import org.jenkinsci.plugins.github.config.GitHubServerConfig;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -100,12 +99,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
     @NonNull
     private final String repoOwner;
     /**
-     * The API endpoint for the GitHub server.
-     */
-    @CheckForNull
-    private String apiUri;
-    /**
-     * The credentials to use when accessing {@link #apiUri} (and also the default credentials to use for checking out).
+     * The credentials to use when accessing {@link #collectionUrl} (and also the default credentials to use for checking out).
      */
     @CheckForNull
     private String credentialsId;
@@ -210,9 +204,8 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
     /**
      * Legacy constructor.
      *
-     * @param apiUri                the API endpoint for the GitHub server.
      * @param repoOwner             the owner of the repositories to navigate.
-     * @param scanCredentialsId     the credentials to use when accessing {@link #apiUri} (and also the default
+     * @param scanCredentialsId     the credentials to use when accessing {@link #collectionUrl} (and also the default
      *                              credentials to use for checking out).
      * @param checkoutCredentialsId the credentials to use when checking out.
      *                              {@link #setCredentialsId(String)} and {@link SSHCheckoutTrait}
@@ -220,10 +213,9 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
     @Deprecated
     @Restricted(DoNotUse.class)
     @RestrictedSince("2.2.0")
-    public AzureDevOpsRepoSCMNavigator(String apiUri, String azureProjectName, String collectionUrl, String repoOwner, String scanCredentialsId, String checkoutCredentialsId) {
+    public AzureDevOpsRepoSCMNavigator(String azureProjectName, String collectionUrl, String repoOwner, String scanCredentialsId, String checkoutCredentialsId) {
         this(azureProjectName, collectionUrl, repoOwner);
         setCredentialsId(scanCredentialsId);
-        setApiUri(apiUri);
         // legacy constructor means legacy defaults
         this.traits = new ArrayList<>();
         this.traits.add(new BranchDiscoveryTrait(true, true));
@@ -235,32 +227,10 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
     }
 
     /**
-     * Gets the API endpoint for the GitHub server.
-     *
-     * @return the API endpoint for the GitHub server.
-     */
-    @CheckForNull
-    public String getApiUri() {
-        return apiUri;
-    }
-
-    /**
-     * Sets the API endpoint for the GitHub server.
-     *
-     * @param apiUri the API endpoint for the GitHub server.
-     * @since 2.2.0
-     */
-    @DataBoundSetter
-    public void setApiUri(String apiUri) {
-        apiUri = AzureDevOpsRepoConfiguration.normalizeApiUri(Util.fixEmptyAndTrim(apiUri));
-        this.apiUri = GitHubServerConfig.GITHUB_URL.equals(apiUri) ? null : apiUri;
-    }
-
-    /**
-     * Gets the {@link StandardCredentials#getId()} of the credentials to use when accessing {@link #apiUri} (and also
+     * Gets the {@link StandardCredentials#getId()} of the credentials to use when accessing {@link #collectionUrl} (and also
      * the default credentials to use for checking out).
      *
-     * @return the {@link StandardCredentials#getId()} of the credentials to use when accessing {@link #apiUri} (and
+     * @return the {@link StandardCredentials#getId()} of the credentials to use when accessing {@link #collectionUrl} (and
      * also the default credentials to use for checking out).
      * @since 2.2.0
      */
@@ -270,11 +240,11 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
     }
 
     /**
-     * Sets the {@link StandardCredentials#getId()} of the credentials to use when accessing {@link #apiUri} (and also
+     * Sets the {@link StandardCredentials#getId()} of the credentials to use when accessing {@link #collectionUrl} (and also
      * the default credentials to use for checking out).
      *
      * @param credentialsId the {@link StandardCredentials#getId()} of the credentials to use when accessing
-     *                      {@link #apiUri} (and also the default credentials to use for checking out).
+     *                      {@link #collectionUrl} (and also the default credentials to use for checking out).
      * @since 2.2.0
      */
     @DataBoundSetter
@@ -399,9 +369,6 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
                 traits.add(new RegexSCMSourceFilterTrait(pattern));
             }
             this.traits = traits;
-        }
-        if (!StringUtils.equals(apiUri, AzureDevOpsRepoConfiguration.normalizeApiUri(apiUri))) {
-            setApiUri(apiUri);
         }
         return this;
     }
@@ -891,7 +858,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
     @NonNull
     @Override
     protected String id() {
-        return StringUtils.defaultIfBlank(apiUri, AzureDevOpsRepoSCMSource.GITHUB_URL) + "::" + repoOwner;
+        return StringUtils.defaultIfBlank(collectionUrl, AzureDevOpsRepoSCMSource.GITHUB_URL) + "::" + repoOwner;
     }
 
     /**
@@ -912,20 +879,20 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
             throw new AbortException("Must specify user or organization");
         }
 
-        StandardCredentials credentials = Connector.lookupScanCredentials((Item) observer.getContext(), apiUri,
+        StandardCredentials credentials = Connector.lookupScanCredentials((Item) observer.getContext(), collectionUrl,
                 credentialsId);
 
         // Github client and validation
-        GitHub github = Connector.connect(apiUri, credentials);
+        GitHub github = Connector.connect(collectionUrl, credentials);
         try {
-            Connector.checkConnectionValidity(apiUri, listener, credentials, github);
+            Connector.checkConnectionValidity(collectionUrl, listener, credentials, github);
             Connector.checkApiRateLimit(listener, github);
 
             // Input data validation
             if (credentials != null && !isCredentialValid(github)) {
                 String message = String.format("Invalid scan credentials %s to connect to %s, skipping",
                         CredentialsNameProvider.name(credentials),
-                        apiUri == null ? AzureDevOpsRepoSCMSource.GITHUB_URL : apiUri);
+                        collectionUrl == null ? AzureDevOpsRepoSCMSource.GITHUB_URL : collectionUrl);
                 throw new AbortException(message);
             }
 
@@ -1045,16 +1012,16 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
         }
 
         StandardCredentials credentials =
-                Connector.lookupScanCredentials((Item) observer.getContext(), apiUri, credentialsId);
+                Connector.lookupScanCredentials((Item) observer.getContext(), collectionUrl, credentialsId);
 
         // Github client and validation
-        GitHub github = Connector.connect(apiUri, credentials);
+        GitHub github = Connector.connect(collectionUrl, credentials);
         try {
             try {
                 Connector.checkApiUrlValidity(github, credentials);
             } catch (HttpException e) {
                 String message = String.format("It seems %s is unreachable",
-                        apiUri == null ? AzureDevOpsRepoSCMSource.GITHUB_URL : apiUri);
+                        collectionUrl == null ? AzureDevOpsRepoSCMSource.GITHUB_URL : collectionUrl);
                 throw new AbortException(message);
             }
 
@@ -1062,7 +1029,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
             if (credentials != null && !isCredentialValid(github)) {
                 String message = String.format("Invalid scan credentials %s to connect to %s, skipping",
                         CredentialsNameProvider.name(credentials),
-                        apiUri == null ? AzureDevOpsRepoSCMSource.GITHUB_URL : apiUri);
+                        collectionUrl == null ? AzureDevOpsRepoSCMSource.GITHUB_URL : collectionUrl);
                 throw new AbortException(message);
             }
 
@@ -1075,7 +1042,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
 
                 if (!github.isAnonymous()) {
                     listener.getLogger()
-                            .format("Connecting to %s using %s%n", apiUri == null ? AzureDevOpsRepoSCMSource.GITHUB_URL : apiUri,
+                            .format("Connecting to %s using %s%n", collectionUrl == null ? AzureDevOpsRepoSCMSource.GITHUB_URL : collectionUrl,
                                     CredentialsNameProvider.name(credentials));
                     GHMyself myself;
                     try {
@@ -1102,7 +1069,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
                     }
                 } else {
                     listener.getLogger().format("Connecting to %s with no credentials, anonymous access%n",
-                            apiUri == null ? AzureDevOpsRepoSCMSource.GITHUB_URL : apiUri);
+                            collectionUrl == null ? AzureDevOpsRepoSCMSource.GITHUB_URL : collectionUrl);
                 }
 
                 GHOrganization org = null;
@@ -1177,8 +1144,8 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
         // TODO when we have support for trusted events, use the details from event if event was from trusted source
         listener.getLogger().printf("Looking up details of %s...%n", getRepoOwner());
         List<Action> result = new ArrayList<>();
-        StandardCredentials credentials = Connector.lookupScanCredentials((Item) owner, getApiUri(), credentialsId);
-        GitHub hub = Connector.connect(getApiUri(), credentials);
+        StandardCredentials credentials = Connector.lookupScanCredentials((Item) owner, getCollectionUrl(), credentialsId);
+        GitHub hub = Connector.connect(getCollectionUrl(), credentials);
         try {
             Connector.checkApiRateLimit(listener, hub);
             GHUser u = hub.getUser(getRepoOwner());
@@ -1210,8 +1177,8 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
         GitHubWebHook.get().registerHookFor(owner);
         try {
             // FIXME MINOR HACK ALERT
-            StandardCredentials credentials = Connector.lookupScanCredentials((Item) owner, getApiUri(), credentialsId);
-            GitHub hub = Connector.connect(getApiUri(), credentials);
+            StandardCredentials credentials = Connector.lookupScanCredentials((Item) owner, getCollectionUrl(), credentialsId);
+            GitHub hub = Connector.connect(getCollectionUrl(), credentials);
             try {
                 AzureDevOpsRepoOrgWebHook.register(hub, repoOwner);
             } finally {
@@ -1585,7 +1552,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
         @NonNull
         @Override
         public SCMSource create(@NonNull String name) {
-            return new AzureDevOpsRepoSCMSourceBuilder(getId() + "::" + name, apiUri, credentialsId, collectionUrl, repoOwner, name, azureProjectName)
+            return new AzureDevOpsRepoSCMSourceBuilder(getId() + "::" + name, credentialsId, collectionUrl, name, azureProjectName)
                     .withRequest(request)
                     .build();
         }

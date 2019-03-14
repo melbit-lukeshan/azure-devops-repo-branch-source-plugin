@@ -40,7 +40,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
         AzureDevOpsRepoSCMNavigator instance = load();
         assertThat(instance.id(), is("https://api.github.com::cloudbeers"));
         assertThat(instance.getRepoOwner(), is("cloudbeers"));
-        assertThat(instance.getApiUri(), is(nullValue()));
+        assertThat(instance.getCollectionUrl(), is(nullValue()));
         assertThat(instance.getCredentialsId(), is("bcaef157-f105-407f-b150-df7722eab6c1"));
         assertThat(instance.getTraits(), is(Collections.<SCMTrait<?>>emptyList()));
     }
@@ -50,7 +50,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
         AzureDevOpsRepoSCMNavigator instance = load();
         assertThat(instance.id(), is("https://api.github.com::cloudbeers"));
         assertThat(instance.getRepoOwner(), is("cloudbeers"));
-        assertThat(instance.getApiUri(), is(nullValue()));
+        assertThat(instance.getCollectionUrl(), is(nullValue()));
         assertThat(instance.getCredentialsId(), is("bcaef157-f105-407f-b150-df7722eab6c1"));
         assertThat("SAME checkout credentials should mean no checkout trait",
                 instance.getTraits(),
@@ -88,7 +88,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
         AzureDevOpsRepoSCMNavigator instance = load();
         assertThat(instance.id(), is("https://azuredevopsrepo.test/api/v3::cloudbeers"));
         assertThat(instance.getRepoOwner(), is("cloudbeers"));
-        assertThat(instance.getApiUri(), is("https://azuredevopsrepo.test/api/v3"));
+//        assertThat(instance.getApiUri(), is("https://azuredevopsrepo.test/api/v3"));
         assertThat(instance.getCredentialsId(), is("bcaef157-f105-407f-b150-df7722eab6c1"));
         assertThat("checkout credentials should mean checkout trait",
                 instance.getTraits(),
@@ -136,7 +136,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
         AzureDevOpsRepoSCMNavigator instance = load();
         assertThat(instance.id(), is("https://azuredevopsrepo.test/api/v3::cloudbeers"));
         assertThat(instance.getRepoOwner(), is("cloudbeers"));
-        assertThat(instance.getApiUri(), is("https://azuredevopsrepo.test/api/v3"));
+//        assertThat(instance.getApiUri(), is("https://azuredevopsrepo.test/api/v3"));
         assertThat(instance.getCredentialsId(), is("bcaef157-f105-407f-b150-df7722eab6c1"));
         assertThat("checkout credentials should mean checkout trait",
                 instance.getTraits(),
@@ -185,7 +185,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
         AzureDevOpsRepoSCMNavigator instance = load();
         assertThat(instance.id(), is("https://azuredevopsrepo.test/api/v3::cloudbeers"));
         assertThat(instance.getRepoOwner(), is("cloudbeers"));
-        assertThat(instance.getApiUri(), is("https://azuredevopsrepo.test/api/v3"));
+//        assertThat(instance.getApiUri(), is("https://azuredevopsrepo.test/api/v3"));
         assertThat(instance.getCredentialsId(), is("bcaef157-f105-407f-b150-df7722eab6c1"));
         assertThat("checkout credentials equal to scan should mean no checkout trait",
                 instance.getTraits(),
@@ -231,7 +231,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
         AzureDevOpsRepoSCMNavigator instance = load();
         assertThat(instance.id(), is("https://azuredevopsrepo.test/api/v3::cloudbeers"));
         assertThat(instance.getRepoOwner(), is("cloudbeers"));
-        assertThat(instance.getApiUri(), is("https://azuredevopsrepo.test/api/v3"));
+//        assertThat(instance.getApiUri(), is("https://azuredevopsrepo.test/api/v3"));
         assertThat(instance.getCredentialsId(), is("bcaef157-f105-407f-b150-df7722eab6c1"));
         assertThat("checkout credentials should mean checkout trait",
                 instance.getTraits(),
@@ -281,7 +281,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
         AzureDevOpsRepoSCMNavigator instance = load();
         assertThat(instance.id(), is("https://api.github.com::cloudbeers"));
         assertThat(instance.getRepoOwner(), is("cloudbeers"));
-        assertThat(instance.getApiUri(), is(nullValue()));
+//        assertThat(instance.getApiUri(), is(nullValue()));
         assertThat(instance.getCredentialsId(), is("bcaef157-f105-407f-b150-df7722eab6c1"));
         assertThat(instance.getTraits(),
                 containsInAnyOrder(
@@ -318,7 +318,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
         AzureDevOpsRepoSCMNavigator instance = load();
         assertThat(instance.id(), is("https://api.github.com::cloudbeers"));
         assertThat(instance.getRepoOwner(), is("cloudbeers"));
-        assertThat(instance.getApiUri(), is(nullValue()));
+//        assertThat(instance.getApiUri(), is(nullValue()));
         assertThat(instance.getCredentialsId(), is("bcaef157-f105-407f-b150-df7722eab6c1"));
         assertThat(instance.getTraits(),
                 containsInAnyOrder(
@@ -1552,7 +1552,6 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
     @Test
     public void given__legacyCode__when__constructor_cloud__then__discoveryTraitDefaults() throws Exception {
         AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator(
-                null,
                 "spring",
                 "https://dev.azure.com/lukeshan",
                 "cloudbeers",
@@ -1561,7 +1560,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
         );
         assertThat(instance.id(), is("https://api.github.com::cloudbeers"));
         assertThat(instance.getRepoOwner(), is("cloudbeers"));
-        assertThat(instance.getApiUri(), is(nullValue()));
+        assertThat(instance.getCollectionUrl(), is("https://dev.azure.com/lukeshan"));
         assertThat(instance.getCredentialsId(), is("bcaef157-f105-407f-b150-df7722eab6c1"));
         assertThat(instance.getTraits(),
                 containsInAnyOrder(
@@ -1587,7 +1586,6 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
     @Test
     public void given__legacyCode__when__constructor_server__then__discoveryTraitDefaults() throws Exception {
         AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator(
-                "https://azuredevopsrepo.test/api/v3",
                 "spring",
                 "https://dev.azure.com/lukeshan",
                 "cloudbeers",
@@ -1596,7 +1594,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
         );
         assertThat(instance.id(), is("https://azuredevopsrepo.test/api/v3::cloudbeers"));
         assertThat(instance.getRepoOwner(), is("cloudbeers"));
-        assertThat(instance.getApiUri(), is("https://azuredevopsrepo.test/api/v3"));
+        assertThat(instance.getCollectionUrl(), is("https://dev.azure.com/lukeshan"));
         assertThat(instance.getCredentialsId(), is("bcaef157-f105-407f-b150-df7722eab6c1"));
         assertThat(instance.getTraits(),
                 containsInAnyOrder(
@@ -1672,27 +1670,6 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
     }
 
     @Test
-    public void given__instance__when__setApiUri_null__then__nullApplied() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("spring", "https://dev.azure.com/lukeshan", "test");
-        instance.setApiUri(null);
-        assertThat(instance.getApiUri(), is(nullValue()));
-    }
-
-    @Test
-    public void given__instance__when__setApiUri_value__then__valueApplied() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("spring", "https://dev.azure.com/lukeshan", "test");
-        instance.setApiUri("https://azuredevopsrepo.test");
-        assertThat(instance.getApiUri(), is("https://azuredevopsrepo.test"));
-    }
-
-    @Test
-    public void given__instance__when__setApiUri_cloudUrl__then__valueApplied() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("spring", "https://dev.azure.com/lukeshan", "test");
-        instance.setApiUri("https://github.com");
-        assertThat(instance.getApiUri(), is("https://github.com"));
-    }
-
-    @Test
     public void given__legacyCode__when__setPattern_default__then__patternSetAndTraitRemoved() {
         AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("spring", "https://dev.azure.com/lukeshan", "test");
         instance.setTraits(Arrays.<SCMTrait<? extends SCMTrait<?>>>asList(new BranchDiscoveryTrait(true, false), new RegexSCMSourceFilterTrait("job.*"),
@@ -1739,14 +1716,14 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
 
     @Test
     public void given__legacyCode__when__checkoutCredentials_SAME__then__noTraitAdded() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator(null, "spring", "https://dev.azure.com/lukeshan", "test", "scan", AzureDevOpsRepoSCMSource.DescriptorImpl.SAME);
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("spring", "https://dev.azure.com/lukeshan", "test", "scan", AzureDevOpsRepoSCMSource.DescriptorImpl.SAME);
         assertThat(instance.getCheckoutCredentialsId(), is(AzureDevOpsRepoSCMNavigator.DescriptorImpl.SAME));
         assertThat(instance.getTraits(), not(Matchers.<SCMTrait<?>>hasItem(instanceOf(SSHCheckoutTrait.class))));
     }
 
     @Test
     public void given__legacyCode__when__checkoutCredentials_null__then__traitAdded_ANONYMOUS() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator(null, "spring", "https://dev.azure.com/lukeshan", "test", "scan", null);
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("spring", "https://dev.azure.com/lukeshan", "test", "scan", null);
         assertThat(instance.getCheckoutCredentialsId(), is(AzureDevOpsRepoSCMSource.DescriptorImpl.ANONYMOUS));
         assertThat(instance.getTraits(), Matchers.<SCMTrait<?>>hasItem(allOf(
                 instanceOf(SSHCheckoutTrait.class),
@@ -1756,7 +1733,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
 
     @Test
     public void given__legacyCode__when__checkoutCredentials_value__then__traitAdded() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator(null, "spring", "https://dev.azure.com/lukeshan", "test", "scan", "value");
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("spring", "https://dev.azure.com/lukeshan", "test", "scan", "value");
         assertThat(instance.getCheckoutCredentialsId(), is("value"));
         assertThat(instance.getTraits(), Matchers.<SCMTrait<?>>hasItem(allOf(
                 instanceOf(SSHCheckoutTrait.class),
@@ -1766,7 +1743,7 @@ public class AzureDevOpsRepoSCMNavigatorTraitsTest {
 
     @Test
     public void given__legacyCode__when__checkoutCredentials_ANONYMOUS__then__traitAdded() {
-        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator(null, "spring", "https://dev.azure.com/lukeshan", "test", "scan",
+        AzureDevOpsRepoSCMNavigator instance = new AzureDevOpsRepoSCMNavigator("spring", "https://dev.azure.com/lukeshan", "test", "scan",
                 AzureDevOpsRepoSCMSource.DescriptorImpl.ANONYMOUS);
         assertThat(instance.getCheckoutCredentialsId(), is(AzureDevOpsRepoSCMSource.DescriptorImpl.ANONYMOUS));
         assertThat(instance.getTraits(), Matchers.<SCMTrait<?>>hasItem(allOf(

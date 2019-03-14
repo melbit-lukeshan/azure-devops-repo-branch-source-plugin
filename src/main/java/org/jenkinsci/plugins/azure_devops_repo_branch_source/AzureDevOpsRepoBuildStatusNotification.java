@@ -136,7 +136,7 @@ public class AzureDevOpsRepoBuildStatusNotification {
         if (src instanceof AzureDevOpsRepoSCMSource) {
             AzureDevOpsRepoSCMSource source = (AzureDevOpsRepoSCMSource) src;
             if (source.getScanCredentialsId() != null) {
-                return github.getRepository(source.getRepoOwner() + "/" + source.getRepository());
+                return github.getRepository(source.getProjectName() + "/" + source.getRepository());
             }
         }
         return null;
@@ -161,8 +161,8 @@ public class AzureDevOpsRepoBuildStatusNotification {
                 return null;
             }
             if (source.getScanCredentialsId() != null) {
-                return Connector.connect(source.getApiUri(), Connector.lookupScanCredentials
-                        (job, source.getApiUri(), source.getScanCredentialsId()));
+                return Connector.connect(source.getCollectionUrl(), Connector.lookupScanCredentials
+                        (job, source.getCollectionUrl(), source.getScanCredentialsId()));
             }
         }
         return null;

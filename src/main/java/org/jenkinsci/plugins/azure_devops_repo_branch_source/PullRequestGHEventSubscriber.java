@@ -238,8 +238,8 @@ public class PullRequestGHEventSubscriber extends GHEventsSubscriber {
         @Override
         public Map<SCMHead, SCMRevision> heads(@NonNull SCMSource source) {
             if (!(source instanceof AzureDevOpsRepoSCMSource
-                    && isApiMatch(((AzureDevOpsRepoSCMSource) source).getApiUri())
-                    && repoOwner.equalsIgnoreCase(((AzureDevOpsRepoSCMSource) source).getRepoOwner())
+                    && isApiMatch(((AzureDevOpsRepoSCMSource) source).getCollectionUrl())
+                    && repoOwner.equalsIgnoreCase(((AzureDevOpsRepoSCMSource) source).getProjectName())
                     && repository.equalsIgnoreCase(((AzureDevOpsRepoSCMSource) source).getRepository()))) {
                 return Collections.emptyMap();
             }
@@ -273,7 +273,7 @@ public class PullRequestGHEventSubscriber extends GHEventsSubscriber {
                 return Collections.emptyMap();
             }
 
-            boolean fork = !src.getRepoOwner().equalsIgnoreCase(prOwnerName);
+            boolean fork = !src.getProjectName().equalsIgnoreCase(prOwnerName);
 
             Map<SCMHead, SCMRevision> result = new HashMap<>();
             AzureDevOpsRepoSCMSourceContext context = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none())

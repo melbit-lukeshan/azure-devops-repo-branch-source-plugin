@@ -39,11 +39,6 @@ public class AzureDevOpsRepoSCMSourceBuilder extends SCMSourceBuilder<AzureDevOp
     @CheckForNull
     private final String id;
     /**
-     * The {@link AzureDevOpsRepoSCMSource#getApiUri()}.
-     */
-    @CheckForNull
-    private final String apiUri;
-    /**
      * The Azure DevOps collection URL.
      */
     @NonNull
@@ -54,11 +49,6 @@ public class AzureDevOpsRepoSCMSourceBuilder extends SCMSourceBuilder<AzureDevOp
     @CheckForNull
     private final String credentialsId;
     /**
-     * The repository owner.
-     */
-    @NonNull
-    private final String repoOwner;
-    /**
      * The Azure DevOps project name.
      */
     @NonNull
@@ -68,19 +58,15 @@ public class AzureDevOpsRepoSCMSourceBuilder extends SCMSourceBuilder<AzureDevOp
      * Constructor.
      *
      * @param id            the {@link AzureDevOpsRepoSCMSource#getId()}
-     * @param apiUri        the {@link AzureDevOpsRepoSCMSource#getApiUri()}
      * @param credentialsId the credentials id.
-     * @param repoOwner     the repository owner.
      * @param repoName      the project name.
      */
-    public AzureDevOpsRepoSCMSourceBuilder(@CheckForNull String id, @CheckForNull String apiUri,
-                                           @CheckForNull String credentialsId, @NonNull String collectionUrl, @NonNull String repoOwner,
+    public AzureDevOpsRepoSCMSourceBuilder(@CheckForNull String id,
+                                           @CheckForNull String credentialsId, @NonNull String collectionUrl,
                                            @NonNull String repoName, @NonNull String azureProjectName) {
         super(AzureDevOpsRepoSCMSource.class, repoName);
         this.id = id;
-        this.apiUri = apiUri;
         this.collectionUrl = collectionUrl;
-        this.repoOwner = repoOwner;
         this.credentialsId = credentialsId;
         this.azureProjectName = azureProjectName;
     }
@@ -92,16 +78,6 @@ public class AzureDevOpsRepoSCMSourceBuilder extends SCMSourceBuilder<AzureDevOp
      */
     public final String id() {
         return id;
-    }
-
-    /**
-     * The endpoint of the {@link AzureDevOpsRepoSCMSource} that is being built.
-     *
-     * @return the endpoint of the {@link AzureDevOpsRepoSCMSource} that is being built.
-     */
-    @CheckForNull
-    public final String apiUri() {
-        return apiUri;
     }
 
     /**
@@ -135,24 +111,13 @@ public class AzureDevOpsRepoSCMSourceBuilder extends SCMSourceBuilder<AzureDevOp
     }
 
     /**
-     * The repository owner that the {@link AzureDevOpsRepoSCMSource} will be configured to use.
-     *
-     * @return the repository owner that the {@link AzureDevOpsRepoSCMSource} will be configured to use.
-     */
-    @NonNull
-    public final String repoOwner() {
-        return repoOwner;
-    }
-
-    /**
      * {@inheritDoc}
      */
     @NonNull
     @Override
     public AzureDevOpsRepoSCMSource build() {
-        AzureDevOpsRepoSCMSource result = new AzureDevOpsRepoSCMSource(collectionUrl, repoOwner, projectName(), azureProjectName);
+        AzureDevOpsRepoSCMSource result = new AzureDevOpsRepoSCMSource(collectionUrl, projectName(), azureProjectName);
         result.setId(id());
-        result.setApiUri(apiUri());
         result.setCredentialsId(credentialsId());
         result.setTraits(traits());
         return result;
