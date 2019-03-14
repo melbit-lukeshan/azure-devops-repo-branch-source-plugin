@@ -10,18 +10,22 @@ import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials
 import com.cloudbees.plugins.credentials.domains.DomainRequirement
 import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder
+import hudson.AbortException
 import hudson.Util
 import hudson.model.Item
 import hudson.model.Queue
+import hudson.model.TaskListener
 import hudson.model.queue.Tasks
 import hudson.security.ACL
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
 import jenkins.model.Jenkins
 import jenkins.scm.api.SCMSourceOwner
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.AzureDevOpsRepoConsoleNote
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support.OkHttp2Helper
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support.Result
 import java.io.IOException
+import java.util.*
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -106,9 +110,9 @@ object AzureConnector {
         return URIRequirementBuilder.create().build()
     }
 
-    private fun lookupScanCredentials(context: Item?,
-                                      collectionUrl: String?,
-                                      scanCredentialsId: String?): StandardCredentials? {
+    fun lookupScanCredentials(context: Item?,
+                              collectionUrl: String?,
+                              scanCredentialsId: String?): StandardCredentials? {
         return if (Util.fixEmpty(scanCredentialsId) == null) {
             null
         } else {
@@ -124,6 +128,16 @@ object AzureConnector {
                     ),
                     CredentialsMatchers.allOf(CredentialsMatchers.withId(scanCredentialsId!!), azureScanCredentialsMatcher())
             )
+        }
+    }
+
+    private fun isCredentialValid(collectionUrl: String?, credentials: StandardCredentials): Boolean {
+        return if (collectionUrl != null) {
+            val dummyResult = listProjects(collectionUrl, credentials)
+            val goodValue = dummyResult.getGoodValueOrNull()
+            goodValue != null
+        } else {
+            false
         }
     }
 
@@ -180,5 +194,41 @@ object AzureConnector {
             }
         }
         return repositoryNameList
+    }
+
+    fun getRepository(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String): AzureRepository? {
+        val result = listRepositories(collectionUrl, credentials, projectName)
+        result.getGoodValueOrNull()?.let {
+            for (repository in it.value) {
+                if (repository.name == repositoryName) {
+                    return repository
+                }
+            }
+        }
+        return null
+    }
+
+    @Throws(IOException::class)
+    fun checkConnectionValidity(collectionUrl: String?, listener: TaskListener, credentials: StandardCredentials?) {
+        assert(collectionUrl != null)
+        assert(credentials != null)
+        if (credentials != null && !isCredentialValid(collectionUrl, credentials)) {
+            val message = String.format("Invalid scan credentials %s to connect to %s, skipping", CredentialsNameProvider.name(credentials), collectionUrl)
+            throw AbortException(message)
+        }
+        listener.logger.println(AzureDevOpsRepoConsoleNote.create(
+                System.currentTimeMillis(),
+                String.format("Connecting to %s using %s", collectionUrl, CredentialsNameProvider.name(credentials!!))
+        ))
+    }
+
+    @Throws(IOException::class)
+    fun checkConnectionValidity(collectionUrl: String?, credentials: StandardCredentials?) {
+        assert(collectionUrl != null)
+        assert(credentials != null)
+        if (credentials != null && !isCredentialValid(collectionUrl, credentials)) {
+            val message = String.format("Error using credentials %s to connect to %s", CredentialsNameProvider.name(credentials), collectionUrl)
+            throw AbortException(message)
+        }
     }
 }

@@ -44,7 +44,7 @@ public class TagDiscoveryTraitTest {
 
     @Test
     public void authority() throws Exception {
-        try (AzureDevOpsRepoSCMSourceRequest probe = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.collect()).newRequest(new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "does-not-exist", "http://does-not-exist.test", "spring"), null)) {
+        try (AzureDevOpsRepoSCMSourceRequest probe = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.collect()).newRequest(new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "does-not-exist", "spring"), null)) {
             TagDiscoveryTrait.TagSCMHeadAuthority instance = new TagDiscoveryTrait.TagSCMHeadAuthority();
             assertThat(instance.isTrusted(probe, new SCMHead("v1.0.0")), is(false));
             assertThat(instance.isTrusted(probe, new PullRequestSCMHead("PR-1", "does-not-exists",

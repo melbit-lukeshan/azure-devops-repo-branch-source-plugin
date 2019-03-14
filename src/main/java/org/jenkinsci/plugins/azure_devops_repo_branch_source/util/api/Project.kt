@@ -7,5 +7,6 @@ data class Project(val id: String,
                    val url: String,
                    val state: ProjectState,
                    val revision: Int,
+                   val description: String?,
                    val visibility: ProjectVisibility,
                    val lastUpdateTime: Date)

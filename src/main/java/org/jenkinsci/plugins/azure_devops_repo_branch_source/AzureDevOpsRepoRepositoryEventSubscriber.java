@@ -102,12 +102,12 @@ public class AzureDevOpsRepoRepositoryEventSubscriber extends GHEventsSubscriber
                     return;
                 }
                 if (!"created".equals(action)) {
-                    LOGGER.log(FINE, "Repository {0} was {1} not created, will be ignored",
+                    LOGGER.log(FINE, "AzureRepository {0} was {1} not created, will be ignored",
                             new Object[]{repo.getRepositoryName(), action});
                     return;
                 }
                 if (!fork) {
-                    LOGGER.log(FINE, "Repository {0} was created but it is empty, will be ignored",
+                    LOGGER.log(FINE, "AzureRepository {0} was created but it is empty, will be ignored",
                             repo.getRepositoryName());
                     return;
                 }

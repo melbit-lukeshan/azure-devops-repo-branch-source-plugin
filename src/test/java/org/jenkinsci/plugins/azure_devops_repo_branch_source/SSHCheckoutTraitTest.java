@@ -30,7 +30,7 @@ public class SSHCheckoutTraitTest {
     @Test
     public void given__sshCheckoutWithCredentials__when__decorating__then__credentialsApplied() throws Exception {
         SSHCheckoutTrait instance = new SSHCheckoutTrait("keyId");
-        AzureDevOpsRepoSCMSource source = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "example", "does-not-exist", "spring");
+        AzureDevOpsRepoSCMSource source = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "example", "spring");
         source.setCredentialsId("scanId");
         AzureDevOpsRepoSCMBuilder probe = new AzureDevOpsRepoSCMBuilder(source, new BranchSCMHead("master"), null);
         assumeThat(probe.credentialsId(), is("scanId"));
@@ -41,7 +41,7 @@ public class SSHCheckoutTraitTest {
     @Test
     public void given__sshCheckoutWithAgentKey__when__decorating__then__useAgentKeyApplied() throws Exception {
         SSHCheckoutTrait instance = new SSHCheckoutTrait(null);
-        AzureDevOpsRepoSCMSource source = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "example", "does-not-exist", "spring");
+        AzureDevOpsRepoSCMSource source = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "example", "spring");
         source.setCredentialsId("scanId");
         AzureDevOpsRepoSCMBuilder probe = new AzureDevOpsRepoSCMBuilder(source, new BranchSCMHead("master"), null);
         assumeThat(probe.credentialsId(), is("scanId"));
