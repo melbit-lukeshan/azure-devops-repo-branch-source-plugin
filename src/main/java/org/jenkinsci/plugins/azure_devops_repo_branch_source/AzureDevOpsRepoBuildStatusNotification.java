@@ -121,7 +121,7 @@ public class AzureDevOpsRepoBuildStatusNotification {
     }
 
     /**
-     * Returns the GitHub AzureRepository associated to a Job.
+     * Returns the GitHub GitRepository associated to a Job.
      *
      * @param job A {@link Job}
      * @return A {@link GHRepository} or null, either if a scan credentials was not provided, or a AzureDevOpsRepoSCMSource was not defined.
@@ -143,7 +143,7 @@ public class AzureDevOpsRepoBuildStatusNotification {
     }
 
     /**
-     * Returns the GitHub AzureRepository associated to a Job.
+     * Returns the GitHub GitRepository associated to a Job.
      *
      * @param job A {@link Job}
      * @return A {@link GHRepository} or {@code null}, if any of: a credentials was not provided; notifications were
@@ -186,7 +186,7 @@ public class AzureDevOpsRepoBuildStatusNotification {
     public static class JobScheduledListener extends QueueListener {
 
         /**
-         * Manages the GitHub Commit Pending Status.
+         * Manages the GitHub Commit Pending GitStatus.
          */
         @Override
         public void onEnterWaiting(Queue.WaitingItem wi) {

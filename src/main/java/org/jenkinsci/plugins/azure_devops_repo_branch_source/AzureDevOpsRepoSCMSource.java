@@ -74,7 +74,7 @@ import org.eclipse.jgit.lib.Constants;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzurePermissionType;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureRepository;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitRepository;
 import org.jenkinsci.plugins.github.config.GitHubServerConfig;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -192,7 +192,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
      * Cache of details of the Azure repository.
      */
     @CheckForNull
-    private transient AzureRepository azureRepository;
+    private transient GitRepository gitRepository;
 
     /**
      * The cache of {@link ObjectMetadataAction} instances for each open PR.
@@ -722,17 +722,17 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                     throw new AbortException("No repository selected, skipping");
                 }
 
-                azureRepository = AzureConnector.INSTANCE.getRepository(collectionUrl, credentials, projectName, repository);
+                this.gitRepository = AzureConnector.INSTANCE.getRepository(collectionUrl, credentials, projectName, repository);
 
                 String fullName = projectName + "/" + repository;
                 //ghRepository = github.getRepository(fullName);
                 //final GHRepository ghRepository = this.ghRepository;
-                final AzureRepository azureRepository = this.azureRepository;
+                final GitRepository gitRepository = this.gitRepository;
 
-                listener.getLogger().format("Examining %s%n", HyperlinkNote.encodeTo(azureRepository.getRemoteUrl(), fullName));
+                listener.getLogger().format("Examining %s%n", HyperlinkNote.encodeTo(gitRepository.getRemoteUrl(), fullName));
 
                 //repositoryUrl = ghRepository.getHtmlUrl();
-                repositoryUrl = new URL(azureRepository.getRemoteUrl());
+                repositoryUrl = new URL(gitRepository.getRemoteUrl());
 
                 try (final AzureDevOpsRepoSCMSourceRequest request = new AzureDevOpsRepoSCMSourceContext(criteria, observer)
                         .withTraits(traits)
@@ -1524,18 +1524,18 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
             //Connector.checkConnectionValidity(collectionUrl, listener, credentials, hub);
             AzureConnector.INSTANCE.checkConnectionValidity(collectionUrl, listener, credentials);
             try {
-                azureRepository = AzureConnector.INSTANCE.getRepository(collectionUrl, credentials, getProjectName(), repository);
-                repositoryUrl = new URL(azureRepository.getRemoteUrl());
+                gitRepository = AzureConnector.INSTANCE.getRepository(collectionUrl, credentials, getProjectName(), repository);
+                repositoryUrl = new URL(gitRepository.getRemoteUrl());
                 //ghRepository = hub.getRepository(getProjectName() + '/' + repository);
                 //repositoryUrl = ghRepository.getHtmlUrl();
             } catch (Exception e) {
                 throw new AbortException(
                         String.format("Invalid scan credentials when using %s to connect to %s/%s on %s", CredentialsNameProvider.name(credentials), projectName, repository, collectionUrl));
             }
-            result.add(new ObjectMetadataAction(null, azureRepository.getProject().getDescription(), Util.fixEmpty(azureRepository.getRemoteUrl())));
-            result.add(new AzureDevOpsRepoLink("icon-github-repo", azureRepository.getRemoteUrl()));
-            if (StringUtils.isNotBlank(azureRepository.getDefaultBranch())) {
-                result.add(new AzureDevOpsRepoDefaultBranch(getProjectName(), repository, azureRepository.getDefaultBranch()));
+            result.add(new ObjectMetadataAction(null, gitRepository.getProject().getDescription(), Util.fixEmpty(gitRepository.getRemoteUrl())));
+            result.add(new AzureDevOpsRepoLink("icon-github-repo", gitRepository.getRemoteUrl()));
+            if (StringUtils.isNotBlank(gitRepository.getDefaultBranch())) {
+                result.add(new AzureDevOpsRepoDefaultBranch(getProjectName(), repository, gitRepository.getDefaultBranch()));
             }
             return result;
         } finally {
@@ -2249,7 +2249,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         private final TaskListener listener;
         //private GitHub github;
         //private GHRepository repo;
-        private AzureRepository repo;
+        private GitRepository repo;
 
         public DeferredPermissionsSource(TaskListener listener) {
             this.listener = listener;

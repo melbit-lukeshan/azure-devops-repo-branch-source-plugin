@@ -196,7 +196,7 @@ object AzureConnector {
         return repositoryNameList
     }
 
-    fun getRepository(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String): AzureRepository? {
+    fun getRepository(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String): GitRepository? {
         val result = listRepositories(collectionUrl, credentials, projectName)
         result.getGoodValueOrNull()?.let {
             for (repository in it.value) {
