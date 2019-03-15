@@ -14,6 +14,8 @@ public class AaaTest {
 
     public static final String collectionUrl = "https://dev.azure.com/lukeshan";
     public static final String pat = "ltwwf6dxrqhvjalhzd7gorew7fnd4k5pz3vhpgz524ehf6yuzuma";
+    public static final String projectName = "int-terraform-aws-efs";
+    public static final String repository = "int-terraform-aws-efs";
 
     @Test
     public void aTest0() throws Exception {
@@ -35,10 +37,19 @@ public class AaaTest {
 
     @Test
     public void aTest2() throws Exception {
-        ListRepositoriesRequest listRepositoriesRequest = new ListRepositoriesRequest(collectionUrl, pat, "int-terraform-aws-efs");
+        ListRepositoriesRequest listRepositoriesRequest = new ListRepositoriesRequest(collectionUrl, pat, projectName);
         OkHttp2Helper.INSTANCE.setDebugMode(true);
         Result<Repositories, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(listRepositoriesRequest, Repositories.class, Object.class);
         Repositories repositories = result.getGoodValueOrNull();
         assertThat(repositories.getCount(), is(3));
+    }
+
+    @Test
+    public void aTest3() throws Exception {
+        ListRefsRequest listRefsRequest = new ListRefsRequest(collectionUrl, pat, projectName, repository);
+        OkHttp2Helper.INSTANCE.setDebugMode(true);
+        Result<Refs, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(listRefsRequest, Refs.class, Object.class);
+        Refs refs = result.getGoodValueOrNull();
+        assertThat(refs.getCount(), is(3));
     }
 }
