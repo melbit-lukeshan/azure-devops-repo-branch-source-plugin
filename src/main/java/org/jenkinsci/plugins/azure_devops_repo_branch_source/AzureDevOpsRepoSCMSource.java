@@ -72,9 +72,7 @@ import jenkins.scm.impl.trait.WildcardSCMHeadFilterTrait;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.lib.Constants;
 import org.jenkinsci.Symbol;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzurePermissionType;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitRepository;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.*;
 import org.jenkinsci.plugins.github.config.GitHubServerConfig;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -192,7 +190,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
      * Cache of details of the Azure repository.
      */
     @CheckForNull
-    private transient GitRepository gitRepository;
+    private transient GitRepositoryWithAzureContext gitRepository;
 
     /**
      * The cache of {@link ObjectMetadataAction} instances for each open PR.
@@ -727,12 +725,12 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                 String fullName = projectName + "/" + repository;
                 //ghRepository = github.getRepository(fullName);
                 //final GHRepository ghRepository = this.ghRepository;
-                final GitRepository gitRepository = this.gitRepository;
+                final GitRepositoryWithAzureContext gitRepository = this.gitRepository;
 
-                listener.getLogger().format("Examining %s%n", HyperlinkNote.encodeTo(gitRepository.getRemoteUrl(), fullName));
+                listener.getLogger().format("Examining %s%n", HyperlinkNote.encodeTo(gitRepository.getGitRepository().getRemoteUrl(), fullName));
 
                 //repositoryUrl = ghRepository.getHtmlUrl();
-                repositoryUrl = new URL(gitRepository.getRemoteUrl());
+                repositoryUrl = new URL(gitRepository.getGitRepository().getRemoteUrl());
 
                 try (final AzureDevOpsRepoSCMSourceRequest request = new AzureDevOpsRepoSCMSourceContext(criteria, observer)
                         .withTraits(traits)
@@ -741,13 +739,16 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                     request.setGitHub(github);
                     request.setRepository(ghRepository);
                     if (request.isFetchPRs()) {
-                        request.setPullRequests(new LazyPullRequests(request, ghRepository));
+                        //TODO uncomment below
+                        //request.setPullRequests(new LazyPullRequests(request, ghRepository));
                     }
                     if (request.isFetchBranches()) {
-                        request.setBranches(new LazyBranches(request, ghRepository));
+                        //request.setBranches(new LazyBranches(request, ghRepository));
+                        request.setBranches(new LazyBranchesAzure(request, gitRepository));
                     }
                     if (request.isFetchTags()) {
-                        request.setTags(new LazyTags(request, ghRepository));
+                        //TODO uncomment below
+                        //request.setTags(new LazyTags(request, ghRepository));
                     }
                     request.setCollaboratorNames(new LazyContributorNames(request, listener, github, ghRepository, credentials));
                     request.setPermissionsSource(new AzureDevOpsRepoPermissionsSource() {
@@ -761,20 +762,20 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                     if (request.isFetchBranches() && !request.isComplete()) {
                         listener.getLogger().format("%n  Checking branches...%n");
                         int count = 0;
-                        for (final GHBranch branch : request.getBranches()) {
+                        for (final GitRef branch : request.getBranches()) {
                             count++;
                             String branchName = branch.getName();
                             listener.getLogger().format("%n    Checking branch %s%n", HyperlinkNote
                                     .encodeTo(repositoryUrl + "/tree/" + branchName, branchName));
                             BranchSCMHead head = new BranchSCMHead(branchName);
-                            if (request.process(head, new SCMRevisionImpl(head, branch.getSHA1()),
+                            if (request.process(head, new SCMRevisionImpl(head, branch.getObjectId()),
                                     new SCMSourceRequest.ProbeLambda<BranchSCMHead, SCMRevisionImpl>() {
                                         @NonNull
                                         @Override
                                         public SCMSourceCriteria.Probe create(@NonNull BranchSCMHead head,
                                                                               @Nullable SCMRevisionImpl revisionInfo)
                                                 throws IOException, InterruptedException {
-                                            return new AzureDevOpsRepoSCMProbe(github, ghRepository, head, revisionInfo);
+                                            return new AzureDevOpsRepoSCMProbe(gitRepository, head, revisionInfo);
                                         }
                                     }, new CriteriaWitness(listener))) {
                                 listener.getLogger().format("%n  %d branches were processed (query completed)%n", count);
@@ -1525,17 +1526,17 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
             AzureConnector.INSTANCE.checkConnectionValidity(collectionUrl, listener, credentials);
             try {
                 gitRepository = AzureConnector.INSTANCE.getRepository(collectionUrl, credentials, getProjectName(), repository);
-                repositoryUrl = new URL(gitRepository.getRemoteUrl());
+                repositoryUrl = new URL(gitRepository.getGitRepository().getRemoteUrl());
                 //ghRepository = hub.getRepository(getProjectName() + '/' + repository);
                 //repositoryUrl = ghRepository.getHtmlUrl();
             } catch (Exception e) {
                 throw new AbortException(
                         String.format("Invalid scan credentials when using %s to connect to %s/%s on %s", CredentialsNameProvider.name(credentials), projectName, repository, collectionUrl));
             }
-            result.add(new ObjectMetadataAction(null, gitRepository.getProject().getDescription(), Util.fixEmpty(gitRepository.getRemoteUrl())));
-            result.add(new AzureDevOpsRepoLink("icon-github-repo", gitRepository.getRemoteUrl()));
-            if (StringUtils.isNotBlank(gitRepository.getDefaultBranch())) {
-                result.add(new AzureDevOpsRepoDefaultBranch(getProjectName(), repository, gitRepository.getDefaultBranch()));
+            result.add(new ObjectMetadataAction(null, gitRepository.getGitRepository().getProject().getDescription(), Util.fixEmpty(gitRepository.getGitRepository().getRemoteUrl())));
+            result.add(new AzureDevOpsRepoLink("icon-github-repo", gitRepository.getGitRepository().getRemoteUrl()));
+            if (StringUtils.isNotBlank(gitRepository.getGitRepository().getDefaultBranch())) {
+                result.add(new AzureDevOpsRepoDefaultBranch(getProjectName(), repository, gitRepository.getGitRepository().getDefaultBranch()));
             }
             return result;
         } finally {
@@ -1852,6 +1853,54 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                 Collections.sort(values, new Comparator<GHBranch>() {
                     @Override
                     public int compare(GHBranch o1, GHBranch o2) {
+                        if (defaultBranch.equals(o1.getName())) {
+                            return -1;
+                        }
+                        if (defaultBranch.equals(o2.getName())) {
+                            return 1;
+                        }
+                        return 0;
+                    }
+                });
+                return values;
+            } catch (IOException | InterruptedException e) {
+                throw new AzureDevOpsRepoSCMSource.WrappedException(e);
+            }
+        }
+    }
+
+    private static class LazyBranchesAzure extends LazyIterable<GitRef> {
+        private final AzureDevOpsRepoSCMSourceRequest request;
+        private final GitRepositoryWithAzureContext repo;
+
+        public LazyBranchesAzure(AzureDevOpsRepoSCMSourceRequest request, GitRepositoryWithAzureContext repo) {
+            this.request = request;
+            this.repo = repo;
+        }
+
+        @Override
+        protected Iterable<GitRef> create() {
+            try {
+                request.checkApiRateLimit();
+                Set<String> branchNames = request.getRequestedOriginBranchNames();
+                if (branchNames != null && branchNames.size() == 1) {
+                    String branchName = branchNames.iterator().next();
+                    request.listener().getLogger().format("%n  Getting remote branch %s...%n", branchName);
+                    //GitRef branch = repo.getBranch(branchName);
+                    GitRef branch = AzureConnector.INSTANCE.getBranch(repo, branchName);
+                    if (branch != null) {
+                        return Collections.singletonList(branch);
+                    } else {
+                        return Collections.emptyList();
+                    }
+                }
+                request.listener().getLogger().format("%n  Getting remote branches...%n");
+                // local optimization: always try the default branch first in any search
+                List<GitRef> values = new ArrayList<>(AzureConnector.INSTANCE.getBranches(repo));
+                final String defaultBranch = StringUtils.defaultIfBlank(repo.getGitRepository().getDefaultBranch(), "master");
+                Collections.sort(values, new Comparator<GitRef>() {
+                    @Override
+                    public int compare(GitRef o1, GitRef o2) {
                         if (defaultBranch.equals(o1.getName())) {
                             return -1;
                         }

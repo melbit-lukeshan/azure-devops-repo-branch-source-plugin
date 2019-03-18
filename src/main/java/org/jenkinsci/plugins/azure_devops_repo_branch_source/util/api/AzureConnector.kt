@@ -110,32 +110,9 @@ object AzureConnector {
         return URIRequirementBuilder.create().build()
     }
 
-    fun lookupScanCredentials(context: Item?,
-                              collectionUrl: String?,
-                              scanCredentialsId: String?): StandardCredentials? {
-        return if (Util.fixEmpty(scanCredentialsId) == null) {
-            null
-        } else {
-            CredentialsMatchers.firstOrNull<StandardUsernameCredentials>(
-                    CredentialsProvider.lookupCredentials<StandardUsernameCredentials>(
-                            StandardUsernameCredentials::class.java,
-                            context,
-                            if (context is Queue.Task)
-                                Tasks.getDefaultAuthenticationOf((context as Queue.Task?)!!)
-                            else
-                                ACL.SYSTEM,
-                            azureDomainRequirements(collectionUrl)
-                    ),
-                    CredentialsMatchers.allOf(CredentialsMatchers.withId(scanCredentialsId!!), azureScanCredentialsMatcher())
-            )
-        }
-    }
-
     private fun isCredentialValid(collectionUrl: String?, credentials: StandardCredentials): Boolean {
         return if (collectionUrl != null) {
-            val dummyResult = listProjects(collectionUrl, credentials)
-            val goodValue = dummyResult.getGoodValueOrNull()
-            goodValue != null
+            listProjects(collectionUrl, credentials).getGoodValueOrNull() != null
         } else {
             false
         }
@@ -155,6 +132,67 @@ object AzureConnector {
         val listRepositoriesRequest = ListRepositoriesRequest(fixedCollectionUrl, pat, projectName)
         OkHttp2Helper.setDebugMode(true)
         return OkHttp2Helper.executeRequest(listRepositoriesRequest)
+    }
+
+    private fun listRefsR(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String): Result<Refs, Any> {
+        val fixedCollectionUrl = Util.fixEmptyAndTrim(collectionUrl)!!
+        val pat = (credentials as StandardUsernamePasswordCredentials).password.plainText
+        val listRefsRequest = ListRefsRequest(fixedCollectionUrl, pat, projectName, repositoryName)
+        OkHttp2Helper.setDebugMode(true)
+        return OkHttp2Helper.executeRequest(listRefsRequest)
+    }
+
+    private fun listCommitsR(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String): Result<Commits, Any> {
+        val fixedCollectionUrl = Util.fixEmptyAndTrim(collectionUrl)!!
+        val pat = (credentials as StandardUsernamePasswordCredentials).password.plainText
+        val listCommitsRequest = ListCommitsRequest(fixedCollectionUrl, pat, projectName, repositoryName)
+        OkHttp2Helper.setDebugMode(true)
+        return OkHttp2Helper.executeRequest(listCommitsRequest)
+    }
+
+    private fun getCommitR(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, commitId: String): Result<GitCommit, Any> {
+        val fixedCollectionUrl = Util.fixEmptyAndTrim(collectionUrl)!!
+        val pat = (credentials as StandardUsernamePasswordCredentials).password.plainText
+        val getCommitRequest = GetCommitRequest(fixedCollectionUrl, pat, projectName, repositoryName, commitId)
+        OkHttp2Helper.setDebugMode(true)
+        return OkHttp2Helper.executeRequest(getCommitRequest)
+    }
+
+    private fun listItemsR(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, scopePath: String): Result<Items, Any> {
+        val fixedCollectionUrl = Util.fixEmptyAndTrim(collectionUrl)!!
+        val pat = (credentials as StandardUsernamePasswordCredentials).password.plainText
+        val listItemsRequest = ListItemsRequest(fixedCollectionUrl, pat, projectName, repositoryName, scopePath)
+        OkHttp2Helper.setDebugMode(true)
+        return OkHttp2Helper.executeRequest(listItemsRequest)
+    }
+
+    private fun getItemR(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, itemPath: String): Result<GitItem, Any> {
+        val fixedCollectionUrl = Util.fixEmptyAndTrim(collectionUrl)!!
+        val pat = (credentials as StandardUsernamePasswordCredentials).password.plainText
+        val getItemRequest = GetItemRequest(fixedCollectionUrl, pat, projectName, repositoryName, itemPath)
+        OkHttp2Helper.setDebugMode(true)
+        return OkHttp2Helper.executeRequest(getItemRequest)
+    }
+
+    fun lookupScanCredentials(context: Item?,
+                              collectionUrl: String?,
+                              scanCredentialsId: String?): StandardCredentials? {
+        return if (Util.fixEmpty(scanCredentialsId) == null) {
+            null
+        } else {
+            CredentialsMatchers.firstOrNull<StandardUsernameCredentials>(
+                    CredentialsProvider.lookupCredentials<StandardUsernameCredentials>(
+                            StandardUsernameCredentials::class.java,
+                            context,
+                            if (context is Queue.Task)
+                                Tasks.getDefaultAuthenticationOf((context as Queue.Task?)!!)
+                            else
+                                ACL.SYSTEM,
+                            azureDomainRequirements(collectionUrl)
+                    ),
+                    CredentialsMatchers.allOf(CredentialsMatchers.withId(scanCredentialsId!!), azureScanCredentialsMatcher())
+            )
+        }
     }
 
     fun listScanCredentials(context: Item?, collectionUrl: String): ListBoxModel {
@@ -196,16 +234,103 @@ object AzureConnector {
         return repositoryNameList
     }
 
-    fun getRepository(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String): GitRepository? {
+    fun getRepository(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String): GitRepositoryWithAzureContext? {
         val result = listRepositories(collectionUrl, credentials, projectName)
         result.getGoodValueOrNull()?.let {
             for (repository in it.value) {
                 if (repository.name == repositoryName) {
-                    return repository
+                    return GitRepositoryWithAzureContext(repository, collectionUrl, credentials, projectName, repositoryName)
                 }
             }
         }
         return null
+    }
+
+    fun getRef(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, branchName: String): GitRef? {
+        return getRef(
+                gitRepositoryWithAzureContext.collectionUrl,
+                gitRepositoryWithAzureContext.credentials,
+                gitRepositoryWithAzureContext.projectName,
+                gitRepositoryWithAzureContext.repositoryName,
+                branchName)
+    }
+
+    fun getRefs(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext): List<GitRef> {
+        return getRefs(
+                gitRepositoryWithAzureContext.collectionUrl,
+                gitRepositoryWithAzureContext.credentials,
+                gitRepositoryWithAzureContext.projectName,
+                gitRepositoryWithAzureContext.repositoryName)
+    }
+
+    private fun getRefs(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String): List<GitRef> {
+        val result = listRefsR(collectionUrl, credentials, projectName, repositoryName)
+        result.getGoodValueOrNull()?.let {
+            return it.value
+        }
+        return arrayListOf()
+    }
+
+    private fun getRef(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, branchName: String): GitRef? {
+        getRefs(collectionUrl, credentials, projectName, repositoryName).forEach { gitRef ->
+            if (gitRef.name == branchName) {
+                return gitRef
+            }
+        }
+        return null
+    }
+
+    fun getCommits(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext): List<GitCommitRef> {
+        return getCommits(
+                gitRepositoryWithAzureContext.collectionUrl,
+                gitRepositoryWithAzureContext.credentials,
+                gitRepositoryWithAzureContext.projectName,
+                gitRepositoryWithAzureContext.repositoryName)
+    }
+
+    fun getCommit(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, commitSha1: String): GitCommit? {
+        return getCommit(
+                gitRepositoryWithAzureContext.collectionUrl,
+                gitRepositoryWithAzureContext.credentials,
+                gitRepositoryWithAzureContext.projectName,
+                gitRepositoryWithAzureContext.repositoryName,
+                commitSha1)
+    }
+
+    private fun getCommits(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String): List<GitCommitRef> {
+        return listCommitsR(collectionUrl, credentials, projectName, repositoryName).getGoodValueOrNull()?.value ?: arrayListOf()
+    }
+
+    private fun getCommit(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, commitId: String): GitCommit? {
+        return getCommitR(collectionUrl, credentials, projectName, repositoryName, commitId).getGoodValueOrNull()
+    }
+
+    //TODO GitHub support getting content by path and ref. What do we do?
+    fun getItems(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, scopePath: String, ref: String): List<GitItem> {
+        return getItems(
+                gitRepositoryWithAzureContext.collectionUrl,
+                gitRepositoryWithAzureContext.credentials,
+                gitRepositoryWithAzureContext.projectName,
+                gitRepositoryWithAzureContext.repositoryName,
+                scopePath)
+    }
+
+    //TODO GitHub support getting content by path and ref. What do we do?
+    fun getItem(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, itemPath: String, ref: String): GitItem? {
+        return getItem(
+                gitRepositoryWithAzureContext.collectionUrl,
+                gitRepositoryWithAzureContext.credentials,
+                gitRepositoryWithAzureContext.projectName,
+                gitRepositoryWithAzureContext.repositoryName,
+                itemPath)
+    }
+
+    private fun getItems(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, scopePath: String): List<GitItem> {
+        return listItemsR(collectionUrl, credentials, projectName, repositoryName, scopePath).getGoodValueOrNull()?.value ?: arrayListOf()
+    }
+
+    private fun getItem(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, itemPath: String): GitItem? {
+        return getItemR(collectionUrl, credentials, projectName, repositoryName, itemPath).getGoodValueOrNull()
     }
 
     @Throws(IOException::class)

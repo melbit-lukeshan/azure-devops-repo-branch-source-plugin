@@ -5,6 +5,7 @@ import com.squareup.okhttp.logging.HttpLoggingInterceptor
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okio.ByteString
 import java.io.IOException
+import java.io.InputStream
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
@@ -207,6 +208,13 @@ object OkHttp2Helper {
         return response.let { theResponse ->
             var responseBodyString = theResponse.body()?.string()
             if (theResponse.isSuccessful) {
+
+                if (targetClass.java.equals(InputStream.class)) {
+
+                        } else {
+
+                }
+
                 try {
                     responseBodyString!!.let {
                         request.goodResponseBodyWrapper?.takeIf { wrapper -> wrapper.isNotBlank() }?.replace("*", it)

@@ -30,7 +30,12 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.plugins.git.AbstractGitSCMSource;
 import jenkins.scm.api.*;
 import org.eclipse.jgit.lib.Constants;
-import org.kohsuke.github.*;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitCommit;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitRef;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitRepositoryWithAzureContext;
+import org.kohsuke.github.GHContent;
+import org.kohsuke.github.GHFileNotFoundException;
 
 import java.io.IOException;
 import java.util.List;
@@ -47,14 +52,12 @@ class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosabl
     static /*mostly final*/ boolean JENKINS_54126_WORKAROUND = Boolean.parseBoolean(System.getProperty(AzureDevOpsRepoSCMProbe.class.getName() + ".JENKINS_54126_WORKAROUND", Boolean.FALSE.toString()));
     static /*mostly final*/ boolean STAT_RETHROW_API_FNF = Boolean.parseBoolean(System.getProperty(AzureDevOpsRepoSCMProbe.class.getName() + ".STAT_RETHROW_API_FNF", Boolean.TRUE.toString()));
     private final SCMRevision revision;
-    private final transient GitHub gitHub;
-    private final transient GHRepository repo;
+    private final transient GitRepositoryWithAzureContext repo;
     private final String ref;
     private final String name;
     private transient boolean open = true;
 
-    public AzureDevOpsRepoSCMProbe(GitHub github, GHRepository repo, SCMHead head, SCMRevision revision) {
-        this.gitHub = github;
+    public AzureDevOpsRepoSCMProbe(GitRepositoryWithAzureContext repo, SCMHead head, SCMRevision revision) {
         this.revision = revision;
         this.repo = repo;
         this.name = head.getName();
@@ -70,16 +73,16 @@ class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosabl
 
     @Override
     public void close() throws IOException {
-        if (gitHub == null || repo == null) {
-            return;
-        }
-        synchronized (this) {
-            if (!open) {
-                return;
-            }
-            open = false;
-        }
-        Connector.release(gitHub);
+//        if (gitHub == null || repo == null) {
+//            return;
+//        }
+//        synchronized (this) {
+//            if (!open) {
+//                return;
+//            }
+//            open = false;
+//        }
+//        Connector.release(gitHub);
     }
 
     private synchronized void checkOpen() throws IOException {
@@ -107,19 +110,22 @@ class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosabl
             }
         }
         if (revision instanceof AbstractGitSCMSource.SCMRevisionImpl) {
-            try {
-                GHCommit commit = repo.getCommit(((AbstractGitSCMSource.SCMRevisionImpl) revision).getHash());
-                return commit.getCommitDate().getTime();
-            } catch (IOException e) {
-                // ignore
+//                GHCommit commit = repo.getCommit(((AbstractGitSCMSource.SCMRevisionImpl) revision).getHash());
+//                return commit.getCommitDate().getTime();
+            GitCommit commit = AzureConnector.INSTANCE.getCommit(repo, ((AbstractGitSCMSource.SCMRevisionImpl) revision).getHash());
+            if (commit != null) {
+                return commit.getPush().getDate().getTime();
             }
         } else if (revision == null) {
-            try {
-                GHRef ref = repo.getRef(this.ref);
-                GHCommit commit = repo.getCommit(ref.getObject().getSha());
-                return commit.getCommitDate().getTime();
-            } catch (IOException e) {
-                // ignore
+//            GHRef ref = repo.getRef(this.ref);
+//            GHCommit commit = repo.getCommit(ref.getObject().getSha());
+//            return commit.getCommitDate().getTime();
+            GitRef ref = AzureConnector.INSTANCE.getRef(repo, this.ref);
+            if (ref != null) {
+                GitCommit commit = AzureConnector.INSTANCE.getCommit(repo, ref.getObjectId());
+                if (commit != null) {
+                    return commit.getPush().getDate().getTime();
+                }
             }
         }
         return 0;

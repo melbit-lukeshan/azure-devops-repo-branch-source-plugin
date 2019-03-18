@@ -34,7 +34,11 @@ import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
 import jenkins.scm.api.trait.SCMSourceRequest;
 import net.jcip.annotations.GuardedBy;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzurePermissionType;
-import org.kohsuke.github.*;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitRef;
+import org.kohsuke.github.GHPullRequest;
+import org.kohsuke.github.GHRef;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GitHub;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -96,7 +100,7 @@ public class AzureDevOpsRepoSCMSourceRequest extends SCMSourceRequest {
      * The branch details or {@code null} if not {@link #isFetchBranches()}.
      */
     @CheckForNull
-    private Iterable<GHBranch> branches;
+    private Iterable<GitRef> branches;
     /**
      * The tag details or {@code null} if not {@link #isFetchTags()}.
      */
@@ -321,23 +325,23 @@ public class AzureDevOpsRepoSCMSourceRequest extends SCMSourceRequest {
     }
 
     /**
-     * Provides the requests with the branch details.
-     *
-     * @param branches the branch details.
-     */
-    public final void setBranches(@CheckForNull Iterable<GHBranch> branches) {
-        this.branches = branches;
-    }
-
-    /**
      * Returns the branch details or an empty list if either the request did not specify to {@link #isFetchBranches()}
      * or if the branch details have not been provided by {@link #setBranches(Iterable)} yet.
      *
      * @return the branch details (may be empty)
      */
     @NonNull
-    public final Iterable<GHBranch> getBranches() {
+    public final Iterable<GitRef> getBranches() {
         return Util.fixNull(branches);
+    }
+
+    /**
+     * Provides the requests with the branch details.
+     *
+     * @param branches the branch details.
+     */
+    public final void setBranches(@CheckForNull Iterable<GitRef> branches) {
+        this.branches = branches;
     }
 
     /**
@@ -387,9 +391,9 @@ public class AzureDevOpsRepoSCMSourceRequest extends SCMSourceRequest {
      * @throws InterruptedException if interrupted while waiting.
      */
     public final void checkApiRateLimit() throws IOException, InterruptedException {
-        if (gitHub != null) {
-            Connector.checkApiRateLimit(listener(), gitHub);
-        }
+//        if (gitHub != null) {
+//            Connector.checkApiRateLimit(listener(), gitHub);
+//        }
     }
 
     /**

@@ -25,12 +25,12 @@
 
 package org.jenkinsci.plugins.azure_devops_repo_branch_source;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.scm.api.SCMFile;
 import org.eclipse.jgit.lib.Constants;
-import org.kohsuke.github.GHContent;
-import org.kohsuke.github.GHRepository;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitItem;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitRepositoryWithAzureContext;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -42,12 +42,12 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
 
     private TypeInfo info;
     private final AzureDevOpsRepoClosable closable;
-    private final GHRepository repo;
+    private final GitRepositoryWithAzureContext repo;
     private final String ref;
     private transient Object metadata;
     private transient boolean resolved;
 
-    AzureDevOpsRepoSCMFile(AzureDevOpsRepoClosable closable, GHRepository repo, String ref) {
+    AzureDevOpsRepoSCMFile(AzureDevOpsRepoClosable closable, GitRepositoryWithAzureContext repo, String ref) {
         super();
         this.closable = closable;
         type(Type.DIRECTORY);
@@ -64,12 +64,12 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
         this.ref = parent.ref;
     }
 
-    private AzureDevOpsRepoSCMFile(@NonNull AzureDevOpsRepoSCMFile parent, String name, GHContent metadata) {
+    private AzureDevOpsRepoSCMFile(@NonNull AzureDevOpsRepoSCMFile parent, String name, GitItem metadata) {
         super(parent, name);
         this.closable = parent.closable;
         this.repo = parent.repo;
         this.ref = parent.ref;
-        if (metadata.isDirectory()) {
+        if (metadata.isFolder()) {
             info = TypeInfo.DIRECTORY_CONFIRMED;
             // we have not listed the children yet, but we know it is a directory
         } else {
@@ -90,34 +90,30 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
             try {
                 switch (info) {
                     case DIRECTORY_ASSUMED:
-                        metadata = repo.getDirectoryContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
+                        //metadata = repo.getDirectoryContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
+                        metadata = AzureConnector.INSTANCE.getItems(repo, getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
                         info = TypeInfo.DIRECTORY_CONFIRMED;
                         resolved = true;
                         break;
                     case DIRECTORY_CONFIRMED:
-                        metadata = repo.getDirectoryContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
+                        //metadata = repo.getDirectoryContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
+                        metadata = AzureConnector.INSTANCE.getItems(repo, getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
                         resolved = true;
                         break;
                     case NON_DIRECTORY_CONFIRMED:
-                        metadata = repo.getFileContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
+                        //metadata = repo.getFileContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
+                        metadata = AzureConnector.INSTANCE.getItem(repo, getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
                         resolved = true;
                         break;
                     case UNRESOLVED:
                         checkOpen();
-                        try {
-                            metadata = repo.getFileContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
+                        //metadata = repo.getFileContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
+                        metadata = AzureConnector.INSTANCE.getItem(repo, getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
+                        if (metadata != null) {
                             info = TypeInfo.NON_DIRECTORY_CONFIRMED;
                             resolved = true;
-                        } catch (IOException e) {
-                            if (e.getCause() instanceof IOException
-                                    && e.getCause().getCause() instanceof JsonMappingException) {
-                                metadata = repo.getDirectoryContent(getPath(),
-                                        ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
-                                info = TypeInfo.DIRECTORY_CONFIRMED;
-                                resolved = true;
-                            } else {
-                                throw e;
-                            }
+                        } else {
+                            throw new IOException("Getting meta data failed");
                         }
                         break;
                 }
@@ -139,10 +135,11 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
     @Override
     public Iterable<SCMFile> children() throws IOException {
         checkOpen();
-        List<GHContent> content = repo.getDirectoryContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
+        //List<GHContent> content = repo.getDirectoryContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
+        List<GitItem> content = AzureConnector.INSTANCE.getItems(repo, getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
         List<SCMFile> result = new ArrayList<>(content.size());
-        for (GHContent c : content) {
-            result.add(new AzureDevOpsRepoSCMFile(this, c.getName(), c));
+        for (GitItem c : content) {
+            result.add(new AzureDevOpsRepoSCMFile(this, c.getPath(), c));
         }
         return result;
     }
@@ -160,15 +157,16 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
         if (metadata instanceof List) {
             return Type.DIRECTORY;
         }
-        if (metadata instanceof GHContent) {
-            GHContent content = (GHContent) metadata;
-            if ("symlink".equals(content.getType())) {
+        if (metadata instanceof GitItem) {
+            GitItem content = (GitItem) metadata;
+            if (content.isSymLink()) {
                 return Type.LINK;
             }
-            if (content.isFile()) {
-                return Type.REGULAR_FILE;
+            if (content.isFolder()) {
+                return Type.DIRECTORY;
             }
-            return Type.OTHER;
+            return Type.REGULAR_FILE;
+            //return Type.OTHER;
         }
         return Type.NONEXISTENT;
     }
@@ -180,8 +178,8 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
         if (metadata instanceof List) {
             throw new IOException("Directory");
         }
-        if (metadata instanceof GHContent) {
-            return ((GHContent)metadata).read();
+        if (metadata instanceof GitItem) {
+            return ((GitItem) metadata).read();
         }
         throw new FileNotFoundException(getPath());
     }
