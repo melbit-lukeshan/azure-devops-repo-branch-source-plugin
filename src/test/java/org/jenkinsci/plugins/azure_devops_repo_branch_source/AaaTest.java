@@ -5,8 +5,11 @@ import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support.OkHttp
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support.Result;
 import org.junit.Test;
 
+import java.io.InputStream;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertNotNull;
 
 public class AaaTest {
 //    @ClassRule
@@ -16,6 +19,7 @@ public class AaaTest {
     public static final String pat = "ltwwf6dxrqhvjalhzd7gorew7fnd4k5pz3vhpgz524ehf6yuzuma";
     public static final String projectName = "int-terraform-aws-efs";
     public static final String repository = "int-terraform-aws-efs";
+    public static final String readmeUrl = "https://dev.azure.com/lukeshan/cd168403-6d20-4056-914b-cab7f07d9598/_apis/git/repositories/5e438059-083c-4db7-ab73-54d838b5d20d/Items?path=%2FREADME.md&versionDescriptor%5BversionOptions%5D=0&versionDescriptor%5BversionType%5D=0&versionDescriptor%5Bversion%5D=master&download=true&resolveLfs=true&%24format=octetStream&api-version=5.0-preview.1";
 
     @Test
     public void aTest0() throws Exception {
@@ -46,10 +50,25 @@ public class AaaTest {
 
     @Test
     public void aTest3() throws Exception {
-        ListRefsRequest listRefsRequest = new ListRefsRequest(collectionUrl, pat, projectName, repository);
+        ListRefsRequest listRefsRequest = new ListRefsRequest(collectionUrl, pat, projectName, repository, "tags/");
         OkHttp2Helper.INSTANCE.setDebugMode(true);
         Result<Refs, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(listRefsRequest, Refs.class, Object.class);
         Refs refs = result.getGoodValueOrNull();
-        assertThat(refs.getCount(), is(3));
+        if (refs != null) {
+            System.out.println(refs.getCount());
+            for (GitRef gitRef : refs.getValue()) {
+                System.out.println(gitRef.getName() + "->" + gitRef.getUrl());
+            }
+        }
+        assertThat(refs.getCount(), is(8));
+    }
+
+    @Test
+    public void aTest4() throws Exception {
+        GetItemStreamRequest getItemStreamRequest = new GetItemStreamRequest(collectionUrl, pat, readmeUrl);
+        OkHttp2Helper.INSTANCE.setDebugMode(true);
+        Result<InputStream, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(getItemStreamRequest, InputStream.class, Object.class);
+        InputStream inputStream = result.getGoodValueOrNull();
+        assertNotNull(inputStream);
     }
 }

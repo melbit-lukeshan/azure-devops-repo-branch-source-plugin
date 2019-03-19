@@ -826,7 +826,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                                                 if (!trusted) {
                                                     listener.getLogger().format("    (not from a trusted source)%n");
                                                 }
-                                                return new AzureDevOpsRepoSCMProbe(github, ghRepository,
+                                                return new AzureDevOpsRepoSCMProbe(gitRepository,
                                                         trusted ? head : head.getTarget(), null);
                                             }
                                         },
@@ -909,7 +909,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                                         public SCMSourceCriteria.Probe create(@NonNull AzureDevOpsRepoTagSCMHead head,
                                                                               @Nullable GitTagSCMRevision revisionInfo)
                                                 throws IOException, InterruptedException {
-                                            return new AzureDevOpsRepoSCMProbe(github, ghRepository, head, revisionInfo);
+                                            return new AzureDevOpsRepoSCMProbe(gitRepository, head, revisionInfo);
                                         }
                                     }, new CriteriaWitness(listener))) {
                                 listener.getLogger()
@@ -1268,13 +1268,14 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     protected SCMProbe createProbe(@NonNull SCMHead head, @CheckForNull final SCMRevision revision) throws IOException {
         StandardCredentials credentials = Connector.lookupScanCredentials((Item) getOwner(), collectionUrl, credentialsId);
         // Github client and validation
-        GitHub github = Connector.connect(collectionUrl, credentials);
+        //GitHub github = Connector.connect(collectionUrl, credentials);
         try {
             String fullName = projectName + "/" + repository;
-            final GHRepository repo = github.getRepository(fullName);
-            return new AzureDevOpsRepoSCMProbe(github, repo, head, revision);
-        } catch (IOException | RuntimeException | Error e) {
-            Connector.release(github);
+            //final GHRepository repo = github.getRepository(fullName);
+            final GitRepositoryWithAzureContext repo = AzureConnector.INSTANCE.getRepository(collectionUrl, credentials, projectName, repository);
+            return new AzureDevOpsRepoSCMProbe(repo, head, revision);
+        } catch (Error e) {
+            //Connector.release(github);
             throw e;
         }
     }
@@ -1887,7 +1888,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                     String branchName = branchNames.iterator().next();
                     request.listener().getLogger().format("%n  Getting remote branch %s...%n", branchName);
                     //GitRef branch = repo.getBranch(branchName);
-                    GitRef branch = AzureConnector.INSTANCE.getBranch(repo, branchName);
+                    GitRef branch = AzureConnector.INSTANCE.getRef(repo, branchName);
                     if (branch != null) {
                         return Collections.singletonList(branch);
                     } else {
@@ -1896,7 +1897,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                 }
                 request.listener().getLogger().format("%n  Getting remote branches...%n");
                 // local optimization: always try the default branch first in any search
-                List<GitRef> values = new ArrayList<>(AzureConnector.INSTANCE.getBranches(repo));
+                List<GitRef> values = AzureConnector.INSTANCE.getBranches(repo);
                 final String defaultBranch = StringUtils.defaultIfBlank(repo.getGitRepository().getDefaultBranch(), "master");
                 Collections.sort(values, new Comparator<GitRef>() {
                     @Override
@@ -1911,7 +1912,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                     }
                 });
                 return values;
-            } catch (IOException | InterruptedException e) {
+            } catch (Exception e) {
                 throw new AzureDevOpsRepoSCMSource.WrappedException(e);
             }
         }

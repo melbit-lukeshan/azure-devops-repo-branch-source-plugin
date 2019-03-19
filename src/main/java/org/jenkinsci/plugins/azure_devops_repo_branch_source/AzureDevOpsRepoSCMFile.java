@@ -179,7 +179,7 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
             throw new IOException("Directory");
         }
         if (metadata instanceof GitItem) {
-            return ((GitItem) metadata).read();
+            //return ((GitItem) metadata).read();
         }
         throw new FileNotFoundException(getPath());
     }

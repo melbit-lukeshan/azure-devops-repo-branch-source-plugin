@@ -30,18 +30,10 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.plugins.git.AbstractGitSCMSource;
 import jenkins.scm.api.*;
 import org.eclipse.jgit.lib.Constants;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitCommit;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitRef;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitRepositoryWithAzureContext;
-import org.kohsuke.github.GHContent;
-import org.kohsuke.github.GHFileNotFoundException;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.*;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -136,71 +128,71 @@ class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosabl
     public SCMProbeStat stat(@NonNull String path) throws IOException {
         checkOpen();
         int index = path.lastIndexOf('/') + 1;
-        try {
-            List<GHContent> directoryContent = repo.getDirectoryContent(path.substring(0, index), Constants.R_REFS + ref);
-            for (GHContent content : directoryContent) {
+//        try {
+        //List<GHContent> directoryContent = repo.getDirectoryContent(path.substring(0, index), Constants.R_REFS + ref);
+        List<GitItem> directoryContent = AzureConnector.INSTANCE.getItems(repo, path.substring(0, index), Constants.R_REFS + ref);
+        for (GitItem content : directoryContent) {
                 if (content.getPath().equals(path)) {
-                    if (content.isFile()) {
-                        return SCMProbeStat.fromType(SCMFile.Type.REGULAR_FILE);
-                    } else if (content.isDirectory()) {
+                    if (content.isFolder()) {
                         return SCMProbeStat.fromType(SCMFile.Type.DIRECTORY);
-                    } else if ("symlink".equals(content.getType())) {
+                    } else if (content.isSymLink()) {
                         return SCMProbeStat.fromType(SCMFile.Type.LINK);
                     } else {
-                        return SCMProbeStat.fromType(SCMFile.Type.OTHER);
+                        return SCMProbeStat.fromType(SCMFile.Type.REGULAR_FILE);
+                        //return SCMProbeStat.fromType(SCMFile.Type.OTHER);
                     }
                 }
             }
-            for (GHContent content : directoryContent) {
+        for (GitItem content : directoryContent) {
                 if (content.getPath().equalsIgnoreCase(path)) {
                     return SCMProbeStat.fromAlternativePath(content.getPath());
                 }
             }
-        } catch (GHFileNotFoundException fnf) {
-            boolean finicky = false;
-            if (index == 0 || index == 1) {
-                // the revision does not exist, we should complain unless JENKINS-54126.
-                finicky = true;
-            } else {
-                try {
-                    repo.getDirectoryContent("/", Constants.R_REFS + ref);
-                } catch (IOException e) {
-                    // this must be an issue with the revision, so complain unless JENKINS-54126
-                    fnf.addSuppressed(e);
-                    finicky = true;
-                }
-                // means that does not exist and this is handled below this try/catch block.
-            }
-            if (finicky && JENKINS_54126_WORKAROUND) {
-                LOG.log(Level.FINE, String.format("JENKINS-54126 Received finacky response from GitHub %s : %s", repo.getFullName(), ref), fnf);
-                final Optional<List<String>> status;
-                final Map<String, List<String>> responseHeaderFields = fnf.getResponseHeaderFields();
-                if (responseHeaderFields != null) {
-                    status = Optional.ofNullable(responseHeaderFields.get(null));
-                } else {
-                    status = Optional.empty();
-                }
-
-                if (AzureDevOpsRepoSCMSource.getCacheSize() > 0
-                        && gitHub.getConnector() instanceof Connector.ForceValidationOkHttpConnector
-                        && status.isPresent() && status.get().stream().anyMatch((s) -> s.contains("40"))) { //Any status >= 400 is a FNF in okhttp
-                    //JENKINS-54126 try again without cache headers
-                    LOG.log(Level.FINE, "JENKINS-54126 Attempting the request again with workaround.");
-                    final Connector.ForceValidationOkHttpConnector oldConnector = (Connector.ForceValidationOkHttpConnector) gitHub.getConnector();
-                    try {
-                        //TODO I'm not sure we are alone in using this connector so maybe concurrent modification problems
-                        gitHub.setConnector(oldConnector.getDelegate());
-                        return stat(path);
-                    } finally {
-                        gitHub.setConnector(oldConnector);
-                    }
-                } else if (STAT_RETHROW_API_FNF) {
-                    throw fnf;
-                } else {
-                    LOG.log(Level.FINE, "JENKINS-54126 silently ignoring the problem.");
-                }
-            }
-        }
+//        } catch (GHFileNotFoundException fnf) {
+//            boolean finicky = false;
+//            if (index == 0 || index == 1) {
+//                // the revision does not exist, we should complain unless JENKINS-54126.
+//                finicky = true;
+//            } else {
+//                try {
+//                    repo.getDirectoryContent("/", Constants.R_REFS + ref);
+//                } catch (IOException e) {
+//                    // this must be an issue with the revision, so complain unless JENKINS-54126
+//                    fnf.addSuppressed(e);
+//                    finicky = true;
+//                }
+//                // means that does not exist and this is handled below this try/catch block.
+//            }
+//            if (finicky && JENKINS_54126_WORKAROUND) {
+//                LOG.log(Level.FINE, String.format("JENKINS-54126 Received finacky response from GitHub %s : %s", repo.getFullName(), ref), fnf);
+//                final Optional<List<String>> status;
+//                final Map<String, List<String>> responseHeaderFields = fnf.getResponseHeaderFields();
+//                if (responseHeaderFields != null) {
+//                    status = Optional.ofNullable(responseHeaderFields.get(null));
+//                } else {
+//                    status = Optional.empty();
+//                }
+//
+//                if (AzureDevOpsRepoSCMSource.getCacheSize() > 0
+//                        && gitHub.getConnector() instanceof Connector.ForceValidationOkHttpConnector
+//                        && status.isPresent() && status.get().stream().anyMatch((s) -> s.contains("40"))) { //Any status >= 400 is a FNF in okhttp
+//                    //JENKINS-54126 try again without cache headers
+//                    LOG.log(Level.FINE, "JENKINS-54126 Attempting the request again with workaround.");
+//                    final Connector.ForceValidationOkHttpConnector oldConnector = (Connector.ForceValidationOkHttpConnector) gitHub.getConnector();
+//                    try {
+//                        //TODO I'm not sure we are alone in using this connector so maybe concurrent modification problems
+//                        gitHub.setConnector(oldConnector.getDelegate());
+//                        return stat(path);
+//                    } finally {
+//                        gitHub.setConnector(oldConnector);
+//                    }
+//                } else if (STAT_RETHROW_API_FNF) {
+//                    throw fnf;
+//                } else {
+//                    LOG.log(Level.FINE, "JENKINS-54126 silently ignoring the problem.");
+//                }
+//            }
+//        }
         return SCMProbeStat.fromType(SCMFile.Type.NONEXISTENT);
     }
 

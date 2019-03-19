@@ -14,7 +14,7 @@ abstract class AzureBaseRequest<T, R>(val collectionUrl: String, private val pat
     override val jsonProcessor = GsonProcessor
     override val host = "{collectionUrl}"
     override val headers = "Authorization={authorizationHeader}"
-    override val parameters = "api-version=5.0"
+    override val parameters: String? = "api-version=5.0"
     override val retryIfConnectionFail = true
     override val timeout = 30
 }

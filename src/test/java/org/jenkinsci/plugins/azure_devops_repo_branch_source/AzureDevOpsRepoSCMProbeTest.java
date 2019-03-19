@@ -6,12 +6,13 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 import jenkins.scm.api.SCMHeadOrigin;
 import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitRepositoryWithAzureContext;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 
 import java.io.FileNotFoundException;
@@ -41,9 +42,11 @@ public class AzureDevOpsRepoSCMProbeTest {
                                 .withHeader("Content-Type", "application/json")
                                 .withBodyFile("body-cloudbeers-yolo-PucD6.json"))
         );
-        final GHRepository repo = github.getRepository("cloudbeers/yolo");
+        //final GHRepository repo = github.getRepository("cloudbeers/yolo");
+        final GitRepositoryWithAzureContext repo =
+                AzureConnector.INSTANCE.getRepository("http://localhost:" + githubApi.port(), null, "cloudbeers", "yolo");
         final PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "cloudbeers", "yolo", "b", 1, new BranchSCMHead("master"), new SCMHeadOrigin.Fork("rsandell"), ChangeRequestCheckoutStrategy.MERGE);
-        probe = new AzureDevOpsRepoSCMProbe(github, repo,
+        probe = new AzureDevOpsRepoSCMProbe(repo,
                 head,
                 new PullRequestSCMRevision(head, "a", "b"));
     }

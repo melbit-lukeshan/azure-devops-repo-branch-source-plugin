@@ -134,10 +134,10 @@ object AzureConnector {
         return OkHttp2Helper.executeRequest(listRepositoriesRequest)
     }
 
-    private fun listRefsR(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String): Result<Refs, Any> {
+    private fun listRefsR(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, filter: String): Result<Refs, Any> {
         val fixedCollectionUrl = Util.fixEmptyAndTrim(collectionUrl)!!
         val pat = (credentials as StandardUsernamePasswordCredentials).password.plainText
-        val listRefsRequest = ListRefsRequest(fixedCollectionUrl, pat, projectName, repositoryName)
+        val listRefsRequest = ListRefsRequest(fixedCollectionUrl, pat, projectName, repositoryName, filter)
         OkHttp2Helper.setDebugMode(true)
         return OkHttp2Helper.executeRequest(listRefsRequest)
     }
@@ -246,41 +246,43 @@ object AzureConnector {
         return null
     }
 
-    fun getRef(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, branchName: String): GitRef? {
-        return getRef(
-                gitRepositoryWithAzureContext.collectionUrl,
-                gitRepositoryWithAzureContext.credentials,
-                gitRepositoryWithAzureContext.projectName,
-                gitRepositoryWithAzureContext.repositoryName,
-                branchName)
-    }
-
-    fun getRefs(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext): List<GitRef> {
+    fun getRefs(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, filter: String): List<GitRef>? {
         return getRefs(
                 gitRepositoryWithAzureContext.collectionUrl,
                 gitRepositoryWithAzureContext.credentials,
                 gitRepositoryWithAzureContext.projectName,
-                gitRepositoryWithAzureContext.repositoryName)
+                gitRepositoryWithAzureContext.repositoryName,
+                filter)
     }
 
-    private fun getRefs(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String): List<GitRef> {
-        val result = listRefsR(collectionUrl, credentials, projectName, repositoryName)
-        result.getGoodValueOrNull()?.let {
-            return it.value
-        }
-        return arrayListOf()
-    }
-
-    private fun getRef(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, branchName: String): GitRef? {
-        getRefs(collectionUrl, credentials, projectName, repositoryName).forEach { gitRef ->
-            if (gitRef.name == branchName) {
-                return gitRef
+    fun getRef(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, filter: String): GitRef? {
+        getRefs(
+                gitRepositoryWithAzureContext.collectionUrl,
+                gitRepositoryWithAzureContext.credentials,
+                gitRepositoryWithAzureContext.projectName,
+                gitRepositoryWithAzureContext.repositoryName,
+                filter)?.forEach {
+            if (it.name == "refs/$filter") {
+                return it
             }
         }
         return null
     }
 
-    fun getCommits(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext): List<GitCommitRef> {
+    fun getBranches(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext): List<GitRef>? {
+        return getRefs(
+                gitRepositoryWithAzureContext.collectionUrl,
+                gitRepositoryWithAzureContext.credentials,
+                gitRepositoryWithAzureContext.projectName,
+                gitRepositoryWithAzureContext.repositoryName,
+                "heads/")
+    }
+
+    private fun getRefs(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, filter: String): List<GitRef>? {
+        return listRefsR(collectionUrl, credentials, projectName, repositoryName, filter).getGoodValueOrNull()?.value
+    }
+
+    fun getCommits(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext): List<GitCommitRef>? {
         return getCommits(
                 gitRepositoryWithAzureContext.collectionUrl,
                 gitRepositoryWithAzureContext.credentials,
@@ -297,8 +299,8 @@ object AzureConnector {
                 commitSha1)
     }
 
-    private fun getCommits(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String): List<GitCommitRef> {
-        return listCommitsR(collectionUrl, credentials, projectName, repositoryName).getGoodValueOrNull()?.value ?: arrayListOf()
+    private fun getCommits(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String): List<GitCommitRef>? {
+        return listCommitsR(collectionUrl, credentials, projectName, repositoryName).getGoodValueOrNull()?.value
     }
 
     private fun getCommit(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, commitId: String): GitCommit? {

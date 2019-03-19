@@ -206,32 +206,29 @@ object OkHttp2Helper {
     @PublishedApi
     internal fun <T : Any, R : Any> responseToResult(response: Response, request: Request<T, R>, targetClass: KClass<T>, errorClass: KClass<R>): Result<T, R> {
         return response.let { theResponse ->
-            var responseBodyString = theResponse.body()?.string()
             if (theResponse.isSuccessful) {
-
-                if (targetClass.java.equals(InputStream.class)) {
-
-                        } else {
-
-                }
-
-                try {
-                    responseBodyString!!.let {
-                        request.goodResponseBodyWrapper?.takeIf { wrapper -> wrapper.isNotBlank() }?.replace("*", it)
-                                ?: it
-                    }.also {
-                        responseBodyString = it
-                    }.let {
-                        Result.Good(request.jsonProcessor.instanceFromJson(it, targetClass)!!, Result.HttpStatus(theResponse.code(), theResponse.message()))
+                if (targetClass == InputStream::class) {
+                    Result.Good(theResponse.body().byteStream() as T, Result.HttpStatus(theResponse.code(), theResponse.message()))
+                } else {
+                    var responseBodyString = theResponse.body()?.string()
+                    try {
+                        responseBodyString!!.let {
+                            request.goodResponseBodyWrapper?.takeIf { wrapper -> wrapper.isNotBlank() }?.replace("*", it)
+                                    ?: it
+                        }.also {
+                            responseBodyString = it
+                        }.let {
+                            Result.Good(request.jsonProcessor.instanceFromJson(it, targetClass)!!, Result.HttpStatus(theResponse.code(), theResponse.message()))
+                        }
+                    } catch (e: Exception) {
+                        Result.Malformed(responseBodyString, Result.HttpStatus(theResponse.code(), theResponse.message()), e)
                     }
-                } catch (e: Exception) {
-                    Result.Malformed(responseBodyString, Result.HttpStatus(theResponse.code(), theResponse.message()), e)
                 }
             } else {
+                var responseBodyString = theResponse.body()?.string()
                 try {
                     responseBodyString!!.let {
-                        request.httpErrorResponseBodyWrapper?.takeIf { wrapper -> wrapper.isNotBlank() }?.replace("*", it)
-                                ?: it
+                        request.httpErrorResponseBodyWrapper?.takeIf { wrapper -> wrapper.isNotBlank() }?.replace("*", it) ?: it
                     }.also {
                         responseBodyString = it
                     }.let {
@@ -279,7 +276,7 @@ object OkHttp2Helper {
             //if (call.isCanceled) {
             //    resultHandler(Result.Canceled(if (e.message.equals(CANCELED)) null else e), request)
             //} else {
-                resultHandler(Result.IoError(e), request)
+            resultHandler(Result.IoError(e), request)
             //}
         }
 
