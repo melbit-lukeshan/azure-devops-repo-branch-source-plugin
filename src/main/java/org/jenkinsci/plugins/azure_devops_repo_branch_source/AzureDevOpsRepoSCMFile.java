@@ -27,10 +27,10 @@ package org.jenkinsci.plugins.azure_devops_repo_branch_source;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.scm.api.SCMFile;
-import org.eclipse.jgit.lib.Constants;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitItem;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitRepositoryWithAzureContext;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.VersionControlRecursionType;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -91,24 +91,24 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
                 switch (info) {
                     case DIRECTORY_ASSUMED:
                         //metadata = repo.getDirectoryContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
-                        metadata = AzureConnector.INSTANCE.getItems(repo, getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
+                        metadata = AzureConnector.INSTANCE.getItems(repo, getPath(), VersionControlRecursionType.none);
                         info = TypeInfo.DIRECTORY_CONFIRMED;
                         resolved = true;
                         break;
                     case DIRECTORY_CONFIRMED:
                         //metadata = repo.getDirectoryContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
-                        metadata = AzureConnector.INSTANCE.getItems(repo, getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
+                        metadata = AzureConnector.INSTANCE.getItems(repo, getPath(), VersionControlRecursionType.none);
                         resolved = true;
                         break;
                     case NON_DIRECTORY_CONFIRMED:
                         //metadata = repo.getFileContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
-                        metadata = AzureConnector.INSTANCE.getItem(repo, getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
+                        metadata = AzureConnector.INSTANCE.getItem(repo, getPath());
                         resolved = true;
                         break;
                     case UNRESOLVED:
                         checkOpen();
                         //metadata = repo.getFileContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
-                        metadata = AzureConnector.INSTANCE.getItem(repo, getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
+                        metadata = AzureConnector.INSTANCE.getItem(repo, getPath());
                         if (metadata != null) {
                             info = TypeInfo.NON_DIRECTORY_CONFIRMED;
                             resolved = true;
@@ -136,7 +136,7 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
     public Iterable<SCMFile> children() throws IOException {
         checkOpen();
         //List<GHContent> content = repo.getDirectoryContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
-        List<GitItem> content = AzureConnector.INSTANCE.getItems(repo, getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
+        List<GitItem> content = AzureConnector.INSTANCE.getItems(repo, getPath(), VersionControlRecursionType.none);
         List<SCMFile> result = new ArrayList<>(content.size());
         for (GitItem c : content) {
             result.add(new AzureDevOpsRepoSCMFile(this, c.getPath(), c));

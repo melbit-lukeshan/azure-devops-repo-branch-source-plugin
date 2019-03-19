@@ -158,10 +158,10 @@ object AzureConnector {
         return OkHttp2Helper.executeRequest(getCommitRequest)
     }
 
-    private fun listItemsR(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, scopePath: String): Result<Items, Any> {
+    private fun listItemsR(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, scopePath: String, recursionType: VersionControlRecursionType): Result<Items, Any> {
         val fixedCollectionUrl = Util.fixEmptyAndTrim(collectionUrl)!!
         val pat = (credentials as StandardUsernamePasswordCredentials).password.plainText
-        val listItemsRequest = ListItemsRequest(fixedCollectionUrl, pat, projectName, repositoryName, scopePath)
+        val listItemsRequest = ListItemsRequest(fixedCollectionUrl, pat, projectName, repositoryName, scopePath, recursionType)
         OkHttp2Helper.setDebugMode(true)
         return OkHttp2Helper.executeRequest(listItemsRequest)
     }
@@ -308,17 +308,18 @@ object AzureConnector {
     }
 
     //TODO GitHub support getting content by path and ref. What do we do?
-    fun getItems(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, scopePath: String, ref: String): List<GitItem> {
+    fun getItems(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, scopePath: String, recursionType: VersionControlRecursionType): List<GitItem> {
         return getItems(
                 gitRepositoryWithAzureContext.collectionUrl,
                 gitRepositoryWithAzureContext.credentials,
                 gitRepositoryWithAzureContext.projectName,
                 gitRepositoryWithAzureContext.repositoryName,
-                scopePath)
+                scopePath,
+                recursionType)
     }
 
     //TODO GitHub support getting content by path and ref. What do we do?
-    fun getItem(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, itemPath: String, ref: String): GitItem? {
+    fun getItem(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, itemPath: String): GitItem? {
         return getItem(
                 gitRepositoryWithAzureContext.collectionUrl,
                 gitRepositoryWithAzureContext.credentials,
@@ -327,8 +328,8 @@ object AzureConnector {
                 itemPath)
     }
 
-    private fun getItems(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, scopePath: String): List<GitItem> {
-        return listItemsR(collectionUrl, credentials, projectName, repositoryName, scopePath).getGoodValueOrNull()?.value ?: arrayListOf()
+    private fun getItems(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, scopePath: String, recursionType: VersionControlRecursionType): List<GitItem> {
+        return listItemsR(collectionUrl, credentials, projectName, repositoryName, scopePath, recursionType).getGoodValueOrNull()?.value ?: arrayListOf()
     }
 
     private fun getItem(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, itemPath: String): GitItem? {

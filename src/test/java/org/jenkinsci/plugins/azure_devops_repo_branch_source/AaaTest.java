@@ -22,6 +22,8 @@ public class AaaTest {
     public static final String repositoryName = "int-terraform-aws-efs";
     public static final String branchHeadHash = "db7a5d4e6139e341534a6a0bebdd86ab6248bc10";
     public static final String readmeUrl = "https://dev.azure.com/lukeshan/cd168403-6d20-4056-914b-cab7f07d9598/_apis/git/repositories/5e438059-083c-4db7-ab73-54d838b5d20d/Items?path=%2FREADME.md&versionDescriptor%5BversionOptions%5D=0&versionDescriptor%5BversionType%5D=0&versionDescriptor%5Bversion%5D=master&download=true&resolveLfs=true&%24format=octetStream&api-version=5.0-preview.1";
+    public static final String itemPath = "/README.md";
+    public static final String scopePath = "/tests";
 
     @Test
     public void aTest0() throws Exception {
@@ -91,6 +93,31 @@ public class AaaTest {
                 }
             } else {
                 System.out.println("gitPushRef is null");
+            }
+        }
+    }
+
+    @Test
+    public void aTest6() throws Exception {
+        GetItemRequest getItemRequest = new GetItemRequest(collectionUrl, pat, projectName, repositoryName, itemPath);
+        OkHttp2Helper.INSTANCE.setDebugMode(true);
+        Result<GitItem, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(getItemRequest, GitItem.class, Object.class);
+        GitItem item = result.getGoodValueOrNull();
+        if (item != null) {
+            System.out.println(item.getPath());
+            System.out.println(item.getUrl());
+        }
+    }
+
+    @Test
+    public void aTest7() throws Exception {
+        ListItemsRequest listItemsRequest = new ListItemsRequest(collectionUrl, pat, projectName, repositoryName, "", VersionControlRecursionType.full);
+        OkHttp2Helper.INSTANCE.setDebugMode(true);
+        Result<Items, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(listItemsRequest, Items.class, Object.class);
+        Items items = result.getGoodValueOrNull();
+        if (items != null) {
+            for (GitItem item : items.getValue()) {
+                System.out.println(item.getPath() + " -> " + (item.isFolder() ? "Folder" : "File"));
             }
         }
     }

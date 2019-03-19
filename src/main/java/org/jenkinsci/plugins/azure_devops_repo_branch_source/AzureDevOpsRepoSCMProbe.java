@@ -29,11 +29,9 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.plugins.git.AbstractGitSCMSource;
 import jenkins.scm.api.*;
-import org.eclipse.jgit.lib.Constants;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.*;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.logging.Logger;
 
 
@@ -126,28 +124,22 @@ class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosabl
     @NonNull
     @Override
     public SCMProbeStat stat(@NonNull String path) throws IOException {
+        System.out.println("path -> " + path);
         checkOpen();
         int index = path.lastIndexOf('/') + 1;
 //        try {
         //List<GHContent> directoryContent = repo.getDirectoryContent(path.substring(0, index), Constants.R_REFS + ref);
-        List<GitItem> directoryContent = AzureConnector.INSTANCE.getItems(repo, path.substring(0, index), Constants.R_REFS + ref);
-        for (GitItem content : directoryContent) {
-                if (content.getPath().equals(path)) {
-                    if (content.isFolder()) {
-                        return SCMProbeStat.fromType(SCMFile.Type.DIRECTORY);
-                    } else if (content.isSymLink()) {
-                        return SCMProbeStat.fromType(SCMFile.Type.LINK);
-                    } else {
-                        return SCMProbeStat.fromType(SCMFile.Type.REGULAR_FILE);
-                        //return SCMProbeStat.fromType(SCMFile.Type.OTHER);
-                    }
-                }
+        GitItem content = AzureConnector.INSTANCE.getItem(repo, path);
+        if (content != null) {
+            if (content.isFolder()) {
+                return SCMProbeStat.fromType(SCMFile.Type.DIRECTORY);
+            } else if (content.isSymLink()) {
+                return SCMProbeStat.fromType(SCMFile.Type.LINK);
+            } else {
+                return SCMProbeStat.fromType(SCMFile.Type.REGULAR_FILE);
+                //return SCMProbeStat.fromType(SCMFile.Type.OTHER);
             }
-        for (GitItem content : directoryContent) {
-                if (content.getPath().equalsIgnoreCase(path)) {
-                    return SCMProbeStat.fromAlternativePath(content.getPath());
-                }
-            }
+        }
 //        } catch (GHFileNotFoundException fnf) {
 //            boolean finicky = false;
 //            if (index == 0 || index == 1) {
