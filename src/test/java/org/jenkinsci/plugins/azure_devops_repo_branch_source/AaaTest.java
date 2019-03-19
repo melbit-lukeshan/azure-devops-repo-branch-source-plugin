@@ -6,6 +6,7 @@ import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support.Result
 import org.junit.Test;
 
 import java.io.InputStream;
+import java.time.OffsetDateTime;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -18,7 +19,8 @@ public class AaaTest {
     public static final String collectionUrl = "https://dev.azure.com/lukeshan";
     public static final String pat = "ltwwf6dxrqhvjalhzd7gorew7fnd4k5pz3vhpgz524ehf6yuzuma";
     public static final String projectName = "int-terraform-aws-efs";
-    public static final String repository = "int-terraform-aws-efs";
+    public static final String repositoryName = "int-terraform-aws-efs";
+    public static final String branchHeadHash = "db7a5d4e6139e341534a6a0bebdd86ab6248bc10";
     public static final String readmeUrl = "https://dev.azure.com/lukeshan/cd168403-6d20-4056-914b-cab7f07d9598/_apis/git/repositories/5e438059-083c-4db7-ab73-54d838b5d20d/Items?path=%2FREADME.md&versionDescriptor%5BversionOptions%5D=0&versionDescriptor%5BversionType%5D=0&versionDescriptor%5Bversion%5D=master&download=true&resolveLfs=true&%24format=octetStream&api-version=5.0-preview.1";
 
     @Test
@@ -50,17 +52,17 @@ public class AaaTest {
 
     @Test
     public void aTest3() throws Exception {
-        ListRefsRequest listRefsRequest = new ListRefsRequest(collectionUrl, pat, projectName, repository, "tags/");
+        ListRefsRequest listRefsRequest = new ListRefsRequest(collectionUrl, pat, projectName, repositoryName, "heads/b3");
         OkHttp2Helper.INSTANCE.setDebugMode(true);
         Result<Refs, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(listRefsRequest, Refs.class, Object.class);
         Refs refs = result.getGoodValueOrNull();
         if (refs != null) {
             System.out.println(refs.getCount());
             for (GitRef gitRef : refs.getValue()) {
-                System.out.println(gitRef.getName() + "->" + gitRef.getUrl());
+                System.out.println(gitRef.getName() + "->" + gitRef.getObjectId() + "->" + gitRef.getUrl());
             }
         }
-        assertThat(refs.getCount(), is(8));
+        assertThat(refs.getCount(), is(1));
     }
 
     @Test
@@ -70,5 +72,26 @@ public class AaaTest {
         Result<InputStream, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(getItemStreamRequest, InputStream.class, Object.class);
         InputStream inputStream = result.getGoodValueOrNull();
         assertNotNull(inputStream);
+    }
+
+    @Test
+    public void aTest5() throws Exception {
+        GetCommitRequest getCommitRequest = new GetCommitRequest(collectionUrl, pat, projectName, repositoryName, branchHeadHash);
+        OkHttp2Helper.INSTANCE.setDebugMode(true);
+        Result<GitCommit, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(getCommitRequest, GitCommit.class, Object.class);
+        GitCommit commit = result.getGoodValueOrNull();
+        if (commit != null) {
+            GitPushRef gitPushRef = commit.getPush();
+            if (gitPushRef != null) {
+                OffsetDateTime date = gitPushRef.getDate();
+                if (date != null) {
+                    System.out.println(date.toString());
+                } else {
+                    System.out.println("date is null");
+                }
+            } else {
+                System.out.println("gitPushRef is null");
+            }
+        }
     }
 }

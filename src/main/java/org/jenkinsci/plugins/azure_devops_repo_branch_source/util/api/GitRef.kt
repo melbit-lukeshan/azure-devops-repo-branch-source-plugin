@@ -32,4 +32,8 @@ data class GitRef(
     fun isPullRequest(): Boolean {
         return name.startsWith("refs/pull/")
     }
+
+    fun getBranchName(): String {
+        return name.replace("refs/heads/", "", true)
+    }
 }

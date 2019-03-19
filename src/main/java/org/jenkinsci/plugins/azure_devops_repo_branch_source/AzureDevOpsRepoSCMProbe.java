@@ -65,15 +65,15 @@ class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosabl
 
     @Override
     public void close() throws IOException {
-//        if (gitHub == null || repo == null) {
-//            return;
-//        }
-//        synchronized (this) {
-//            if (!open) {
-//                return;
-//            }
-//            open = false;
-//        }
+        if (repo == null) {
+            return;
+        }
+        synchronized (this) {
+            if (!open) {
+                return;
+            }
+            open = false;
+        }
 //        Connector.release(gitHub);
     }
 
@@ -106,7 +106,7 @@ class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosabl
 //                return commit.getCommitDate().getTime();
             GitCommit commit = AzureConnector.INSTANCE.getCommit(repo, ((AbstractGitSCMSource.SCMRevisionImpl) revision).getHash());
             if (commit != null) {
-                return commit.getPush().getDate().getTime();
+                return commit.getPush().getDate().toInstant().toEpochMilli();
             }
         } else if (revision == null) {
 //            GHRef ref = repo.getRef(this.ref);
@@ -116,7 +116,7 @@ class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosabl
             if (ref != null) {
                 GitCommit commit = AzureConnector.INSTANCE.getCommit(repo, ref.getObjectId());
                 if (commit != null) {
-                    return commit.getPush().getDate().getTime();
+                    return commit.getPush().getDate().toInstant().toEpochMilli();
                 }
             }
         }

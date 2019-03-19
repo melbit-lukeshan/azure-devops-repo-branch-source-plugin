@@ -3,10 +3,9 @@ package org.jenkinsci.plugins.azure_devops_repo_branch_source.util.gson
 import com.google.gson.*
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support.Constants
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support.LogUtil
-import org.threeten.bp.LocalDate
-import org.threeten.bp.OffsetDateTime
-import org.threeten.bp.format.DateTimeFormatter
 import java.lang.reflect.Type
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -39,12 +38,12 @@ class GsonTypeAdapterLocalDate(deserializerFormat: String? = Constants.LOCAL_DAT
 
     override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): LocalDate? =
             try {
-                formatterForDeserializer?.parse(json.asString, LocalDate.FROM)
+                formatterForDeserializer?.parse(json.asString, LocalDate::from)
                         ?: LocalDate.ofEpochDay(json.asLong)
             } catch (e: Exception) {
                 additionalDateFormattersForDeserializerSet.forEach {
                     try {
-                        it.parse(json.asString, OffsetDateTime.FROM)
+                        it.parse(json.asString, LocalDate::from)
                     } catch (ex: Exception) {
                     }
                 }
@@ -58,6 +57,6 @@ class GsonTypeAdapterLocalDate(deserializerFormat: String? = Constants.LOCAL_DAT
             } ?: JsonPrimitive(src.toEpochDay())
 
     override fun getTargetClass(): KClass<*> {
-        return OffsetDateTime::class
+        return LocalDate::class
     }
 }

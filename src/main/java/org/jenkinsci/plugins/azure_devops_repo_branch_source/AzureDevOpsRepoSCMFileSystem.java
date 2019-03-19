@@ -115,7 +115,7 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
         if (ref != null) {
             GitCommit commit = AzureConnector.INSTANCE.getCommit(repo, ref.getObjectId());
             if (commit != null) {
-                return commit.getPush().getDate().getTime();
+                return commit.getPush().getDate().toInstant().toEpochMilli();
             }
         }
         return 0L;

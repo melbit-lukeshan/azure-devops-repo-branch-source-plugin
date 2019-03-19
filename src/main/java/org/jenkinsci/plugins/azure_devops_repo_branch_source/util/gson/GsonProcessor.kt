@@ -1,12 +1,11 @@
 package org.jenkinsci.plugins.azure_devops_repo_branch_source.util.gson
 
-import com.emmacanhelp.androidbase.json.gson.GsonTypeAdapterOffsetDateTime
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support.JsonProcessor
-import org.threeten.bp.LocalDate
-import org.threeten.bp.OffsetDateTime
 import java.math.BigDecimal
+import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.full.cast

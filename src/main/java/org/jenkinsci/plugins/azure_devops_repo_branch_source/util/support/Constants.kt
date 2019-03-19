@@ -1,11 +1,13 @@
 package org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support
 
-import org.threeten.bp.OffsetDateTime
-import org.threeten.bp.ZoneId
-import org.threeten.bp.ZoneOffset
+import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
 import java.util.*
 
 object Constants {
+
+    const val DATE_TIME_FORMAT_AZURE = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX"
 
     // supported universally
     const val DATE_TIME_FORMAT_RFC822 = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"

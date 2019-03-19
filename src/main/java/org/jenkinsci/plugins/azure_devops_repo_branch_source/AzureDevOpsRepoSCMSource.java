@@ -764,9 +764,9 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                         int count = 0;
                         for (final GitRef branch : request.getBranches()) {
                             count++;
-                            String branchName = branch.getName();
-                            listener.getLogger().format("%n    Checking branch %s%n", HyperlinkNote
-                                    .encodeTo(repositoryUrl + "/tree/" + branchName, branchName));
+                            String branchName = branch.getBranchName();
+                            //listener.getLogger().format("%n    Checking branch %s%n", HyperlinkNote.encodeTo(repositoryUrl + "/tree/" + branchName, branchName));
+                            listener.getLogger().format("%n    Checking branch %s%n", HyperlinkNote.encodeTo(repositoryUrl + "?version=GB" + branchName, branchName));
                             BranchSCMHead head = new BranchSCMHead(branchName);
                             if (request.process(head, new SCMRevisionImpl(head, branch.getObjectId()),
                                     new SCMSourceRequest.ProbeLambda<BranchSCMHead, SCMRevisionImpl>() {

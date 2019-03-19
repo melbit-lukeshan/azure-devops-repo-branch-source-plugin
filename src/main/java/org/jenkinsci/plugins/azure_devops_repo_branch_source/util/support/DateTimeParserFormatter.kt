@@ -1,9 +1,9 @@
 package org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support
 
-import org.threeten.bp.*
-import org.threeten.bp.format.DateTimeFormatter
 import java.text.DateFormat
 import java.text.SimpleDateFormat
+import java.time.*
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 /**
@@ -27,19 +27,19 @@ class DateTimeParserFormatter(private val format: String?) {
         DateTimeFormatter.ofPattern(format, Locale.US)
     }
 
-    fun toOffsetDateTime(string: String?): OffsetDateTime? = string?.let { dateTimeFormatter.parse(it, OffsetDateTime.FROM) }
+    fun toOffsetDateTime(string: String?): OffsetDateTime? = string?.let { dateTimeFormatter.parse(it, OffsetDateTime::from) }
 
     fun toString(offsetDateTime: OffsetDateTime?): String? = offsetDateTime?.let { dateTimeFormatter.format(it) }
 
-    fun toLocalDateTime(string: String?): LocalDateTime? = string?.let { dateTimeFormatter.parse(it, LocalDateTime.FROM) }
+    fun toLocalDateTime(string: String?): LocalDateTime? = string?.let { dateTimeFormatter.parse(it, LocalDateTime::from) }
 
     fun toString(localDateTime: LocalDateTime?): String? = localDateTime?.let { dateTimeFormatter.format(it) }
 
-    fun toLocalDate(string: String?): LocalDate? = string?.let { dateTimeFormatter.parse(it, LocalDate.FROM) }
+    fun toLocalDate(string: String?): LocalDate? = string?.let { dateTimeFormatter.parse(it, LocalDate::from) }
 
     fun toString(localDate: LocalDate?): String? = localDate?.let { dateTimeFormatter.format(it) }
 
-    fun toLocalTime(string: String?): LocalTime? = string?.let { dateTimeFormatter.parse(it, LocalTime.FROM) }
+    fun toLocalTime(string: String?): LocalTime? = string?.let { dateTimeFormatter.parse(it, LocalTime::from) }
 
     fun toString(localTime: LocalTime?): String? = localTime?.let { dateTimeFormatter.format(it) }
 

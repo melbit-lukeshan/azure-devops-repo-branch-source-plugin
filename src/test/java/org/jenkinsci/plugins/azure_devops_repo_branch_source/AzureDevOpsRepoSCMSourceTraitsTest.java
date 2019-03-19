@@ -44,7 +44,7 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
         AzureDevOpsRepoSCMSource instance = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "repo", "spring");
         instance.setId("test");
         assertThat(DescribableModel.uninstantiate2_(instance).toString(),
-                is("@github(id=test,repoOwner=repo-owner,repository=repo)")
+                is("@github(id=test,repoOwner=repo-owner,repositoryName=repo)")
         );
         instance.setBuildOriginBranch(true);
         instance.setBuildOriginBranchWithPR(false);
@@ -60,7 +60,7 @@ public class AzureDevOpsRepoSCMSourceTraitsTest {
                         + "credentialsId=foo,"
                         + "id=test,"
                         + "repoOwner=repo-owner,"
-                        + "repository=repo,"
+                        + "repositoryName=repo,"
                         + "traits=["
                         + "@gitHubBranchDiscovery$org.jenkinsci.plugins.azure_devops_repo_branch_source.BranchDiscoveryTrait(strategyId=1), "
                         + "$OriginPullRequestDiscoveryTrait(strategyId=1), "
