@@ -885,8 +885,9 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
         // Github client and validation
         GitHub github = Connector.connect(collectionUrl, credentials);
         try {
-            Connector.checkConnectionValidity(collectionUrl, listener, credentials, github);
-            Connector.checkApiRateLimit(listener, github);
+//            Connector.checkConnectionValidity(collectionUrl, listener, credentials, github);
+//            Connector.checkApiRateLimit(listener, github);
+            AzureConnector.INSTANCE.checkConnectionValidity(collectionUrl, listener, credentials);
 
             // Input data validation
             if (credentials != null && !isCredentialValid(github)) {

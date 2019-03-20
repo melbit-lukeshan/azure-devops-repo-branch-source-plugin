@@ -179,6 +179,11 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
             throw new IOException("Directory");
         }
         if (metadata instanceof GitItem) {
+            InputStream inputStream = AzureConnector.INSTANCE.getItemStream(repo, getPath());
+            if (inputStream != null) {
+                return inputStream;
+            }
+            //AzureConnector.INSTANCE.
             //return ((GitItem) metadata).read();
         }
         throw new FileNotFoundException(getPath());

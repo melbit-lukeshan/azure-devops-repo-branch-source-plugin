@@ -707,7 +707,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         // Github client and validation
         final GitHub github = Connector.connect(collectionUrl, credentials);
         try {
-            checkApiUrlValidity(github, credentials);
+            checkApiUrlValidity(credentials);
             Connector.checkApiRateLimit(listener, github);
 
             try {
@@ -942,13 +942,14 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         // Github client and validation
         final GitHub github = Connector.connect(collectionUrl, credentials);
         try {
-            checkApiUrlValidity(github, credentials);
+            checkApiUrlValidity(credentials);
             Connector.checkApiRateLimit(listener, github);
             Set<String> result = new TreeSet<>();
 
             try {
                 // Input data validation
-                Connector.checkConnectionValidity(collectionUrl, listener, credentials, github);
+//                Connector.checkConnectionValidity(collectionUrl, listener, credentials, github);
+                AzureConnector.INSTANCE.checkConnectionValidity(collectionUrl, listener, credentials);
 
                 // Input data validation
                 if (StringUtils.isBlank(repository)) {
@@ -1035,7 +1036,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         // Github client and validation
         final GitHub github = Connector.connect(collectionUrl, credentials);
         try {
-            checkApiUrlValidity(github, credentials);
+            checkApiUrlValidity(credentials);
             Connector.checkApiRateLimit(listener, github);
             // Input data validation
             if (StringUtils.isBlank(repository)) {
@@ -1231,7 +1232,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         }
     }
 
-    private void checkApiUrlValidity(GitHub github, StandardCredentials credentials) throws IOException {
+    private void checkApiUrlValidity(StandardCredentials credentials) throws IOException {
         try {
             //Connector.checkApiUrlValidity(github, credentials);
             AzureConnector.INSTANCE.checkConnectionValidity(collectionUrl, credentials);
@@ -1286,49 +1287,49 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         StandardCredentials credentials = Connector.lookupScanCredentials((Item) getOwner(), collectionUrl, credentialsId);
 
         // Github client and validation
-        GitHub github = Connector.connect(collectionUrl, credentials);
-        try {
-            checkApiUrlValidity(github, credentials);
+//        GitHub github = Connector.connect(collectionUrl, credentials);
 
-            try {
-                Connector.checkConnectionValidity(collectionUrl, listener, credentials, github);
-                Connector.checkApiRateLimit(listener, github);
-                String fullName = projectName + "/" + repository;
-                ghRepository = github.getRepository(fullName);
-                repositoryUrl = ghRepository.getHtmlUrl();
-                if (head instanceof PullRequestSCMHead) {
-                    PullRequestSCMHead prhead = (PullRequestSCMHead) head;
-                    int number = prhead.getNumber();
-                    GHPullRequest pr = ghRepository.getPullRequest(number);
-                    String baseHash;
-                    switch (prhead.getCheckoutStrategy()) {
-                        case MERGE:
-                            baseHash = ghRepository.getRef("heads/" + prhead.getTarget().getName()).getObject().getSha();
-                            break;
-                        default:
-                            baseHash = pr.getBase().getSha();
-                            break;
-                    }
-                    return new PullRequestSCMRevision(prhead, baseHash, pr.getHead().getSha());
-                } else if (head instanceof AzureDevOpsRepoTagSCMHead) {
-                    AzureDevOpsRepoTagSCMHead tagHead = (AzureDevOpsRepoTagSCMHead) head;
-                    GHRef tag = ghRepository.getRef("tags/" + tagHead.getName());
-                    String sha = tag.getObject().getSha();
-                    if ("tag".equalsIgnoreCase(tag.getObject().getType())) {
-                        // annotated tag object
-                        GHTagObject tagObject = ghRepository.getTagObject(sha);
-                        // we want the sha of the tagged commit not the tag object
-                        sha = tagObject.getObject().getSha();
-                    }
-                    return new GitTagSCMRevision(tagHead, sha);
-                } else {
-                    return new SCMRevisionImpl(head, ghRepository.getRef("heads/" + head.getName()).getObject().getSha());
-                }
-            } catch (RateLimitExceededException rle) {
-                throw new AbortException(rle.getMessage());
+//                Connector.checkConnectionValidity(collectionUrl, listener, credentials, github);
+        AzureConnector.INSTANCE.checkConnectionValidity(collectionUrl, listener, credentials);
+//                Connector.checkApiRateLimit(listener, github);
+        String fullName = projectName + "/" + repository;
+        gitRepository = AzureConnector.INSTANCE.getRepository(collectionUrl, credentials, projectName, repository);
+//                ghRepository = github.getRepository(fullName);
+        //repositoryUrl = ghRepository.getHtmlUrl();
+        repositoryUrl = new URL(gitRepository.getGitRepository().getRemoteUrl());
+        if (head instanceof PullRequestSCMHead) {
+            PullRequestSCMHead prhead = (PullRequestSCMHead) head;
+            int number = prhead.getNumber();
+            GHPullRequest pr = ghRepository.getPullRequest(number);
+            String baseHash;
+            switch (prhead.getCheckoutStrategy()) {
+                case MERGE:
+                    baseHash = ghRepository.getRef("heads/" + prhead.getTarget().getName()).getObject().getSha();
+                    break;
+                default:
+                    baseHash = pr.getBase().getSha();
+                    break;
             }
-        } finally {
-            Connector.release(github);
+            return new PullRequestSCMRevision(prhead, baseHash, pr.getHead().getSha());
+        } else if (head instanceof AzureDevOpsRepoTagSCMHead) {
+            AzureDevOpsRepoTagSCMHead tagHead = (AzureDevOpsRepoTagSCMHead) head;
+            GHRef tag = ghRepository.getRef("tags/" + tagHead.getName());
+            String sha = tag.getObject().getSha();
+            if ("tag".equalsIgnoreCase(tag.getObject().getType())) {
+                // annotated tag object
+                GHTagObject tagObject = ghRepository.getTagObject(sha);
+                // we want the sha of the tagged commit not the tag object
+                sha = tagObject.getObject().getSha();
+            }
+            return new GitTagSCMRevision(tagHead, sha);
+        } else {
+            //return new SCMRevisionImpl(head, ghRepository.getRef("heads/" + head.getName()).getObject().getSha());
+            GitRef branch = AzureConnector.INSTANCE.getRef(gitRepository, "heads/" + head.getName());
+            if (branch != null) {
+                return new SCMRevisionImpl(head, branch.getObjectId());
+            } else {
+                throw new IOException("Branch " + head.getName() + " cannot be found.");
+            }
         }
     }
 
@@ -1360,7 +1361,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                     try {
                         GitHub github = Connector.connect(collectionUrl, credentials);
                         try {
-                            checkApiUrlValidity(github, credentials);
+                            checkApiUrlValidity(credentials);
                             Connector.checkApiRateLimit(listener, github);
                             ghRepository = github.getRepository(fullName);
                             LOGGER.log(Level.INFO, "Got remote pull requests from {0}", fullName);
@@ -2246,11 +2247,12 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
             try {
                 GitHub github = Connector.connect(collectionUrl, credentials);
                 try {
-                    checkApiUrlValidity(github, credentials);
+                    checkApiUrlValidity(credentials);
                     Connector.checkApiRateLimit(listener, github);
 
                     // Input data validation
-                    Connector.checkConnectionValidity(collectionUrl, listener, credentials, github);
+//                    Connector.checkConnectionValidity(collectionUrl, listener, credentials, github);
+                    AzureConnector.INSTANCE.checkConnectionValidity(collectionUrl, listener, credentials);
                     // Input data validation
                     String credentialsName =
                             credentials == null

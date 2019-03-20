@@ -39,8 +39,6 @@ import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConne
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitCommit;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitRef;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitRepositoryWithAzureContext;
-import org.kohsuke.github.GHUser;
-import org.kohsuke.github.GitHub;
 import org.kohsuke.github.HttpException;
 
 import java.io.IOException;
@@ -251,13 +249,13 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
                     Connector.lookupScanCredentials((Item) src.getOwner(), collectionUrl, src.getCredentialsId());
 
             // Github client and validation
-            GitHub github = Connector.connect(collectionUrl, credentials);
+            //GitHub github = Connector.connect(collectionUrl, credentials);
             try {
                 try {
-                    Connector.checkApiUrlValidity(github, credentials);
+                    //Connector.checkApiUrlValidity(github, credentials);
+                    AzureConnector.INSTANCE.checkConnectionValidity(collectionUrl, credentials);
                 } catch (HttpException e) {
-                    String message = String.format("It seems %s is unreachable",
-                            collectionUrl == null ? AzureDevOpsRepoSCMSource.GITHUB_URL : collectionUrl);
+                    String message = String.format("It seems %s is unreachable", collectionUrl);
                     throw new IOException(message);
                 }
                 String refName;
@@ -268,19 +266,19 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
                 } else if (head instanceof PullRequestSCMHead) {
                     PullRequestSCMHead pr = (PullRequestSCMHead) head;
                     if (!pr.isMerge() && pr.getSourceRepo() != null) {
-                        GHUser user = github.getUser(pr.getSourceOwner());
-                        if (user == null) {
-                            // we need to release here as we are not throwing an exception or transferring
-                            // responsibility to FS
-                            Connector.release(github);
-                            return null;
-                        }
+                        //GHUser user = github.getUser(pr.getSourceOwner());
+                        //if (user == null) {
+                        // we need to release here as we are not throwing an exception or transferring
+                        // responsibility to FS
+                        //    Connector.release(github);
+                        //    return null;
+                        //}
                         //GHRepository repo = user.getRepository(pr.getSourceRepo());
                         GitRepositoryWithAzureContext repo = AzureConnector.INSTANCE.getRepository(collectionUrl, credentials, src.getProjectName(), src.getRepository());
                         if (repo == null) {
                             // we need to release here as we are not throwing an exception or transferring
                             // responsibility to FS
-                            Connector.release(github);
+                            //Connector.release(github);
                             return null;
                         }
                         return new AzureDevOpsRepoSCMFileSystem(
@@ -289,20 +287,20 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
                                 rev);
                     }
                     // we need to release here as we are not throwing an exception or transferring responsibility to FS
-                    Connector.release(github);
+                    //Connector.release(github);
                     return null; // TODO support merge revisions somehow
                 } else {
-                    // we need to release here as we are not throwing an exception or transferring responsibility to FS
-                    Connector.release(github);
-                    return null;
-                }
-
-                GHUser user = github.getUser(src.getProjectName());
-                if (user == null) {
                     // we need to release here as we are not throwing an exception or transferring responsibility to FS
                     //Connector.release(github);
                     return null;
                 }
+
+                //GHUser user = github.getUser(src.getProjectName());
+                //if (user == null) {
+                // we need to release here as we are not throwing an exception or transferring responsibility to FS
+                //Connector.release(github);
+                //    return null;
+                //}
                 //GHRepository repo = user.getRepository(src.getRepository());
                 GitRepositoryWithAzureContext repo = AzureConnector.INSTANCE.getRepository(collectionUrl, credentials, src.getProjectName(), src.getRepository());
                 if (repo == null) {
@@ -332,7 +330,7 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
                 }
                 return new AzureDevOpsRepoSCMFileSystem(repo, refName, rev);
             } catch (IOException | RuntimeException e) {
-                Connector.release(github);
+                //Connector.release(github);
                 throw e;
             }
         }

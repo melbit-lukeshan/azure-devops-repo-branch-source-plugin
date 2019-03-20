@@ -25,6 +25,7 @@ import org.jenkinsci.plugins.azure_devops_repo_branch_source.AzureDevOpsRepoCons
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support.OkHttp2Helper
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support.Result
 import java.io.IOException
+import java.io.InputStream
 import java.util.*
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -174,6 +175,14 @@ object AzureConnector {
         return OkHttp2Helper.executeRequest(getItemRequest)
     }
 
+    private fun getItemStreamR(collectionUrl: String, credentials: StandardCredentials, url: String): Result<InputStream, Any> {
+        val fixedCollectionUrl = Util.fixEmptyAndTrim(collectionUrl)!!
+        val pat = (credentials as StandardUsernamePasswordCredentials).password.plainText
+        val getItemStreamRequest = GetItemStreamRequest(fixedCollectionUrl, pat, url)
+        OkHttp2Helper.setDebugMode(true)
+        return OkHttp2Helper.executeRequest(getItemStreamRequest)
+    }
+
     fun lookupScanCredentials(context: Item?,
                               collectionUrl: String?,
                               scanCredentialsId: String?): StandardCredentials? {
@@ -307,7 +316,6 @@ object AzureConnector {
         return getCommitR(collectionUrl, credentials, projectName, repositoryName, commitId).getGoodValueOrNull()
     }
 
-    //TODO GitHub support getting content by path and ref. What do we do?
     fun getItems(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, scopePath: String, recursionType: VersionControlRecursionType): List<GitItem> {
         return getItems(
                 gitRepositoryWithAzureContext.collectionUrl,
@@ -318,7 +326,6 @@ object AzureConnector {
                 recursionType)
     }
 
-    //TODO GitHub support getting content by path and ref. What do we do?
     fun getItem(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, itemPath: String): GitItem? {
         return getItem(
                 gitRepositoryWithAzureContext.collectionUrl,
@@ -328,12 +335,30 @@ object AzureConnector {
                 itemPath)
     }
 
+    fun getItemStream(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, itemPath: String): InputStream? {
+        return getItem(
+                gitRepositoryWithAzureContext.collectionUrl,
+                gitRepositoryWithAzureContext.credentials,
+                gitRepositoryWithAzureContext.projectName,
+                gitRepositoryWithAzureContext.repositoryName,
+                itemPath)?.let {
+            getItemStream(
+                    gitRepositoryWithAzureContext.collectionUrl,
+                    gitRepositoryWithAzureContext.credentials,
+                    it.url)
+        }
+    }
+
     private fun getItems(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, scopePath: String, recursionType: VersionControlRecursionType): List<GitItem> {
         return listItemsR(collectionUrl, credentials, projectName, repositoryName, scopePath, recursionType).getGoodValueOrNull()?.value ?: arrayListOf()
     }
 
     private fun getItem(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, itemPath: String): GitItem? {
         return getItemR(collectionUrl, credentials, projectName, repositoryName, itemPath).getGoodValueOrNull()
+    }
+
+    private fun getItemStream(collectionUrl: String, credentials: StandardCredentials, url: String): InputStream? {
+        return getItemStreamR(collectionUrl, credentials, url).getGoodValueOrNull()
     }
 
     @Throws(IOException::class)
