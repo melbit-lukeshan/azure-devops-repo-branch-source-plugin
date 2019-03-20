@@ -76,7 +76,7 @@ public class AzureDevOpsRepoSCMSourceContext
      *
      * @since TODO
      */
-    private final List<AbstractGitHubNotificationStrategy> notificationStrategies = new ArrayList<>();
+    private final List<AbstractAzureDevOpsNotificationStrategy> notificationStrategies = new ArrayList<>();
 
     /**
      * Constructor.
@@ -160,9 +160,9 @@ public class AzureDevOpsRepoSCMSourceContext
      * @return the strategies used to notify Github of build status.
      * @since TODO
      */
-    public final List<AbstractGitHubNotificationStrategy> notificationStrategies() {
+    public final List<AbstractAzureDevOpsNotificationStrategy> notificationStrategies() {
         if (notificationStrategies.isEmpty()) {
-            return Collections.<AbstractGitHubNotificationStrategy>singletonList(new DefaultGitHubNotificationStrategy());
+            return Collections.<AbstractAzureDevOpsNotificationStrategy>singletonList(new DefaultAzureDevOpsNotificationStrategy());
         }
         return Collections.unmodifiableList(notificationStrategies);
     }
@@ -260,9 +260,9 @@ public class AzureDevOpsRepoSCMSourceContext
      * @since TODO
      */
     @NonNull
-    public final AzureDevOpsRepoSCMSourceContext withNotificationStrategies(List<AbstractGitHubNotificationStrategy> strategies) {
+    public final AzureDevOpsRepoSCMSourceContext withNotificationStrategies(List<AbstractAzureDevOpsNotificationStrategy> strategies) {
         notificationStrategies.clear();
-        for (AbstractGitHubNotificationStrategy strategy : strategies) {
+        for (AbstractAzureDevOpsNotificationStrategy strategy : strategies) {
             if (!notificationStrategies.contains(strategy)) {
                 notificationStrategies.add(strategy);
             }
@@ -278,7 +278,7 @@ public class AzureDevOpsRepoSCMSourceContext
      * @since TODO
      */
     @NonNull
-    public final AzureDevOpsRepoSCMSourceContext withNotificationStrategy(AbstractGitHubNotificationStrategy strategy) {
+    public final AzureDevOpsRepoSCMSourceContext withNotificationStrategy(AbstractAzureDevOpsNotificationStrategy strategy) {
         if (!notificationStrategies.contains(strategy)) {
             notificationStrategies.add(strategy);
         }

@@ -24,33 +24,42 @@
 
 package org.jenkinsci.plugins.azure_devops_repo_branch_source;
 
-import hudson.ExtensionPoint;
 import hudson.model.TaskListener;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
- * Represents a strategy for constructing GitHub status notifications
+ * Default implementation of {@link AbstractAzureDevOpsNotificationStrategy}
  * @since TODO
  */
-public abstract class AbstractGitHubNotificationStrategy implements ExtensionPoint {
-
-    /**
-     * Creates the list of {@link AzureDevOpsRepoNotificationRequest} for the given context.
-     * @param notificationContext {@link AzureDevOpsRepoNotificationContext} the context details
-     * @param listener the listener
-     * @return a list of notification requests
-     * @since TODO
-     */
-    public abstract List<AzureDevOpsRepoNotificationRequest> notifications(AzureDevOpsRepoNotificationContext notificationContext, TaskListener listener);
+public final class DefaultAzureDevOpsNotificationStrategy extends AbstractAzureDevOpsNotificationStrategy {
 
     /**
      * {@inheritDoc}
      */
-    public abstract boolean equals(Object o);
+    public List<AzureDevOpsRepoNotificationRequest> notifications(AzureDevOpsRepoNotificationContext notificationContext, TaskListener listener) {
+        return Collections.singletonList(AzureDevOpsRepoNotificationRequest.build(
+                notificationContext.getDefaultContext(listener),
+                notificationContext.getDefaultUrl(listener),
+                notificationContext.getDefaultMessage(listener),
+                notificationContext.getDefaultState(listener),
+                notificationContext.getDefaultIgnoreError(listener)));
+    }
 
     /**
      * {@inheritDoc}
      */
-    public abstract int hashCode();
+    @Override
+    public boolean equals(Object o) {
+        return this == o || (o != null && getClass() == o.getClass());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        return 42;
+    }
 }

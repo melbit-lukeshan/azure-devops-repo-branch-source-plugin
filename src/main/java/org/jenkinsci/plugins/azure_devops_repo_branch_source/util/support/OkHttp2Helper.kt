@@ -255,16 +255,7 @@ object OkHttp2Helper {
                     Request.Method.PATCH, Request.Method.POST, Request.Method.PUT ->
                         request.bodyAsJson?.let {
                             method(request.method.name, RequestBody.create(MEDIA_TYPE_JSON, it))
-                        }
-                                ?: request.parametersAsMap?.takeIf { parametersMap -> parametersMap.isNotEmpty() }?.let { parametersMap ->
-                                    FormEncodingBuilder().apply {
-                                        parametersMap.forEach { parameter ->
-                                            addEncoded(parameter.key, parameter.value)
-                                        }
-                                        method(request.method.name, build())
-                                    }
-                                }
-                                ?: method(request.method.name, RequestBody.create(null, ByteString.EMPTY))
+                        } ?: method(request.method.name, RequestBody.create(null, ByteString.EMPTY))
                 }
                 tag(request.tag)
             }.build()

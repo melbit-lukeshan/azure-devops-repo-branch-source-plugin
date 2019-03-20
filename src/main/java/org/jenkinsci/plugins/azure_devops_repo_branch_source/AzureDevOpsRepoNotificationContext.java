@@ -31,11 +31,11 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMSource;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitStatusState;
 import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
-import org.kohsuke.github.GHCommitState;
 
 /**
- * Parameter object used in notification strategies {@link AbstractGitHubNotificationStrategy}.
+ * Parameter object used in notification strategies {@link AbstractAzureDevOpsNotificationStrategy}.
  * When creating a new point of notification (e.g. on build completion), populate this object with
  * the relevant details accessible at that point.
  * When implementing a notification strategy, be aware that some details may be absent depending on the point of notification.
@@ -220,22 +220,22 @@ public final class AzureDevOpsRepoNotificationContext {
      * @return Default notification state
      * @since TODO
      */
-    public GHCommitState getDefaultState(TaskListener listener) {
+    public GitStatusState getDefaultState(TaskListener listener) {
         if (null != build && !build.isBuilding()) {
             Result result = build.getResult();
             if (Result.SUCCESS.equals(result)) {
-                return GHCommitState.SUCCESS;
+                return GitStatusState.succeeded;
             } else if (Result.UNSTABLE.equals(result)) {
-                return GHCommitState.FAILURE;
+                return GitStatusState.failed;
             } else if (Result.FAILURE.equals(result)) {
-                return GHCommitState.ERROR;
+                return GitStatusState.failed;
             } else if (Result.ABORTED.equals(result)) {
-                return GHCommitState.ERROR;
+                return GitStatusState.failed;
             } else if (result != null) { // NOT_BUILT etc.
-                return GHCommitState.ERROR;
+                return GitStatusState.error;
             }
         }
-        return GHCommitState.PENDING;
+        return GitStatusState.pending;
     }
 
     /**

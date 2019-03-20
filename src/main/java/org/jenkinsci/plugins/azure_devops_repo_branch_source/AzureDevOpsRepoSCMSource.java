@@ -1521,7 +1521,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                                            @NonNull TaskListener listener) throws IOException {
         List<Action> result = new ArrayList<>();
         result.add(new AzureDevOpsRepoRepoMetadataAction());
-        StandardCredentials credentials = AzureConnector.INSTANCE.lookupScanCredentials(getOwner(), collectionUrl, credentialsId);
+        StandardCredentials credentials = AzureConnector.INSTANCE.lookupCredentials(getOwner(), collectionUrl, credentialsId);
         GitHub hub = Connector.connect(collectionUrl, credentials);
         try {
             //Connector.checkConnectionValidity(collectionUrl, listener, credentials, hub);
@@ -2311,7 +2311,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         public AzurePermissionType fetch(String username) throws IOException, InterruptedException {
             if (repo == null) {
                 listener.getLogger().format("Connecting to %s to check permissions of obtain list of %s for %s/%s%n", collectionUrl, username, projectName, repository);
-                StandardCredentials credentials = AzureConnector.INSTANCE.lookupScanCredentials(getOwner(), collectionUrl, credentialsId);
+                StandardCredentials credentials = AzureConnector.INSTANCE.lookupCredentials(getOwner(), collectionUrl, credentialsId);
                 //github = Connector.connect(collectionUrl, credentials);
                 String fullName = projectName + "/" + repository;
                 //repo = github.getRepository(fullName);

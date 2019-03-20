@@ -50,7 +50,7 @@ public class DefaultGitHubNotificationStrategyTest {
         FreeStyleProject job = j.createFreeStyleProject();
         AzureDevOpsRepoSCMSource src = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "exmaple", "spring");
         FreeStyleBuild run = j.buildAndAssertSuccess(job);
-        DefaultGitHubNotificationStrategy instance = new DefaultGitHubNotificationStrategy();
+        DefaultAzureDevOpsNotificationStrategy instance = new DefaultAzureDevOpsNotificationStrategy();
         List<AzureDevOpsRepoNotificationRequest> notifications =
                 instance.notifications(AzureDevOpsRepoNotificationContext.build(job, run, src, new BranchSCMHead("master")),
                         new LogTaskListener(
@@ -63,7 +63,7 @@ public class DefaultGitHubNotificationStrategyTest {
         FreeStyleProject job = j.createFreeStyleProject();
         AzureDevOpsRepoSCMSource src = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "example", "spring");
         FreeStyleBuild run = j.buildAndAssertSuccess(job);
-        DefaultGitHubNotificationStrategy instance = new DefaultGitHubNotificationStrategy();
+        DefaultAzureDevOpsNotificationStrategy instance = new DefaultAzureDevOpsNotificationStrategy();
         BranchSCMHead testBranch = new BranchSCMHead("master");
         List<AzureDevOpsRepoNotificationRequest> notificationsA =
                 instance.notifications(AzureDevOpsRepoNotificationContext.build(job, run, src, testBranch),
@@ -88,7 +88,7 @@ public class DefaultGitHubNotificationStrategyTest {
         FreeStyleProject job = j.createFreeStyleProject();
         AzureDevOpsRepoSCMSource src = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "example", "spring");
         FreeStyleBuild run = j.buildAndAssertSuccess(job);
-        DefaultGitHubNotificationStrategy instance = new DefaultGitHubNotificationStrategy();
+        DefaultAzureDevOpsNotificationStrategy instance = new DefaultAzureDevOpsNotificationStrategy();
         String urlA = instance.notifications(AzureDevOpsRepoNotificationContext.build(null, run, src, new BranchSCMHead("master")),
                 new LogTaskListener(Logger.getLogger(getClass().getName()), Level.INFO)).get(0).getUrl();
         String urlB = instance.notifications(AzureDevOpsRepoNotificationContext.build(job, null, src, new BranchSCMHead("master")),

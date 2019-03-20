@@ -93,14 +93,9 @@ abstract class Request<T, R>(_category: String? = null, _id: String? = null) {
     open val httpErrorResponseBodyWrapper: String? = null
 
     val fullUrl: String by lazy {
-        if (method == Method.PATCH || method == Method.POST || method == Method.PUT) {
-            "${host.resolvePlaceholdersNotEncoded()}${endpoint.resolvePlaceholdersNotEncoded()
-                    ?: ""}${path.resolvePlaceholdersNotEncoded() ?: ""}"
-        } else {
-            "${host.resolvePlaceholdersNotEncoded()}${endpoint.resolvePlaceholdersNotEncoded()
-                    ?: ""}${path.resolvePlaceholdersNotEncoded()
-                    ?: ""}${parameters?.let { "?$it" }.resolvePlaceholders() ?: ""}"
-        }
+        "${host.resolvePlaceholdersNotEncoded()}${endpoint.resolvePlaceholdersNotEncoded()
+                ?: ""}${path.resolvePlaceholdersNotEncoded()
+                ?: ""}${parameters?.let { "?$it" }.resolvePlaceholders() ?: ""}"
     }
 
     val bodyAsJson: String? by lazy {

@@ -24,14 +24,15 @@
 
 package org.jenkinsci.plugins.azure_devops_repo_branch_source;
 
-import org.kohsuke.github.GHCommitState;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitStatusState;
 
 /**
- * Details of a GitHub status notification to be sent.
+ * Details of a Azure DevOps status notification to be sent.
  * One AzureDevOpsRepoNotificationRequest represents one notification. A strategy supplies a list of these to request one or more
  * notifications.
  * Notifications are differentiated by their Context label. If two notification requests with the same Context label are
  * provided, one will override the other.
+ *
  * @see <a href="https://developer.github.com/v3/repos/statuses/">Github API</a> for details of the purpose of each notification field.
  * @since TODO
  */
@@ -40,13 +41,13 @@ public class AzureDevOpsRepoNotificationRequest {
     private final String context;
     private final String url;
     private final String message;
-    private final GHCommitState state;
+    private final GitStatusState state;
     private final boolean ignoreError;
 
     /**
      * @since TODO
      */
-    private AzureDevOpsRepoNotificationRequest(String context, String url, String message, GHCommitState state, boolean ignoreError) {
+    private AzureDevOpsRepoNotificationRequest(String context, String url, String message, GitStatusState state, boolean ignoreError) {
         this.context = context;
         this.url = url;
         this.message = message;
@@ -54,12 +55,13 @@ public class AzureDevOpsRepoNotificationRequest {
         this.ignoreError = ignoreError;
     }
 
-    public static AzureDevOpsRepoNotificationRequest build(String context, String url, String message, GHCommitState state, boolean ignoreError) {
+    public static AzureDevOpsRepoNotificationRequest build(String context, String url, String message, GitStatusState state, boolean ignoreError) {
         return new AzureDevOpsRepoNotificationRequest(context, url, message, state, ignoreError);
     }
 
     /**
      * Returns the context label to be used for a notification
+     *
      * @return context
      * @since TODO
      */
@@ -69,6 +71,7 @@ public class AzureDevOpsRepoNotificationRequest {
 
     /**
      * Returns the URL to be supplied with a notification
+     *
      * @return url
      * @since TODO
      */
@@ -78,6 +81,7 @@ public class AzureDevOpsRepoNotificationRequest {
 
     /**
      * Returns the message for a notification
+     *
      * @return message
      * @since TODO
      */
@@ -87,15 +91,17 @@ public class AzureDevOpsRepoNotificationRequest {
 
     /**
      * Returns the commit state of a notification
+     *
      * @return state
      * @since TODO
      */
-    public GHCommitState getState() {
+    public GitStatusState getState() {
         return state;
     }
 
     /**
      * Returns whether the notification processor should ignore errors when interacting with GitHub
+     *
      * @return ignoreError
      * @since TODO
      */

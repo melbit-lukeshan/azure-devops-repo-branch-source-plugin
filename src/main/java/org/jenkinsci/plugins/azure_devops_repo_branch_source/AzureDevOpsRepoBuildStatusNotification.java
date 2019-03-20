@@ -37,6 +37,8 @@ import hudson.scm.SCMRevisionState;
 import jenkins.model.Jenkins;
 import jenkins.plugins.git.AbstractGitSCMSource.SCMRevisionImpl;
 import jenkins.scm.api.*;
+import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.*;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 
@@ -67,47 +69,38 @@ public class AzureDevOpsRepoBuildStatusNotification {
         SCMRevision revision = src != null ? SCMRevisionAction.getRevision(src, build) : null;
         if (revision != null) { // only notify if we have a revision to notify
             try {
-                GitHub gitHub = lookUpGitHub(build.getParent());
-                try {
-                    GHRepository repo = lookUpRepo(gitHub, build.getParent());
-                    if (repo != null) {
-                        Result result = build.getResult();
-                        String revisionToNotify = resolveHeadCommit(revision);
-                        SCMHead head = revision.getHead();
-                        List<AbstractGitHubNotificationStrategy> strategies = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none())
-                                .withTraits(((AzureDevOpsRepoSCMSource) src).getTraits()).notificationStrategies();
-                        for (AbstractGitHubNotificationStrategy strategy : strategies) {
-                            // TODO allow strategies to combine/cooperate on a notification
-                            AzureDevOpsRepoNotificationContext notificationContext = AzureDevOpsRepoNotificationContext.build(null, build,
-                                    src, head);
-                            List<AzureDevOpsRepoNotificationRequest> details = strategy.notifications(notificationContext, listener);
-                            for (AzureDevOpsRepoNotificationRequest request : details) {
-                                boolean ignoreError = request.isIgnoreError();
-                                try {
-                                    repo.createCommitStatus(revisionToNotify, request.getState(), request.getUrl(), request.getMessage(),
-                                            request.getContext());
-                                } catch (FileNotFoundException fnfe) {
-                                    if (!ignoreError) {
-                                        listener.getLogger().format("%nCould not update commit status, please check if your scan " +
-                                                "credentials belong to a member of the organization or a collaborator of the " +
-                                                "repository and repo:status scope is selected%n%n");
-                                        if (LOGGER.isLoggable(Level.FINE)) {
-                                            LOGGER.log(Level.FINE, "Could not update commit status, for run "
-                                                    + build.getFullDisplayName()
-                                                    + " please check if your scan "
-                                                    + "credentials belong to a member of the organization or a "
-                                                    + "collaborator of the repository and repo:status scope is selected", fnfe);
-                                        }
-                                    }
+                //GitHub gitHub = lookUpGitHub(build.getParent());
+                GitRepositoryWithAzureContext repo = lookUpRepo(build.getParent());
+                if (repo != null) {
+                    Result result = build.getResult();
+                    String revisionToNotify = resolveHeadCommit(revision);
+                    SCMHead head = revision.getHead();
+                    List<AbstractAzureDevOpsNotificationStrategy> strategies = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none())
+                            .withTraits(((AzureDevOpsRepoSCMSource) src).getTraits()).notificationStrategies();
+                    for (AbstractAzureDevOpsNotificationStrategy strategy : strategies) {
+                        // TODO allow strategies to combine/cooperate on a notification
+                        AzureDevOpsRepoNotificationContext notificationContext = AzureDevOpsRepoNotificationContext.build(null, build, src, head);
+                        List<AzureDevOpsRepoNotificationRequest> details = strategy.notifications(notificationContext, listener);
+                        for (AzureDevOpsRepoNotificationRequest request : details) {
+                            boolean ignoreError = request.isIgnoreError();
+                            //repo.createCommitStatus(revisionToNotify, request.getState(), request.getUrl(), request.getMessage(), request.getContext());
+                            final String instanceUrl = StringUtils.stripEnd(Jenkins.get().getRootUrl(), "/");
+                            final String projectDisplayName = build.getParent().getParent().getFullName() + "/" + build.getParent().getDisplayName();
+                            GitStatusContext context = new GitStatusContext(instanceUrl, projectDisplayName);
+                            GitStatusForCreation status = new GitStatusForCreation(request.getState(), request.getMessage(), request.getUrl(), context);
+                            GitStatus ret = AzureConnector.INSTANCE.createCommitStatus(repo, revisionToNotify, status);
+                            if (ret == null) {
+                                if (!ignoreError) {
+                                    listener.getLogger().format("%nCould not update commit status, please check if your scan " +
+                                            "credentials belong to a member of the organization or a collaborator of the " +
+                                            "repository and repo:status scope is selected%n%n");
                                 }
                             }
                         }
-                        if (result != null) {
-                            listener.getLogger().format("%n" + Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatusSet() + "%n%n");
-                        }
                     }
-                } finally {
-                    Connector.release(gitHub);
+                    if (result != null) {
+                        listener.getLogger().format("%n" + Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatusSet() + "%n%n");
+                    }
                 }
             } catch (IOException ioe) {
                 listener.getLogger().format("%n"
@@ -128,15 +121,13 @@ public class AzureDevOpsRepoBuildStatusNotification {
      * @throws IOException
      */
     @CheckForNull
-    private static GHRepository lookUpRepo(GitHub github, @NonNull Job<?, ?> job) throws IOException {
-        if (github == null) {
-            return null;
-        }
+    private static GitRepositoryWithAzureContext lookUpRepo(@NonNull Job<?, ?> job) throws IOException {
         SCMSource src = SCMSource.SourceByItem.findSource(job);
         if (src instanceof AzureDevOpsRepoSCMSource) {
             AzureDevOpsRepoSCMSource source = (AzureDevOpsRepoSCMSource) src;
-            if (source.getScanCredentialsId() != null) {
-                return github.getRepository(source.getProjectName() + "/" + source.getRepository());
+            if (source.getCredentialsId() != null) {
+                //return github.getRepository(source.getProjectName() + "/" + source.getRepository());
+                return AzureConnector.INSTANCE.getRepository(job, source.getCollectionUrl(), source.getCredentialsId(), source.getProjectName(), source.getRepository());
             }
         }
         return null;
@@ -160,7 +151,7 @@ public class AzureDevOpsRepoBuildStatusNotification {
                     .notificationsDisabled()) {
                 return null;
             }
-            if (source.getScanCredentialsId() != null) {
+            if (source.getCredentialsId() != null) {
                 return Connector.connect(source.getCollectionUrl(), Connector.lookupScanCredentials
                         (job, source.getCollectionUrl(), source.getScanCredentialsId()));
             }
@@ -212,53 +203,41 @@ public class AzureDevOpsRepoBuildStatusNotification {
             Computer.threadPoolForRemoting.submit(new Runnable() {
                 @Override
                 public void run() {
-                    GitHub gitHub = null;
+                    //GitHub gitHub = null;
                     try {
-                        gitHub = lookUpGitHub(job);
-                        try {
-                            if (gitHub == null || gitHub.rateLimit().remaining < 8) {
-                                // we are an optimization to signal commit status early, no point waiting for
-                                // the rate limit to refresh as the checkout will ensure the status is set
-                                return;
-                            }
-                            String hash = resolveHeadCommit(source.fetch(head, null));
-                            if (gitHub.rateLimit().remaining < 8) {  // should only need 2 but may be concurrent threads
-                                // we are an optimization to signal commit status early, no point waiting for
-                                // the rate limit to refresh as the checkout will ensure the status is set
-                                return;
-                            }
-                            GHRepository repo = lookUpRepo(gitHub, job);
-                            if (repo != null) {
-                                // The submitter might push another commit before this build even starts.
-                                if (Jenkins.getActiveInstance().getQueue().getItem(taskId) instanceof Queue.LeftItem) {
-                                    // we took too long and the item has left the queue, no longer valid to apply pending
+                        //gitHub = lookUpGitHub(job);
+                        String hash = resolveHeadCommit(source.fetch(head, null));
+                        GitRepositoryWithAzureContext repo = lookUpRepo(job);
+                        if (repo != null) {
+                            // The submitter might push another commit before this build even starts.
+                            if (Jenkins.getActiveInstance().getQueue().getItem(taskId) instanceof Queue.LeftItem) {
+                                // we took too long and the item has left the queue, no longer valid to apply pending
 
-                                    // status. JobCheckOutListener is now responsible for setting the pending status.
-                                    return;
-                                }
-                                List<AbstractGitHubNotificationStrategy> strategies = sourceContext.notificationStrategies();
-                                for (AbstractGitHubNotificationStrategy strategy : strategies) {
-                                    // TODO allow strategies to combine/cooperate on a notification
-                                    AzureDevOpsRepoNotificationContext notificationContext = AzureDevOpsRepoNotificationContext.build(job, null,
-                                            source, head);
-                                    List<AzureDevOpsRepoNotificationRequest> details = strategy.notifications(notificationContext, null);
-                                    for (AzureDevOpsRepoNotificationRequest request : details) {
-                                        boolean ignoreErrors = request.isIgnoreError();
-                                        try {
-                                            repo.createCommitStatus(hash, request.getState(), request.getUrl(), request.getMessage(),
-                                                    request.getContext());
-                                        } catch (FileNotFoundException e) {
-                                            if (!ignoreErrors) {
-                                                LOGGER.log(Level.WARNING,
-                                                        "Could not update commit status to PENDING. Valid scan credentials? Valid scopes?",
-                                                        LOGGER.isLoggable(Level.FINE) ? e : null);
-                                            }
+                                // status. JobCheckOutListener is now responsible for setting the pending status.
+                                return;
+                            }
+                            List<AbstractAzureDevOpsNotificationStrategy> strategies = sourceContext.notificationStrategies();
+                            for (AbstractAzureDevOpsNotificationStrategy strategy : strategies) {
+                                // TODO allow strategies to combine/cooperate on a notification
+                                AzureDevOpsRepoNotificationContext notificationContext = AzureDevOpsRepoNotificationContext.build(job, null,
+                                        source, head);
+                                List<AzureDevOpsRepoNotificationRequest> details = strategy.notifications(notificationContext, null);
+                                for (AzureDevOpsRepoNotificationRequest request : details) {
+                                    boolean ignoreErrors = request.isIgnoreError();
+                                    //repo.createCommitStatus(hash, request.getState(), request.getUrl(), request.getMessage(), request.getContext());
+                                    final String instanceUrl = StringUtils.stripEnd(Jenkins.get().getRootUrl(), "/");
+                                    final String projectDisplayName = job.getParent().getFullName() + "/" + job.getDisplayName();
+                                    GitStatusContext context = new GitStatusContext(instanceUrl, projectDisplayName);
+                                    GitStatusForCreation status = new GitStatusForCreation(request.getState(), request.getMessage(), request.getUrl(), context);
+                                    GitStatus ret = AzureConnector.INSTANCE.createCommitStatus(repo, hash, status);
+                                    if (ret == null) {
+                                        if (!ignoreErrors) {
+                                            LOGGER.log(Level.WARNING,
+                                                    "Could not update commit status to PENDING. Valid scan credentials? Valid scopes?");
                                         }
                                     }
                                 }
                             }
-                        } finally {
-                            Connector.release(gitHub);
                         }
                     } catch (FileNotFoundException e) {
                         LOGGER.log(Level.WARNING,
@@ -273,8 +252,6 @@ public class AzureDevOpsRepoBuildStatusNotification {
                                 "Could not update commit status to PENDING. Rate limit exhausted",
                                 LOGGER.isLoggable(Level.FINE) ? e : null);
                         LOGGER.log(Level.FINE, null, e);
-                    } finally {
-                        Connector.release(gitHub);
                     }
                 }
             });
