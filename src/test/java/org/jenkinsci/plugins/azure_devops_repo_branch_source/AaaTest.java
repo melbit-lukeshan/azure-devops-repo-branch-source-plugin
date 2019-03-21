@@ -21,7 +21,8 @@ public class AaaTest {
     public static final String projectName = "int-terraform-aws-efs";
     public static final String repositoryName = "int-terraform-aws-efs";
     public static final String branchHeadHash = "db7a5d4e6139e341534a6a0bebdd86ab6248bc10";
-    public static final String readmeUrl = "https://dev.azure.com/lukeshan/cd168403-6d20-4056-914b-cab7f07d9598/_apis/git/repositories/5e438059-083c-4db7-ab73-54d838b5d20d/Items?path=%2FREADME.md&versionDescriptor%5BversionOptions%5D=0&versionDescriptor%5BversionType%5D=0&versionDescriptor%5Bversion%5D=master&download=true&resolveLfs=true&%24format=octetStream&api-version=5.0-preview.1";
+    //public static final String readmeUrl = "https://dev.azure.com/lukeshan/cd168403-6d20-4056-914b-cab7f07d9598/_apis/git/repositories/5e438059-083c-4db7-ab73-54d838b5d20d/Items?path=%2FREADME.md&versionDescriptor%5BversionOptions%5D=0&versionDescriptor%5BversionType%5D=0&versionDescriptor%5Bversion%5D=master&download=true&resolveLfs=true&%24format=octetStream&api-version=5.0-preview.1";
+    public static final String readmeUrl = "https://dev.azure.com/lukeshan/int-terraform-aws-efs/_apis/git/repositories/int-terraform-aws-efs/Items?path=%2FREADME.md&download=true&%24format=octetStream&api-version=5.0-preview.1";
     public static final String itemPath = "/README.md";
     public static final String scopePath = "/tests";
 
@@ -69,7 +70,7 @@ public class AaaTest {
 
     @Test
     public void aTest4() throws Exception {
-        GetItemStreamRequest getItemStreamRequest = new GetItemStreamRequest(collectionUrl, pat, readmeUrl);
+        GetItemStreamRequest getItemStreamRequest = new GetItemStreamRequest(collectionUrl, pat, projectName, repositoryName, itemPath);
         OkHttp2Helper.INSTANCE.setDebugMode(true);
         Result<InputStream, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(getItemStreamRequest, InputStream.class, Object.class);
         InputStream inputStream = result.getGoodValueOrNull();

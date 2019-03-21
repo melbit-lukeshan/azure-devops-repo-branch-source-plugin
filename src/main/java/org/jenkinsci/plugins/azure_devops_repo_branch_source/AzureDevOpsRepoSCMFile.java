@@ -136,10 +136,13 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
     public Iterable<SCMFile> children() throws IOException {
         checkOpen();
         //List<GHContent> content = repo.getDirectoryContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
-        List<GitItem> content = AzureConnector.INSTANCE.getItems(repo, getPath(), VersionControlRecursionType.none);
+        String path = getPath();
+        List<GitItem> content = AzureConnector.INSTANCE.getItems(repo, path, VersionControlRecursionType.oneLevel);
         List<SCMFile> result = new ArrayList<>(content.size());
         for (GitItem c : content) {
-            result.add(new AzureDevOpsRepoSCMFile(this, c.getPath(), c));
+            if (!c.getPath().equalsIgnoreCase(path)) {
+                result.add(new AzureDevOpsRepoSCMFile(this, c.getPath(), c));
+            }
         }
         return result;
     }
@@ -174,6 +177,7 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
     @NonNull
     @Override
     public InputStream content() throws IOException, InterruptedException {
+        System.out.println("AzureDevOpsRepoSCMFile ref is " + this.ref + " getPath() is " + getPath());
         Object metadata = metadata();
         if (metadata instanceof List) {
             throw new IOException("Directory");
@@ -181,10 +185,11 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
         if (metadata instanceof GitItem) {
             InputStream inputStream = AzureConnector.INSTANCE.getItemStream(repo, getPath());
             if (inputStream != null) {
+                System.out.println("AzureDevOpsRepoSCMFile inputStream found.");
                 return inputStream;
+            } else {
+                System.out.println("AzureDevOpsRepoSCMFile inputStream NOT found.");
             }
-            //AzureConnector.INSTANCE.
-            //return ((GitItem) metadata).read();
         }
         throw new FileNotFoundException(getPath());
     }

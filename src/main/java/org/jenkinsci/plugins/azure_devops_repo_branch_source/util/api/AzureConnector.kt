@@ -179,9 +179,9 @@ object AzureConnector {
         return OkHttp2Helper.executeRequest(getItemRequest)
     }
 
-    private fun getItemStreamR(collectionUrl: String, pat: String, url: String): Result<InputStream, Any> {
+    private fun getItemStreamR(collectionUrl: String, pat: String, projectName: String, repositoryName: String, itemPath: String): Result<InputStream, Any> {
         val fixedCollectionUrl = Util.fixEmptyAndTrim(collectionUrl)!!
-        val getItemStreamRequest = GetItemStreamRequest(fixedCollectionUrl, pat, url)
+        val getItemStreamRequest = GetItemStreamRequest(fixedCollectionUrl, pat, projectName, repositoryName, itemPath)
         OkHttp2Helper.setDebugMode(true)
         return OkHttp2Helper.executeRequest(getItemStreamRequest)
     }
@@ -347,17 +347,12 @@ object AzureConnector {
     }
 
     fun getItemStream(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, itemPath: String): InputStream? {
-        return getItem(
+        return getItemStream(
                 gitRepositoryWithAzureContext.collectionUrl,
                 gitRepositoryWithAzureContext.credentials,
                 gitRepositoryWithAzureContext.projectName,
                 gitRepositoryWithAzureContext.repositoryName,
-                itemPath)?.let {
-            getItemStream(
-                    gitRepositoryWithAzureContext.collectionUrl,
-                    gitRepositoryWithAzureContext.credentials,
-                    it.url)
-        }
+                itemPath)
     }
 
     private fun getItems(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, scopePath: String, recursionType: VersionControlRecursionType): List<GitItem> {
@@ -368,8 +363,8 @@ object AzureConnector {
         return getItemR(collectionUrl, getPat(credentials), projectName, repositoryName, itemPath).getGoodValueOrNull()
     }
 
-    private fun getItemStream(collectionUrl: String, credentials: StandardCredentials, url: String): InputStream? {
-        return getItemStreamR(collectionUrl, getPat(credentials), url).getGoodValueOrNull()
+    private fun getItemStream(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, itemPath: String): InputStream? {
+        return getItemStreamR(collectionUrl, getPat(credentials), projectName, repositoryName, itemPath).getGoodValueOrNull()
     }
 
     fun createCommitStatus(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, commitId: String, status: GitStatusForCreation): GitStatus? {

@@ -37,7 +37,6 @@ import jenkins.plugins.git.AbstractGitSCMSource;
 import jenkins.scm.api.*;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.*;
-import org.kohsuke.github.HttpException;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -114,9 +113,10 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
     @Override
     public long lastModified() throws IOException {
 //        return repo.getCommit(ref).getCommitDate().getTime();
-        GitRef ref = AzureConnector.INSTANCE.getRef(repo, this.ref);
+//        GitRef ref = AzureConnector.INSTANCE.getRef(repo, this.ref);
+        // ref should be a SHA1 string
         if (ref != null) {
-            GitCommit commit = AzureConnector.INSTANCE.getCommit(repo, ref.getObjectId());
+            GitCommit commit = AzureConnector.INSTANCE.getCommit(repo, ref);
             if (commit != null) {
                 return commit.getPush().getDate().toInstant().toEpochMilli();
             }
@@ -147,7 +147,6 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
         }
         // this is the format expected by GitSCM, so we need to format each GHCommit with the same format
         // commit %H%ntree %T%nparent %P%nauthor %aN <%aE> %ai%ncommitter %cN <%cE> %ci%n%n%w(76,4,4)%s%n%n%b
-        //TODO uncomment below lines
         List<GitCommitRef> commitRefList = AzureConnector.INSTANCE.getCommits(repo);
         if (commitRefList != null) {
             for (GitCommitRef commit : commitRefList) {
@@ -258,19 +257,13 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
                 throws IOException, InterruptedException {
             AzureDevOpsRepoSCMSource src = (AzureDevOpsRepoSCMSource) source;
             String collectionUrl = src.getCollectionUrl();
-            StandardCredentials credentials =
-                    Connector.lookupScanCredentials((Item) src.getOwner(), collectionUrl, src.getCredentialsId());
+            StandardCredentials credentials = AzureConnector.INSTANCE.lookupCredentials(src.getOwner(), collectionUrl, src.getCredentialsId());
 
             // Github client and validation
             //GitHub github = Connector.connect(collectionUrl, credentials);
             try {
-                try {
-                    //Connector.checkApiUrlValidity(github, credentials);
-                    AzureConnector.INSTANCE.checkConnectionValidity(collectionUrl, credentials);
-                } catch (HttpException e) {
-                    String message = String.format("It seems %s is unreachable", collectionUrl);
-                    throw new IOException(message);
-                }
+                //Connector.checkApiUrlValidity(github, credentials);
+                AzureConnector.INSTANCE.checkConnectionValidity(collectionUrl, credentials);
                 String refName;
                 if (head instanceof BranchSCMHead) {
                     refName = "heads/" + head.getName();
