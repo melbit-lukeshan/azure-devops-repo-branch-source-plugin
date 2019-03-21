@@ -38,7 +38,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Manages the GitHub organization webhook.
+ * Manages the Azure DevOps organization webhook.
  */
 public class AzureDevOpsRepoOrgWebHook {
 
@@ -58,7 +58,7 @@ public class AzureDevOpsRepoOrgWebHook {
     }
 
     public static void register(GitHub hub, String orgName) throws IOException {
-        String rootUrl = Jenkins.getActiveInstance().getRootUrl();
+        String rootUrl = Jenkins.get().getRootUrl();
         if (rootUrl == null) {
             return;
         }
@@ -98,11 +98,11 @@ public class AzureDevOpsRepoOrgWebHook {
     }
 
     private static File getTrackingFile(String orgName) {
-        return new File(Jenkins.getActiveInstance().getRootDir(), "github-webhooks/GitHubOrgHook." + orgName);
+        return new File(Jenkins.get().getRootDir(), "github-webhooks/GitHubOrgHook." + orgName);
     }
 
     public static void deregister(GitHub hub, String orgName) throws IOException {
-        String rootUrl = Jenkins.getActiveInstance().getRootUrl();
+        String rootUrl = Jenkins.get().getRootUrl();
         if (rootUrl == null) {
             return;
         }

@@ -84,12 +84,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is((SCMRevision) revision));
         assertThat(instance.refSpecs(), contains("+refs/heads/test-branch:refs/remotes/@{remote}/test-branch"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.com/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.com/tester/test-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.com/tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -137,12 +137,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is((SCMRevision) revision));
         assertThat(instance.refSpecs(), contains("+refs/heads/test-branch:refs/remotes/@{remote}/test-branch"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.com/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.com/tester/test-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.com/tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -190,12 +190,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is((SCMRevision) revision));
         assertThat(instance.refSpecs(), contains("+refs/heads/test-branch:refs/remotes/@{remote}/test-branch"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.com/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.com/tester/test-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("git@github.com:tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -243,12 +243,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is((SCMRevision) revision));
         assertThat(instance.refSpecs(), contains("+refs/heads/test-branch:refs/remotes/@{remote}/test-branch"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.com/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.com/tester/test-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.com/tester/test-repo.git"));
 
 
@@ -303,12 +303,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is((SCMRevision) revision));
         assertThat(instance.refSpecs(), contains("+refs/heads/test-branch:refs/remotes/@{remote}/test-branch"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.com/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.com/tester/test-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.com/tester/test-repo.git"));
 
         SSHCheckoutTrait sshTrait = new SSHCheckoutTrait(null);
@@ -362,12 +362,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is((SCMRevision) revision));
         assertThat(instance.refSpecs(), contains("+refs/heads/test-branch:refs/remotes/@{remote}/test-branch"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.com/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.com/tester/test-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("git@github.com:tester/test-repo.git"));
 
         SSHCheckoutTrait sshTrait = new SSHCheckoutTrait(null);
@@ -421,12 +421,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is((SCMRevision) revision));
         assertThat(instance.refSpecs(), contains("+refs/heads/test-branch:refs/remotes/@{remote}/test-branch"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.com/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.com/tester/test-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.com/tester/test-repo.git"));
 
         SSHCheckoutTrait sshTrait = new SSHCheckoutTrait("user-key");
@@ -480,12 +480,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is((SCMRevision) revision));
         assertThat(instance.refSpecs(), contains("+refs/heads/test-branch:refs/remotes/@{remote}/test-branch"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.com/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.com/tester/test-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.com/tester/test-repo.git"));
 
         SSHCheckoutTrait sshTrait = new SSHCheckoutTrait("user-key");
@@ -539,12 +539,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is((SCMRevision) revision));
         assertThat(instance.refSpecs(), contains("+refs/heads/test-branch:refs/remotes/@{remote}/test-branch"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.com/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.com/tester/test-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("git@github.com:tester/test-repo.git"));
 
         SSHCheckoutTrait sshTrait = new SSHCheckoutTrait("user-key");
@@ -596,12 +596,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is(nullValue()));
         assertThat(instance.refSpecs(), contains("+refs/heads/test-branch:refs/remotes/@{remote}/test-branch"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.com/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.com/tester/test-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.com/tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -635,12 +635,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is(nullValue()));
         assertThat(instance.refSpecs(), contains("+refs/heads/test-branch:refs/remotes/@{remote}/test-branch"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.com/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.com/tester/test-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.com/tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -674,12 +674,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is(nullValue()));
         assertThat(instance.refSpecs(), contains("+refs/heads/test-branch:refs/remotes/@{remote}/test-branch"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.com/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.com/tester/test-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("git@github.com:tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -715,12 +715,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is((SCMRevision) revision));
         assertThat(instance.refSpecs(), contains("+refs/heads/test-branch:refs/remotes/@{remote}/test-branch"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.test/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.test/tester/test-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.test/tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -769,12 +769,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is((SCMRevision) revision));
         assertThat(instance.refSpecs(), contains("+refs/heads/test-branch:refs/remotes/@{remote}/test-branch"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.test/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.test/tester/test-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.test/tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -822,12 +822,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is((SCMRevision) revision));
         assertThat(instance.refSpecs(), contains("+refs/heads/test-branch:refs/remotes/@{remote}/test-branch"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.test/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.test/tester/test-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("git@github.test:tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -874,12 +874,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is(nullValue()));
         assertThat(instance.refSpecs(), contains("+refs/heads/test-branch:refs/remotes/@{remote}/test-branch"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.test/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.test/tester/test-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.test/tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -914,12 +914,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is(nullValue()));
         assertThat(instance.refSpecs(), contains("+refs/heads/test-branch:refs/remotes/@{remote}/test-branch"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.test/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.test/tester/test-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.test/tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -954,12 +954,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is(nullValue()));
         assertThat(instance.refSpecs(), contains("+refs/heads/test-branch:refs/remotes/@{remote}/test-branch"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.test/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.test/tester/test-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("git@github.test:tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -1000,12 +1000,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is((SCMRevision) revision));
         assertThat(instance.refSpecs(), contains("+refs/pull/1/head:refs/remotes/@{remote}/PR-1"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.com/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.com/qa/qa-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.com/tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -1058,12 +1058,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is((SCMRevision) revision));
         assertThat(instance.refSpecs(), contains("+refs/pull/1/head:refs/remotes/@{remote}/PR-1"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.com/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.com/qa/qa-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.com/tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -1116,12 +1116,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is((SCMRevision) revision));
         assertThat(instance.refSpecs(), contains("+refs/pull/1/head:refs/remotes/@{remote}/PR-1"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.com/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.com/qa/qa-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("git@github.com:tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -1169,12 +1169,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is(nullValue()));
         assertThat(instance.refSpecs(), contains("+refs/pull/1/head:refs/remotes/@{remote}/PR-1"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.com/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.com/qa/qa-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.com/tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -1210,12 +1210,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is(nullValue()));
         assertThat(instance.refSpecs(), contains("+refs/pull/1/head:refs/remotes/@{remote}/PR-1"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.com/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.com/qa/qa-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.com/tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -1251,12 +1251,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is(nullValue()));
         assertThat(instance.refSpecs(), contains("+refs/pull/1/head:refs/remotes/@{remote}/PR-1"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.com/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.com/qa/qa-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("git@github.com:tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -1298,12 +1298,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is((SCMRevision) revision));
         assertThat(instance.refSpecs(), contains("+refs/pull/1/head:refs/remotes/@{remote}/PR-1"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.test/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.test/qa/qa-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.test/tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -1358,12 +1358,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is((SCMRevision) revision));
         assertThat(instance.refSpecs(), contains("+refs/pull/1/head:refs/remotes/@{remote}/PR-1"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.test/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.test/qa/qa-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.test/tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -1417,12 +1417,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is((SCMRevision) revision));
         assertThat(instance.refSpecs(), contains("+refs/pull/1/head:refs/remotes/@{remote}/PR-1"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.test/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.test/qa/qa-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("git@github.test:tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -1471,12 +1471,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is(nullValue()));
         assertThat(instance.refSpecs(), contains("+refs/pull/1/head:refs/remotes/@{remote}/PR-1"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.test/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.test/qa/qa-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.test/tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -1513,12 +1513,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is(nullValue()));
         assertThat(instance.refSpecs(), contains("+refs/pull/1/head:refs/remotes/@{remote}/PR-1"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.test/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.test/qa/qa-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.test/tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -1555,12 +1555,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is(nullValue()));
         assertThat(instance.refSpecs(), contains("+refs/pull/1/head:refs/remotes/@{remote}/PR-1"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.test/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.test/qa/qa-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("git@github.test:tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -1601,12 +1601,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is((SCMRevision) revision));
         assertThat(instance.refSpecs(), contains("+refs/pull/1/head:refs/remotes/@{remote}/PR-1"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.com/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.com/qa/qa-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.com/tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -1670,12 +1670,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is((SCMRevision) revision));
         assertThat(instance.refSpecs(), contains("+refs/pull/1/head:refs/remotes/@{remote}/PR-1"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.com/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.com/qa/qa-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.com/tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -1739,12 +1739,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is((SCMRevision) revision));
         assertThat(instance.refSpecs(), contains("+refs/pull/1/head:refs/remotes/@{remote}/PR-1"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.com/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.com/qa/qa-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("git@github.com:tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -1803,12 +1803,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is(nullValue()));
         assertThat(instance.refSpecs(), contains("+refs/pull/1/head:refs/remotes/@{remote}/PR-1"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.com/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.com/qa/qa-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.com/tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -1855,12 +1855,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is(nullValue()));
         assertThat(instance.refSpecs(), contains("+refs/pull/1/head:refs/remotes/@{remote}/PR-1"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.com/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.com/qa/qa-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.com/tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -1907,12 +1907,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is(nullValue()));
         assertThat(instance.refSpecs(), contains("+refs/pull/1/head:refs/remotes/@{remote}/PR-1"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.com/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.com/qa/qa-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("git@github.com:tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -1965,12 +1965,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is((SCMRevision) revision));
         assertThat(instance.refSpecs(), contains("+refs/pull/1/head:refs/remotes/@{remote}/PR-1"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.test/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.test/qa/qa-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.test/tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -2036,12 +2036,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is((SCMRevision) revision));
         assertThat(instance.refSpecs(), contains("+refs/pull/1/head:refs/remotes/@{remote}/PR-1"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.test/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.test/qa/qa-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.test/tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -2106,12 +2106,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is((SCMRevision) revision));
         assertThat(instance.refSpecs(), contains("+refs/pull/1/head:refs/remotes/@{remote}/PR-1"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.test/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.test/qa/qa-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("git@github.test:tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -2171,12 +2171,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is(nullValue()));
         assertThat(instance.refSpecs(), contains("+refs/pull/1/head:refs/remotes/@{remote}/PR-1"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.test/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.test/qa/qa-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.test/tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -2225,12 +2225,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is(nullValue()));
         assertThat(instance.refSpecs(), contains("+refs/pull/1/head:refs/remotes/@{remote}/PR-1"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.test/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.test/qa/qa-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("https://github.test/tester/test-repo.git"));
 
         GitSCM actual = instance.build();
@@ -2279,12 +2279,12 @@ public class AzureDevOpsRepoSCMBuilderTest {
         assertThat(instance.head(), is((SCMHead) head));
         assertThat(instance.revision(), is(nullValue()));
         assertThat(instance.refSpecs(), contains("+refs/pull/1/head:refs/remotes/@{remote}/PR-1"));
-        assertThat("expecting guess value until withGitHubRemote called",
+        assertThat("expecting guess value until withAzureDevOpsRemote called",
                 instance.remote(), is("https://github.test/tester/test-repo.git"));
         assertThat(instance.browser(), instanceOf(GithubWeb.class));
         assertThat(instance.browser().getRepoUrl(), is("https://github.test/qa/qa-repo"));
 
-        instance.withGitHubRemote();
+        instance.withAzureDevOpsRemote();
         assertThat(instance.remote(), is("git@github.test:tester/test-repo.git"));
 
         GitSCM actual = instance.build();

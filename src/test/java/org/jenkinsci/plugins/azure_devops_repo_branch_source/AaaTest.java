@@ -84,16 +84,8 @@ public class AaaTest {
         GitCommit commit = result.getGoodValueOrNull();
         if (commit != null) {
             GitPushRef gitPushRef = commit.getPush();
-            if (gitPushRef != null) {
-                OffsetDateTime date = gitPushRef.getDate();
-                if (date != null) {
-                    System.out.println(date.toString());
-                } else {
-                    System.out.println("date is null");
-                }
-            } else {
-                System.out.println("gitPushRef is null");
-            }
+            OffsetDateTime date = gitPushRef.getDate();
+            System.out.println(date.toString());
         }
     }
 
@@ -118,6 +110,19 @@ public class AaaTest {
         if (items != null) {
             for (GitItem item : items.getValue()) {
                 System.out.println(item.getPath() + " -> " + (item.isFolder() ? "Folder" : "File"));
+            }
+        }
+    }
+
+    @Test
+    public void aTest8() throws Exception {
+        ListCommitsRequest listCommitsRequest = new ListCommitsRequest(collectionUrl, pat, projectName, repositoryName);
+        OkHttp2Helper.INSTANCE.setDebugMode(true);
+        Result<Commits, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(listCommitsRequest, Commits.class, Object.class);
+        Commits commits = result.getGoodValueOrNull();
+        if (commits != null) {
+            for (GitCommitRef commit : commits.getValue()) {
+                System.out.println(commit.getCommitId() + " -> " + commit.getComment());
             }
         }
     }

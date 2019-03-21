@@ -24,7 +24,6 @@
 
 package org.jenkinsci.plugins.azure_devops_repo_branch_source;
 
-import com.cloudbees.jenkins.GitHubWebHook;
 import com.cloudbees.plugins.credentials.CredentialsNameProvider;
 import com.cloudbees.plugins.credentials.common.StandardCredentials;
 import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
@@ -60,6 +59,7 @@ import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureDevOpsWebHook;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -879,8 +879,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
             throw new AbortException("Must specify user or organization");
         }
 
-        StandardCredentials credentials = Connector.lookupScanCredentials((Item) observer.getContext(), collectionUrl,
-                credentialsId);
+        StandardCredentials credentials = AzureConnector.INSTANCE.lookupCredentials(observer.getContext(), collectionUrl, credentialsId);
 
         // Github client and validation
         GitHub github = Connector.connect(collectionUrl, credentials);
@@ -888,14 +887,6 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
 //            Connector.checkConnectionValidity(collectionUrl, listener, credentials, github);
 //            Connector.checkApiRateLimit(listener, github);
             AzureConnector.INSTANCE.checkConnectionValidity(collectionUrl, listener, credentials);
-
-            // Input data validation
-            if (credentials != null && !isCredentialValid(github)) {
-                String message = String.format("Invalid scan credentials %s to connect to %s, skipping",
-                        CredentialsNameProvider.name(credentials),
-                        collectionUrl == null ? AzureDevOpsRepoSCMSource.GITHUB_URL : collectionUrl);
-                throw new AbortException(message);
-            }
 
             AzureDevOpsRepoSCMNavigatorRequest request = new AzureDevOpsRepoSCMNavigatorContext()
                     .withTraits(traits) // TODO
@@ -995,7 +986,6 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
                 request.close();
             }
         } finally {
-            Connector.release(github);
         }
     }
 
@@ -1130,7 +1120,6 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
                 request.close();
             }
         } finally {
-            Connector.release(github);
         }
     }
 
@@ -1145,7 +1134,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
         // TODO when we have support for trusted events, use the details from event if event was from trusted source
         listener.getLogger().printf("Looking up details of %s...%n", getRepoOwner());
         List<Action> result = new ArrayList<>();
-        StandardCredentials credentials = Connector.lookupScanCredentials((Item) owner, getCollectionUrl(), credentialsId);
+        StandardCredentials credentials = AzureConnector.INSTANCE.lookupCredentials(owner, getCollectionUrl(), credentialsId);
         GitHub hub = Connector.connect(getCollectionUrl(), credentials);
         try {
             Connector.checkApiRateLimit(listener, hub);
@@ -1166,7 +1155,6 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
             }
             return result;
         } finally {
-            Connector.release(hub);
         }
     }
 
@@ -1175,10 +1163,10 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
      */
     @Override
     public void afterSave(@NonNull SCMNavigatorOwner owner) {
-        GitHubWebHook.get().registerHookFor(owner);
+        AzureDevOpsWebHook.Companion.get().registerHookFor(owner);
         try {
             // FIXME MINOR HACK ALERT
-            StandardCredentials credentials = Connector.lookupScanCredentials((Item) owner, getCollectionUrl(), credentialsId);
+            StandardCredentials credentials = AzureConnector.INSTANCE.lookupCredentials(owner, getCollectionUrl(), credentialsId);
             GitHub hub = Connector.connect(getCollectionUrl(), credentials);
             try {
                 AzureDevOpsRepoOrgWebHook.register(hub, repoOwner);

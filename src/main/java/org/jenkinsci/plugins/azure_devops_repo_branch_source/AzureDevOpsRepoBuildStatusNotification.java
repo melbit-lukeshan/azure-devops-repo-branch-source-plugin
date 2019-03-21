@@ -39,8 +39,6 @@ import jenkins.plugins.git.AbstractGitSCMSource.SCMRevisionImpl;
 import jenkins.scm.api.*;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.*;
-import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.GitHub;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -117,7 +115,7 @@ public class AzureDevOpsRepoBuildStatusNotification {
      * Returns the GitHub GitRepository associated to a Job.
      *
      * @param job A {@link Job}
-     * @return A {@link GHRepository} or null, either if a scan credentials was not provided, or a AzureDevOpsRepoSCMSource was not defined.
+     * @return A {@link GitRepositoryWithAzureContext} or null, either if a scan credentials was not provided, or a AzureDevOpsRepoSCMSource was not defined.
      * @throws IOException
      */
     @CheckForNull
@@ -128,32 +126,6 @@ public class AzureDevOpsRepoBuildStatusNotification {
             if (source.getCredentialsId() != null) {
                 //return github.getRepository(source.getProjectName() + "/" + source.getRepository());
                 return AzureConnector.INSTANCE.getRepository(job, source.getCollectionUrl(), source.getCredentialsId(), source.getProjectName(), source.getRepository());
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns the GitHub GitRepository associated to a Job.
-     *
-     * @param job A {@link Job}
-     * @return A {@link GHRepository} or {@code null}, if any of: a credentials was not provided; notifications were
-     * disabled, or the job is not from a {@link AzureDevOpsRepoSCMSource}.
-     * @throws IOException
-     */
-    @CheckForNull
-    private static GitHub lookUpGitHub(@NonNull Job<?, ?> job) throws IOException {
-        SCMSource src = SCMSource.SourceByItem.findSource(job);
-        if (src instanceof AzureDevOpsRepoSCMSource) {
-            AzureDevOpsRepoSCMSource source = (AzureDevOpsRepoSCMSource) src;
-            if (new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none())
-                    .withTraits(source.getTraits())
-                    .notificationsDisabled()) {
-                return null;
-            }
-            if (source.getCredentialsId() != null) {
-                return Connector.connect(source.getCollectionUrl(), Connector.lookupScanCredentials
-                        (job, source.getCollectionUrl(), source.getScanCredentialsId()));
             }
         }
         return null;

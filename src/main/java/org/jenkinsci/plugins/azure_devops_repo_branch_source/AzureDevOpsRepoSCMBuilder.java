@@ -34,7 +34,6 @@ import hudson.model.Item;
 import hudson.model.Queue;
 import hudson.model.queue.Tasks;
 import hudson.plugins.git.GitSCM;
-import hudson.plugins.git.browser.GithubWeb;
 import hudson.security.ACL;
 import jenkins.plugins.git.AbstractGitSCMSource;
 import jenkins.plugins.git.GitSCMBuilder;
@@ -46,12 +45,14 @@ import jenkins.scm.api.mixin.TagSCMHead;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.transport.RefSpec;
-import org.jenkinsci.plugins.github.config.GitHubServerConfig;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureDevOpsWeb;
 
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
+
+//import org.jenkinsci.plugins.github.config.GitHubServerConfig;
 
 /**
  * Builds a {@link GitSCM} for {@link AzureDevOpsRepoSCMSource}.
@@ -114,7 +115,7 @@ public class AzureDevOpsRepoSCMBuilder extends GitSCMBuilder<AzureDevOpsRepoSCMB
                                      @NonNull SCMHead head, @CheckForNull SCMRevision revision) {
         super(head, revision, /*dummy value*/guessRemote(source), source.getCredentialsId());
         this.context = source.getOwner();
-        collectionUrl = StringUtils.defaultIfBlank(source.getCollectionUrl(), GitHubServerConfig.GITHUB_URL);
+        collectionUrl = source.getCollectionUrl();
         projectName = source.getProjectName();
         repository = source.getRepository();
         repositoryUrl = source.getRepositoryUrl();
@@ -135,7 +136,7 @@ public class AzureDevOpsRepoSCMBuilder extends GitSCMBuilder<AzureDevOpsRepoSCMB
         }
         // pre-configure the browser
         if (repoUrl != null) {
-            withBrowser(new GithubWeb(repoUrl));
+            withBrowser(new AzureDevOpsWeb(repoUrl));
         }
         withCredentials(credentialsId(), null);
     }
@@ -148,37 +149,27 @@ public class AzureDevOpsRepoSCMBuilder extends GitSCMBuilder<AzureDevOpsRepoSCMB
      */
     private static String guessRemote(AzureDevOpsRepoSCMSource source) {
         String apiUri = StringUtils.removeEnd(source.getCollectionUrl(), "/");
-        if (StringUtils.isBlank(apiUri) || GitHubServerConfig.GITHUB_URL.equals(apiUri)) {
-            apiUri = "https://github.com";
-        } else {
-            apiUri = StringUtils.removeEnd(apiUri, "/" + API_V3);
-        }
-        return apiUri + "/" + source.getProjectName() + "/" + source.getRepository() + ".git";
+        return apiUri + "/" + source.getProjectName() + "/_git/" + source.getRepository();
     }
 
     /**
-     * Tries as best as possible to guess the repository HTML url to use with {@link GithubWeb}.
+     * Tries as best as possible to guess the repository HTML url to use with {@link AzureDevOpsWeb}.
      *
-     * @param owner the owner.
-     * @param repo  the repository.
+     * @param project the project.
+     * @param repo    the repository.
      * @return the HTML url of the repository or {@code null} if we could not determine the answer.
      */
     @CheckForNull
-    public final String repositoryUrl(String owner, String repo) {
+    public final String repositoryUrl(String project, String repo) {
         if (repositoryUrl != null) {
-            if (projectName.equals(owner) && repository.equals(repo)) {
+            if (projectName.equals(project) && repository.equals(repo)) {
                 return repositoryUrl.toExternalForm();
             }
             // hack!
-            return repositoryUrl.toExternalForm().replace(projectName + "/" + repository, owner + "/" + repo);
+            return repositoryUrl.toExternalForm().replace(projectName + "/" + repository, project + "/" + repo);
         }
-        if (StringUtils.isBlank(collectionUrl) || GitHubServerConfig.GITHUB_URL.equals(collectionUrl)) {
-            return "https://github.com/" + owner + "/" + repo;
-        }
-        if (StringUtils.endsWith(StringUtils.removeEnd(collectionUrl, "/"), "/" + API_V3)) {
-            return StringUtils.removeEnd(StringUtils.removeEnd(collectionUrl, "/"), API_V3) + owner + "/" + repo;
-        }
-        return null;
+        String apiUri = StringUtils.removeEnd(collectionUrl, "/");
+        return apiUri + "/" + project + "/_git/" + repo;
     }
 
     /**
@@ -249,7 +240,7 @@ public class AzureDevOpsRepoSCMBuilder extends GitSCMBuilder<AzureDevOpsRepoSCMB
      * @return {@code this} for method chaining.
      */
     @NonNull
-    public final AzureDevOpsRepoSCMBuilder withGitHubRemote() {
+    public final AzureDevOpsRepoSCMBuilder withAzureDevOpsRemote() {
         withRemote(uriResolver().getRepositoryUri(collectionUrl, projectName, repository));
         final SCMHead h = head();
         String repoUrl;
@@ -260,7 +251,7 @@ public class AzureDevOpsRepoSCMBuilder extends GitSCMBuilder<AzureDevOpsRepoSCMB
             repoUrl = repositoryUrl(projectName, repository);
         }
         if (repoUrl != null) {
-            withBrowser(new GithubWeb(repoUrl));
+            withBrowser(new AzureDevOpsWeb(repoUrl));
         }
         return this;
     }
@@ -274,7 +265,7 @@ public class AzureDevOpsRepoSCMBuilder extends GitSCMBuilder<AzureDevOpsRepoSCMB
         final SCMHead h = head();
         final SCMRevision r = revision();
         try {
-            withGitHubRemote();
+            withAzureDevOpsRemote();
 
             if (h instanceof PullRequestSCMHead) {
                 PullRequestSCMHead head = (PullRequestSCMHead) h;

@@ -30,24 +30,24 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Item;
+import hudson.plugins.git.GitSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import jenkins.plugins.git.AbstractGitSCMSource;
 import jenkins.scm.api.*;
 import org.apache.commons.lang.time.FastDateFormat;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitCommit;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitRef;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitRepositoryWithAzureContext;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.*;
 import org.kohsuke.github.HttpException;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
 /**
- * Implements {@link SCMFileSystem} for GitHub.
+ * Implements {@link SCMFileSystem} for Azure DevOps.
  */
 public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements AzureDevOpsRepoClosable {
     private final GitRepositoryWithAzureContext repo;
@@ -70,15 +70,20 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
             if (rev.getHead() instanceof PullRequestSCMHead) {
                 PullRequestSCMHead pr = (PullRequestSCMHead) rev.getHead();
                 assert !pr.isMerge(); // TODO see below
+                System.out.println("AzureDevOpsRepoSCMFileSystem 3");
                 this.ref = ((PullRequestSCMRevision) rev).getPullHash();
             } else if (rev instanceof AbstractGitSCMSource.SCMRevisionImpl) {
+                System.out.println("AzureDevOpsRepoSCMFileSystem 2");
                 this.ref = ((AbstractGitSCMSource.SCMRevisionImpl) rev).getHash();
             } else {
+                System.out.println("AzureDevOpsRepoSCMFileSystem 1");
                 this.ref = refName;
             }
         } else {
+            System.out.println("AzureDevOpsRepoSCMFileSystem 0");
             this.ref = refName;
         }
+        System.out.println("AzureDevOpsRepoSCMFileSystem ref is " + this.ref);
     }
 
     /**
@@ -143,49 +148,57 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
         // this is the format expected by GitSCM, so we need to format each GHCommit with the same format
         // commit %H%ntree %T%nparent %P%nauthor %aN <%aE> %ai%ncommitter %cN <%cE> %ci%n%n%w(76,4,4)%s%n%n%b
         //TODO uncomment below lines
-//        for (GHCommit commit : repo.queryCommits().from(ref).pageSize(GitSCM.MAX_CHANGELOG).list()) {
-//            if (commit.getSHA1().toLowerCase(Locale.ENGLISH).equals(endHash)) {
-//                break;
-//            }
-//            log.setLength(0);
-//            log.append("commit ").append(commit.getSHA1()).append('\n');
-//            log.append("tree ").append(commit.getTree().getSha()).append('\n');
-//            log.append("parent");
-//            for (String parent : commit.getParentSHA1s()) {
-//                log.append(' ').append(parent);
-//            }
-//            log.append('\n');
-//            GHCommit.ShortInfo info = commit.getCommitShortInfo();
-//            log.append("author ")
-//                    .append(info.getAuthor().getName())
-//                    .append(" <")
-//                    .append(info.getAuthor().getEmail())
-//                    .append("> ")
-//                    .append(iso.format(info.getAuthoredDate()))
-//                    .append('\n');
-//            log.append("committer ")
-//                    .append(info.getCommitter().getName())
-//                    .append(" <")
-//                    .append(info.getCommitter().getEmail())
-//                    .append("> ")
-//                    .append(iso.format(info.getCommitDate()))
-//                    .append('\n');
-//            log.append('\n');
-//            String msg = info.getMessage();
-//            if (msg.endsWith("\r\n")) {
-//                msg = msg.substring(0, msg.length() - 2);
-//            } else if (msg.endsWith("\n")) {
-//                msg = msg.substring(0, msg.length() - 1);
-//            }
-//            msg = msg.replace("\r\n", "\n").replace("\r", "\n").replace("\n", "\n    ");
-//            log.append("    ").append(msg).append('\n');
-//            changeLogStream.write(log.toString().getBytes(StandardCharsets.UTF_8));
-//            changeLogStream.flush();
-//            count++;
-//            if (count >= GitSCM.MAX_CHANGELOG) {
-//                break;
-//            }
-//        }
+        List<GitCommitRef> commitRefList = AzureConnector.INSTANCE.getCommits(repo);
+        if (commitRefList != null) {
+            for (GitCommitRef commit : commitRefList) {
+//            for (GHCommit commit : repo.queryCommits().from(ref).pageSize(GitSCM.MAX_CHANGELOG).list()) {
+                if (commit.getCommitId().toLowerCase(Locale.ENGLISH).equals(endHash)) {
+                    break;
+                }
+                log.setLength(0);
+                log.append("commit ").append(commit.getCommitId()).append('\n');
+//                log.append("tree ").append(commit.getTree().getSha()).append('\n');
+                log.append("tree ").append(" ").append('\n');
+                log.append("parent");
+                if (commit.getParents() != null) {
+                    for (String parent : commit.getParents()) {
+                        log.append(' ').append(parent);
+                    }
+                }
+                log.append('\n');
+//                GHCommit.ShortInfo info = commit.getCommitShortInfo();
+                log.append("author ")
+                        .append(commit.getAuthor().getName())
+                        .append(" <")
+                        .append(commit.getAuthor().getEmail())
+                        .append("> ")
+                        .append(iso.format(commit.getAuthor().getDate()))
+                        .append('\n');
+                log.append("committer ")
+                        .append(commit.getCommitter().getName())
+                        .append(" <")
+                        .append(commit.getCommitter().getEmail())
+                        .append("> ")
+                        .append(iso.format(commit.getCommitter().getDate()))
+                        .append('\n');
+                log.append('\n');
+                String msg = commit.getComment();
+                if (msg.endsWith("\r\n")) {
+                    msg = msg.substring(0, msg.length() - 2);
+                } else if (msg.endsWith("\n")) {
+                    msg = msg.substring(0, msg.length() - 1);
+                }
+                msg = msg.replace("\r\n", "\n").replace("\r", "\n").replace("\n", "\n    ");
+                log.append("    ").append(msg).append('\n');
+                changeLogStream.write(log.toString().getBytes(StandardCharsets.UTF_8));
+                changeLogStream.flush();
+                count++;
+                if (count >= GitSCM.MAX_CHANGELOG) {
+                    break;
+                }
+            }
+        }
+
         return count > 0;
     }
 
