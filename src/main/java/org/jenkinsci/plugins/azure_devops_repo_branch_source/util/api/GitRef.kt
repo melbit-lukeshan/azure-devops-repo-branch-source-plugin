@@ -36,4 +36,12 @@ data class GitRef(
     fun getBranchName(): String {
         return name.replace("refs/heads/", "", true)
     }
+
+    fun getTagName(): String {
+        return name.replace("refs/tags/", "", true)
+    }
+
+    fun getPullRequestName(): String {
+        return name.replace("refs/pull/", "", true)
+    }
 }

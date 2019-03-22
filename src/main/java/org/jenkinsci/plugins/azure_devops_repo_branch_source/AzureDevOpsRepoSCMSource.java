@@ -743,7 +743,6 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                         //request.setPullRequests(new LazyPullRequests(request, ghRepository));
                     }
                     if (request.isFetchBranches()) {
-                        //request.setBranches(new LazyBranches(request, ghRepository));
                         request.setBranches(new LazyBranchesAzure(request, gitRepository));
                     }
                     if (request.isFetchTags()) {

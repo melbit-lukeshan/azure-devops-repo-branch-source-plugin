@@ -34,6 +34,7 @@ import hudson.plugins.git.GitSCM;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import jenkins.plugins.git.AbstractGitSCMSource;
+import jenkins.plugins.git.GitTagSCMRevision;
 import jenkins.scm.api.*;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.*;
@@ -317,22 +318,22 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
                 if (rev == null) {
                     //GHRef ref = repo.getRef(refName);
                     GitRef ref = AzureConnector.INSTANCE.getRef(repo, refName);
-                    //TODO uncomment below lines
-//                    if ("tag".equalsIgnoreCase(ref.getObject().getType())) {
-//                        GHTagObject tag = repo.getTagObject(ref.getObject().getSha());
-//                        if (head instanceof AzureDevOpsRepoTagSCMHead) {
-//                            rev = new GitTagSCMRevision((AzureDevOpsRepoTagSCMHead) head, tag.getObject().getSha());
-//                        } else {
-//                            // we should never get here, but just in case, we have the information to construct
-//                            // the correct head, so let's do that
-//                            rev = new GitTagSCMRevision(
-//                                    new AzureDevOpsRepoTagSCMHead(head.getName(),
-//                                            tag.getTagger().getDate().getTime()), tag.getObject().getSha()
-//                            );
-//                        }
-//                    } else {
-//                        rev = new AbstractGitSCMSource.SCMRevisionImpl(head, ref.getObject().getSha());
-//                    }
+                    if (ref != null) {
+                        if (ref.isTag()) {
+                            if (head instanceof AzureDevOpsRepoTagSCMHead) {
+                                rev = new GitTagSCMRevision((AzureDevOpsRepoTagSCMHead) head, ref.getObjectId());
+                            } else {
+                                // we should never get here, but just in case, we have the information to construct
+                                // the correct head, so let's do that
+                                GitCommit commit = AzureConnector.INSTANCE.getCommit(repo, ref.getObjectId());
+                                if (commit != null) {
+                                    rev = new GitTagSCMRevision(new AzureDevOpsRepoTagSCMHead(head.getName(), commit.getPush().getDate().toInstant().toEpochMilli()), ref.getObjectId());
+                                }
+                            }
+                        } else {
+                            rev = new AbstractGitSCMSource.SCMRevisionImpl(head, ref.getObjectId());
+                        }
+                    }
                 }
                 return new AzureDevOpsRepoSCMFileSystem(repo, refName, rev);
             } catch (IOException | RuntimeException e) {
