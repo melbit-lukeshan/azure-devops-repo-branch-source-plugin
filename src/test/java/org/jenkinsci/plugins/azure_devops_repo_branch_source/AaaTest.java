@@ -20,7 +20,7 @@ public class AaaTest {
     public static final String pat = "ltwwf6dxrqhvjalhzd7gorew7fnd4k5pz3vhpgz524ehf6yuzuma";
     public static final String projectName = "int-terraform-aws-efs";
     public static final String repositoryName = "int-terraform-aws-efs";
-    public static final String branchHeadHashB3 = "db7a5d4e6139e341534a6a0bebdd86ab6248bc10";
+    public static final String branchHeadHashB3 = "f1e1e49a8d5e1a3fa3a0edc2801ce21030e8fdc8";
     public static final String branchHeadHashMaster = "bc8618289aca9809b5073e0f32a4ea6d68dfcb0e";
     public static final String itemPath = "/tests/Jenkinsfile";
     public static final String scopePath = "/tests";
