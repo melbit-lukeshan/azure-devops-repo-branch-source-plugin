@@ -20,10 +20,9 @@ public class AaaTest {
     public static final String pat = "ltwwf6dxrqhvjalhzd7gorew7fnd4k5pz3vhpgz524ehf6yuzuma";
     public static final String projectName = "int-terraform-aws-efs";
     public static final String repositoryName = "int-terraform-aws-efs";
-    public static final String branchHeadHash = "db7a5d4e6139e341534a6a0bebdd86ab6248bc10";
-    //public static final String readmeUrl = "https://dev.azure.com/lukeshan/cd168403-6d20-4056-914b-cab7f07d9598/_apis/git/repositories/5e438059-083c-4db7-ab73-54d838b5d20d/Items?path=%2FREADME.md&versionDescriptor%5BversionOptions%5D=0&versionDescriptor%5BversionType%5D=0&versionDescriptor%5Bversion%5D=master&download=true&resolveLfs=true&%24format=octetStream&api-version=5.0-preview.1";
-    public static final String readmeUrl = "https://dev.azure.com/lukeshan/int-terraform-aws-efs/_apis/git/repositories/int-terraform-aws-efs/Items?path=%2FREADME.md&download=true&%24format=octetStream&api-version=5.0-preview.1";
-    public static final String itemPath = "/README.md";
+    public static final String branchHeadHashB3 = "db7a5d4e6139e341534a6a0bebdd86ab6248bc10";
+    public static final String branchHeadHashMaster = "bc8618289aca9809b5073e0f32a4ea6d68dfcb0e";
+    public static final String itemPath = "/tests/Jenkinsfile";
     public static final String scopePath = "/tests";
 
     @Test
@@ -70,7 +69,7 @@ public class AaaTest {
 
     @Test
     public void aTest4() throws Exception {
-        GetItemStreamRequest getItemStreamRequest = new GetItemStreamRequest(collectionUrl, pat, projectName, repositoryName, itemPath);
+        GetItemStreamRequest getItemStreamRequest = new GetItemStreamRequest(collectionUrl, pat, projectName, repositoryName, itemPath, branchHeadHashMaster, GitVersionType.commit);
         OkHttp2Helper.INSTANCE.setDebugMode(true);
         Result<InputStream, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(getItemStreamRequest, InputStream.class, Object.class);
         InputStream inputStream = result.getGoodValueOrNull();
@@ -79,7 +78,7 @@ public class AaaTest {
 
     @Test
     public void aTest5() throws Exception {
-        GetCommitRequest getCommitRequest = new GetCommitRequest(collectionUrl, pat, projectName, repositoryName, branchHeadHash);
+        GetCommitRequest getCommitRequest = new GetCommitRequest(collectionUrl, pat, projectName, repositoryName, branchHeadHashB3);
         OkHttp2Helper.INSTANCE.setDebugMode(true);
         Result<GitCommit, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(getCommitRequest, GitCommit.class, Object.class);
         GitCommit commit = result.getGoodValueOrNull();
@@ -92,7 +91,7 @@ public class AaaTest {
 
     @Test
     public void aTest6() throws Exception {
-        GetItemRequest getItemRequest = new GetItemRequest(collectionUrl, pat, projectName, repositoryName, itemPath);
+        GetItemRequest getItemRequest = new GetItemRequest(collectionUrl, pat, projectName, repositoryName, itemPath, branchHeadHashB3, GitVersionType.commit);
         OkHttp2Helper.INSTANCE.setDebugMode(true);
         Result<GitItem, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(getItemRequest, GitItem.class, Object.class);
         GitItem item = result.getGoodValueOrNull();

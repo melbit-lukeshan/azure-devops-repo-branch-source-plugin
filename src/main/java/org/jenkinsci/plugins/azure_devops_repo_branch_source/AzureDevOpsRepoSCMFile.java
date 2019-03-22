@@ -27,10 +27,7 @@ package org.jenkinsci.plugins.azure_devops_repo_branch_source;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.scm.api.SCMFile;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitItem;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitRepositoryWithAzureContext;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.VersionControlRecursionType;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.*;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -102,13 +99,13 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
                         break;
                     case NON_DIRECTORY_CONFIRMED:
                         //metadata = repo.getFileContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
-                        metadata = AzureConnector.INSTANCE.getItem(repo, getPath());
+                        metadata = AzureConnector.INSTANCE.getItem(repo, getPath(), ref, GitVersionType.commit);
                         resolved = true;
                         break;
                     case UNRESOLVED:
                         checkOpen();
                         //metadata = repo.getFileContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
-                        metadata = AzureConnector.INSTANCE.getItem(repo, getPath());
+                        metadata = AzureConnector.INSTANCE.getItem(repo, getPath(), ref, GitVersionType.commit);
                         if (metadata != null) {
                             info = TypeInfo.NON_DIRECTORY_CONFIRMED;
                             resolved = true;
@@ -183,7 +180,7 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
             throw new IOException("Directory");
         }
         if (metadata instanceof GitItem) {
-            InputStream inputStream = AzureConnector.INSTANCE.getItemStream(repo, getPath());
+            InputStream inputStream = AzureConnector.INSTANCE.getItemStream(repo, getPath(), ref, GitVersionType.commit);
             if (inputStream != null) {
                 System.out.println("AzureDevOpsRepoSCMFile inputStream found.");
                 return inputStream;

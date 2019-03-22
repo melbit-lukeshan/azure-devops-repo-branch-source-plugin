@@ -100,19 +100,14 @@ class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosabl
             }
         }
         if (revision instanceof AbstractGitSCMSource.SCMRevisionImpl) {
-//                GHCommit commit = repo.getCommit(((AbstractGitSCMSource.SCMRevisionImpl) revision).getHash());
-//                return commit.getCommitDate().getTime();
             GitCommit commit = AzureConnector.INSTANCE.getCommit(repo, ((AbstractGitSCMSource.SCMRevisionImpl) revision).getHash());
             if (commit != null) {
                 return commit.getPush().getDate().toInstant().toEpochMilli();
             }
         } else if (revision == null) {
-//            GHRef ref = repo.getRef(this.ref);
-//            GHCommit commit = repo.getCommit(ref.getObject().getSha());
-//            return commit.getCommitDate().getTime();
-            GitRef ref = AzureConnector.INSTANCE.getRef(repo, this.ref);
-            if (ref != null) {
-                GitCommit commit = AzureConnector.INSTANCE.getCommit(repo, ref.getObjectId());
+            GitRef gitRef = AzureConnector.INSTANCE.getRef(repo, ref);
+            if (gitRef != null) {
+                GitCommit commit = AzureConnector.INSTANCE.getCommit(repo, gitRef.getObjectId());
                 if (commit != null) {
                     return commit.getPush().getDate().toInstant().toEpochMilli();
                 }
@@ -129,7 +124,16 @@ class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosabl
         int index = path.lastIndexOf('/') + 1;
 //        try {
         //List<GHContent> directoryContent = repo.getDirectoryContent(path.substring(0, index), Constants.R_REFS + ref);
-        GitItem content = AzureConnector.INSTANCE.getItem(repo, path);
+        String version = "";
+        if (revision instanceof AbstractGitSCMSource.SCMRevisionImpl) {
+            version = ((AbstractGitSCMSource.SCMRevisionImpl) revision).getHash();
+        } else if (revision == null) {
+            GitRef gitRef = AzureConnector.INSTANCE.getRef(repo, ref);
+            if (gitRef != null) {
+                version = gitRef.getObjectId();
+            }
+        }
+        GitItem content = AzureConnector.INSTANCE.getItem(repo, path, version, GitVersionType.commit);
         if (content != null) {
             if (content.isFolder()) {
                 return SCMProbeStat.fromType(SCMFile.Type.DIRECTORY);
