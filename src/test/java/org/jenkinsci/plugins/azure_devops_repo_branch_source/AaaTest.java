@@ -103,7 +103,7 @@ public class AaaTest {
 
     @Test
     public void aTest7() throws Exception {
-        ListItemsRequest listItemsRequest = new ListItemsRequest(collectionUrl, pat, projectName, repositoryName, "", VersionControlRecursionType.full);
+        ListItemsRequest listItemsRequest = new ListItemsRequest(collectionUrl, pat, projectName, repositoryName, "", branchHeadHashB3, GitVersionType.commit, VersionControlRecursionType.full);
         OkHttp2Helper.INSTANCE.setDebugMode(true);
         Result<Items, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(listItemsRequest, Items.class, Object.class);
         Items items = result.getGoodValueOrNull();

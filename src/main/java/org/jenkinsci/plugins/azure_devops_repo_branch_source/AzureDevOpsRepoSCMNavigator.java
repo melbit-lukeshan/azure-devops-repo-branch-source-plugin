@@ -1361,7 +1361,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
                                                    @QueryParameter String apiUri,
                                                    @QueryParameter String credentialsId) {
             //return Connector.checkScanCredentials(context, apiUri, credentialsId);
-            return AzureConnector.INSTANCE.checkScanCredentials(context, apiUri, credentialsId);
+            return AzureConnector.INSTANCE.checkCredentials(context, apiUri, credentialsId);
         }
 
         /**

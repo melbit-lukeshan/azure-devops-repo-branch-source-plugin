@@ -1624,7 +1624,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                 return new StandardListBoxModel().includeCurrentValue(credentialsId);
             }
             //return Connector.listScanCredentials(context, apiUrl);
-            return AzureConnector.INSTANCE.listScanCredentials(context, collectionUrl);
+            return AzureConnector.INSTANCE.listCredentials(context, collectionUrl);
         }
 
         @Override
@@ -1654,7 +1654,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                                                    @QueryParameter String collectionUrl,
                                                    @QueryParameter String value) {
             //return Connector.checkScanCredentials(context, apiUri, value);
-            return AzureConnector.INSTANCE.checkScanCredentials(context, collectionUrl, value);
+            return AzureConnector.INSTANCE.checkCredentials(context, collectionUrl, value);
         }
 
         @Restricted(NoExternalUse.class)

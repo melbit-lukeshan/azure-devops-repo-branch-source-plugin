@@ -88,13 +88,13 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
                 switch (info) {
                     case DIRECTORY_ASSUMED:
                         //metadata = repo.getDirectoryContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
-                        metadata = AzureConnector.INSTANCE.getItems(repo, getPath(), VersionControlRecursionType.none);
+                        metadata = AzureConnector.INSTANCE.getItems(repo, getPath(), ref, GitVersionType.commit, VersionControlRecursionType.none);
                         info = TypeInfo.DIRECTORY_CONFIRMED;
                         resolved = true;
                         break;
                     case DIRECTORY_CONFIRMED:
                         //metadata = repo.getDirectoryContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
-                        metadata = AzureConnector.INSTANCE.getItems(repo, getPath(), VersionControlRecursionType.none);
+                        metadata = AzureConnector.INSTANCE.getItems(repo, getPath(), ref, GitVersionType.commit, VersionControlRecursionType.none);
                         resolved = true;
                         break;
                     case NON_DIRECTORY_CONFIRMED:
@@ -134,14 +134,18 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
         checkOpen();
         //List<GHContent> content = repo.getDirectoryContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
         String path = getPath();
-        List<GitItem> content = AzureConnector.INSTANCE.getItems(repo, path, VersionControlRecursionType.oneLevel);
-        List<SCMFile> result = new ArrayList<>(content.size());
-        for (GitItem c : content) {
-            if (!c.getPath().equalsIgnoreCase(path)) {
-                result.add(new AzureDevOpsRepoSCMFile(this, c.getPath(), c));
+        List<GitItem> content = AzureConnector.INSTANCE.getItems(repo, path, ref, GitVersionType.commit, VersionControlRecursionType.oneLevel);
+        if (content != null) {
+            List<SCMFile> result = new ArrayList<>(content.size());
+            for (GitItem c : content) {
+                if (!c.getPath().equalsIgnoreCase(path)) {
+                    result.add(new AzureDevOpsRepoSCMFile(this, c.getPath(), c));
+                }
             }
+            return result;
+        } else {
+            throw new IOException("Failed getting children of " + path);
         }
-        return result;
     }
 
     @Override

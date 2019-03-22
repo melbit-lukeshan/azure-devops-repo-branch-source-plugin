@@ -254,17 +254,12 @@ object AzureConnector {
     }
 
     fun getRef(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, filter: String): GitRef? {
-        getRefs(
+        return getRefs(
                 gitRepositoryWithAzureContext.collectionUrl,
                 gitRepositoryWithAzureContext.credentials,
                 gitRepositoryWithAzureContext.projectName,
                 gitRepositoryWithAzureContext.repositoryName,
-                filter)?.forEach {
-            if (it.name == "refs/$filter") {
-                return it
-            }
-        }
-        return null
+                filter)?.find { it.name == "refs/$filter" }
     }
 
     fun getBranches(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext): List<GitRef>? {
@@ -274,6 +269,24 @@ object AzureConnector {
                 gitRepositoryWithAzureContext.projectName,
                 gitRepositoryWithAzureContext.repositoryName,
                 "heads/")
+    }
+
+    fun getTags(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext): List<GitRef>? {
+        return getRefs(
+                gitRepositoryWithAzureContext.collectionUrl,
+                gitRepositoryWithAzureContext.credentials,
+                gitRepositoryWithAzureContext.projectName,
+                gitRepositoryWithAzureContext.repositoryName,
+                "tags/")
+    }
+
+    fun getPullRequests(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext): List<GitRef>? {
+        return getRefs(
+                gitRepositoryWithAzureContext.collectionUrl,
+                gitRepositoryWithAzureContext.credentials,
+                gitRepositoryWithAzureContext.projectName,
+                gitRepositoryWithAzureContext.repositoryName,
+                "pull/")
     }
 
     private fun getRefs(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, filter: String): List<GitRef>? {
