@@ -22,6 +22,7 @@ import hudson.util.ListBoxModel
 import jenkins.model.Jenkins
 import jenkins.scm.api.SCMSourceOwner
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.AzureDevOpsRepoConsoleNote
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.*
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support.OkHttp2Helper
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support.Result
 import java.io.IOException
@@ -78,9 +79,9 @@ object AzureConnector {
     /**
      * Checks the credential ID for use as scan credentials in the supplied context against the supplied API endpoint.
      *
-     * @param context           the context.
-     * @param collectionUrl     the Azure DevOps collection url.
-     * @param scanCredentialsId the credentials ID.
+     * @param context       the context.
+     * @param collectionUrl the Azure DevOps collection url.
+     * @param credentialsId the credentials ID.
      * @return the [FormValidation] results.
      */
     fun checkCredentials(context: Item?, collectionUrl: String?, credentialsId: String): FormValidation {
@@ -202,6 +203,22 @@ object AzureConnector {
         return OkHttp2Helper.executeRequest(CreateCommitStatusRequest(collectionUrl, pat, projectName, repositoryName, commitId, status))
     }
 
+    private fun getPullRequestStatusR(collectionUrl: String, pat: String, projectName: String, repositoryName: String, pullRequestId: Int, statusId: Int): Result<GitPullRequestStatus, Any> {
+        return OkHttp2Helper.executeRequest(GetPullRequestStatusRequest(collectionUrl, pat, projectName, repositoryName, pullRequestId, statusId))
+    }
+
+    private fun listPullRequestStatusesR(collectionUrl: String, pat: String, projectName: String, repositoryName: String, pullRequestId: Int): Result<PullRequestStatuses, Any> {
+        return OkHttp2Helper.executeRequest(ListPullRequestStatusesRequest(collectionUrl, pat, projectName, repositoryName, pullRequestId))
+    }
+
+    private fun getPullRequestR(collectionUrl: String, pat: String, projectName: String, repositoryName: String, pullRequestId: Int): Result<GitPullRequest, Any> {
+        return OkHttp2Helper.executeRequest(GetPullRequestRequest(collectionUrl, pat, projectName, repositoryName, pullRequestId))
+    }
+
+    private fun listPullRequestsR(collectionUrl: String, pat: String, projectName: String, repositoryName: String, pullRequestStatus: PullRequestStatus?, sourceBranchRefName: String?): Result<PullRequests, Any> {
+        return OkHttp2Helper.executeRequest(ListPullRequestsRequest(collectionUrl, pat, projectName, repositoryName, pullRequestStatus, sourceBranchRefName))
+    }
+
     fun getProjectNames(context: Item?, collectionUrl: String?, credentialsId: String?): List<String>? {
         return fixCollectionUrl(collectionUrl)?.let { fixedCollectionUrl ->
             lookupCredentials(context, collectionUrl, credentialsId)?.let { credentials ->
@@ -244,138 +261,148 @@ object AzureConnector {
         }
     }
 
-    fun getRefs(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, filter: String): List<GitRef>? {
-        return getRefs(
+    fun listRefs(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, filter: String): List<GitRef>? {
+        return listRefsR(
                 gitRepositoryWithAzureContext.collectionUrl,
-                gitRepositoryWithAzureContext.credentials,
+                getPat(gitRepositoryWithAzureContext.credentials),
                 gitRepositoryWithAzureContext.projectName,
                 gitRepositoryWithAzureContext.repositoryName,
-                filter)
+                filter).getGoodValueOrNull()?.value
     }
 
     fun getRef(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, filter: String): GitRef? {
-        return getRefs(
+        return listRefsR(
                 gitRepositoryWithAzureContext.collectionUrl,
-                gitRepositoryWithAzureContext.credentials,
+                getPat(gitRepositoryWithAzureContext.credentials),
                 gitRepositoryWithAzureContext.projectName,
                 gitRepositoryWithAzureContext.repositoryName,
-                filter)?.find { it.name == "refs/$filter" }
+                filter).getGoodValueOrNull()?.value?.find { it.name == "refs/$filter" }
     }
 
-    fun getBranches(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext): List<GitRef>? {
-        return getRefs(
+    fun listBranches(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext): List<GitRef>? {
+        return listRefsR(
                 gitRepositoryWithAzureContext.collectionUrl,
-                gitRepositoryWithAzureContext.credentials,
+                getPat(gitRepositoryWithAzureContext.credentials),
                 gitRepositoryWithAzureContext.projectName,
                 gitRepositoryWithAzureContext.repositoryName,
-                "heads/")
+                "heads/").getGoodValueOrNull()?.value
     }
 
-    fun getTags(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext): List<GitRef>? {
-        return getRefs(
+    fun listTags(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext): List<GitRef>? {
+        return listRefsR(
                 gitRepositoryWithAzureContext.collectionUrl,
-                gitRepositoryWithAzureContext.credentials,
+                getPat(gitRepositoryWithAzureContext.credentials),
                 gitRepositoryWithAzureContext.projectName,
                 gitRepositoryWithAzureContext.repositoryName,
-                "tags/")
+                "tags/").getGoodValueOrNull()?.value
     }
 
-    fun getPullRequests(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext): List<GitRef>? {
-        return getRefs(
+    fun listPullRequestsAsRefs(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext): List<GitRef>? {
+        return listRefsR(
                 gitRepositoryWithAzureContext.collectionUrl,
-                gitRepositoryWithAzureContext.credentials,
+                getPat(gitRepositoryWithAzureContext.credentials),
                 gitRepositoryWithAzureContext.projectName,
                 gitRepositoryWithAzureContext.repositoryName,
-                "pull/")
+                "pull/").getGoodValueOrNull()?.value
     }
 
-    private fun getRefs(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, filter: String): List<GitRef>? {
-        return listRefsR(collectionUrl, getPat(credentials), projectName, repositoryName, filter).getGoodValueOrNull()?.value
-    }
-
-    fun getCommits(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext): List<GitCommitRef>? {
-        return getCommits(
+    fun listCommits(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext): List<GitCommitRef>? {
+        return listCommitsR(
                 gitRepositoryWithAzureContext.collectionUrl,
-                gitRepositoryWithAzureContext.credentials,
+                getPat(gitRepositoryWithAzureContext.credentials),
                 gitRepositoryWithAzureContext.projectName,
-                gitRepositoryWithAzureContext.repositoryName)
+                gitRepositoryWithAzureContext.repositoryName).getGoodValueOrNull()?.value
     }
 
     fun getCommit(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, commitId: String): GitCommit? {
-        return getCommit(
+        return getCommitR(
                 gitRepositoryWithAzureContext.collectionUrl,
-                gitRepositoryWithAzureContext.credentials,
+                getPat(gitRepositoryWithAzureContext.credentials),
                 gitRepositoryWithAzureContext.projectName,
                 gitRepositoryWithAzureContext.repositoryName,
-                commitId)
+                commitId).getGoodValueOrNull()
     }
 
-    private fun getCommits(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String): List<GitCommitRef>? {
-        return listCommitsR(collectionUrl, getPat(credentials), projectName, repositoryName).getGoodValueOrNull()?.value
-    }
-
-    private fun getCommit(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, commitId: String): GitCommit? {
-        return getCommitR(collectionUrl, getPat(credentials), projectName, repositoryName, commitId).getGoodValueOrNull()
-    }
-
-    fun getItems(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, scopePath: String, version: String, versionType: GitVersionType, recursionType: VersionControlRecursionType): List<GitItem>? {
-        return getItems(
+    fun listItems(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, scopePath: String, version: String, versionType: GitVersionType, recursionType: VersionControlRecursionType): List<GitItem>? {
+        return listItemsR(
                 gitRepositoryWithAzureContext.collectionUrl,
-                gitRepositoryWithAzureContext.credentials,
+                getPat(gitRepositoryWithAzureContext.credentials),
                 gitRepositoryWithAzureContext.projectName,
                 gitRepositoryWithAzureContext.repositoryName,
                 scopePath,
                 version,
                 versionType,
-                recursionType)
+                recursionType).getGoodValueOrNull()?.value
     }
 
     fun getItem(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, itemPath: String, version: String, versionType: GitVersionType): GitItem? {
-        return getItem(
+        return getItemR(
                 gitRepositoryWithAzureContext.collectionUrl,
-                gitRepositoryWithAzureContext.credentials,
+                getPat(gitRepositoryWithAzureContext.credentials),
                 gitRepositoryWithAzureContext.projectName,
                 gitRepositoryWithAzureContext.repositoryName,
                 itemPath,
                 version,
-                versionType)
+                versionType).getGoodValueOrNull()
     }
 
     fun getItemStream(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, itemPath: String, version: String, versionType: GitVersionType): InputStream? {
-        return getItemStream(
+        return getItemStreamR(
                 gitRepositoryWithAzureContext.collectionUrl,
-                gitRepositoryWithAzureContext.credentials,
+                getPat(gitRepositoryWithAzureContext.credentials),
                 gitRepositoryWithAzureContext.projectName,
                 gitRepositoryWithAzureContext.repositoryName,
                 itemPath,
                 version,
-                versionType)
-    }
-
-    private fun getItems(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, scopePath: String, version: String, versionType: GitVersionType, recursionType: VersionControlRecursionType): List<GitItem>? {
-        return listItemsR(collectionUrl, getPat(credentials), projectName, repositoryName, scopePath, version, versionType, recursionType).getGoodValueOrNull()?.value
-    }
-
-    private fun getItem(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, itemPath: String, version: String, versionType: GitVersionType): GitItem? {
-        return getItemR(collectionUrl, getPat(credentials), projectName, repositoryName, itemPath, version, versionType).getGoodValueOrNull()
-    }
-
-    private fun getItemStream(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, itemPath: String, version: String, versionType: GitVersionType): InputStream? {
-        return getItemStreamR(collectionUrl, getPat(credentials), projectName, repositoryName, itemPath, version, versionType).getGoodValueOrNull()
+                versionType).getGoodValueOrNull()
     }
 
     fun createCommitStatus(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, commitId: String, status: GitStatusForCreation): GitStatus? {
-        return createCommitStatus(
+        return createCommitStatusR(
                 gitRepositoryWithAzureContext.collectionUrl,
-                gitRepositoryWithAzureContext.credentials,
+                getPat(gitRepositoryWithAzureContext.credentials),
                 gitRepositoryWithAzureContext.projectName,
                 gitRepositoryWithAzureContext.repositoryName,
                 commitId,
-                status)
+                status).getGoodValueOrNull()
     }
 
-    private fun createCommitStatus(collectionUrl: String, credentials: StandardCredentials, projectName: String, repositoryName: String, commitId: String, status: GitStatusForCreation): GitStatus? {
-        return createCommitStatusR(collectionUrl, getPat(credentials), projectName, repositoryName, commitId, status).getGoodValueOrNull()
+    fun listPullRequestStatuses(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, pullRequestId: Int): List<GitPullRequestStatus>? {
+        return listPullRequestStatusesR(
+                gitRepositoryWithAzureContext.collectionUrl,
+                getPat(gitRepositoryWithAzureContext.credentials),
+                gitRepositoryWithAzureContext.projectName,
+                gitRepositoryWithAzureContext.repositoryName,
+                pullRequestId).getGoodValueOrNull()?.value
+    }
+
+    fun getPullRequestStatus(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, pullRequestId: Int, statusId: Int): GitPullRequestStatus? {
+        return getPullRequestStatusR(
+                gitRepositoryWithAzureContext.collectionUrl,
+                getPat(gitRepositoryWithAzureContext.credentials),
+                gitRepositoryWithAzureContext.projectName,
+                gitRepositoryWithAzureContext.repositoryName,
+                pullRequestId,
+                statusId).getGoodValueOrNull()
+    }
+
+    fun listPullRequests(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, pullRequestStatus: PullRequestStatus?, sourceBranchRefName: String?): List<GitPullRequest>? {
+        return listPullRequestsR(
+                gitRepositoryWithAzureContext.collectionUrl,
+                getPat(gitRepositoryWithAzureContext.credentials),
+                gitRepositoryWithAzureContext.projectName,
+                gitRepositoryWithAzureContext.repositoryName,
+                pullRequestStatus,
+                sourceBranchRefName).getGoodValueOrNull()?.value
+    }
+
+    fun getPullRequest(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, pullRequestId: Int): GitPullRequest? {
+        return getPullRequestR(
+                gitRepositoryWithAzureContext.collectionUrl,
+                getPat(gitRepositoryWithAzureContext.credentials),
+                gitRepositoryWithAzureContext.projectName,
+                gitRepositoryWithAzureContext.repositoryName,
+                pullRequestId).getGoodValueOrNull()
     }
 
     @Throws(IOException::class)

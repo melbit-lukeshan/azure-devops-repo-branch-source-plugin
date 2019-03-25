@@ -59,7 +59,7 @@ import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureDevOpsWebHook;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.AzureDevOpsWebHook;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;

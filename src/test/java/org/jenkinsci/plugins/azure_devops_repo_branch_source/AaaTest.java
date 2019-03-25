@@ -1,6 +1,7 @@
 package org.jenkinsci.plugins.azure_devops_repo_branch_source;
 
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.*;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.*;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support.OkHttp2Helper;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support.Result;
 import org.junit.Test;
@@ -24,6 +25,7 @@ public class AaaTest {
     public static final String branchHeadHashMaster = "bc8618289aca9809b5073e0f32a4ea6d68dfcb0e";
     public static final String itemPath = "/tests/Jenkinsfile";
     public static final String scopePath = "/tests";
+    public static final int pullRequestId = 8;
 
     @Test
     public void aTest0() throws Exception {
@@ -123,6 +125,19 @@ public class AaaTest {
         if (commits != null) {
             for (GitCommitRef commit : commits.getValue()) {
                 System.out.println(commit.getCommitId() + " -> " + commit.getComment());
+            }
+        }
+    }
+
+    @Test
+    public void aTest9() throws Exception {
+        ListPullRequestStatusesRequest listPullRequestStatusesRequest = new ListPullRequestStatusesRequest(collectionUrl, pat, projectName, repositoryName, pullRequestId);
+        OkHttp2Helper.INSTANCE.setDebugMode(true);
+        Result<PullRequestStatuses, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(listPullRequestStatusesRequest, PullRequestStatuses.class, Object.class);
+        PullRequestStatuses pullRequestStatuses = result.getGoodValueOrNull();
+        if (pullRequestStatuses != null) {
+            for (GitPullRequestStatus gitPullRequestStatus : pullRequestStatuses.getValue()) {
+                System.out.println(gitPullRequestStatus.getId() + " -> " + gitPullRequestStatus.getDescription());
             }
         }
     }

@@ -7,7 +7,7 @@ import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 import jenkins.scm.api.SCMHeadOrigin;
 import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitRepositoryWithAzureContext;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitRepositoryWithAzureContext;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

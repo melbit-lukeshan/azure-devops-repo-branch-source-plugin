@@ -29,7 +29,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.plugins.git.AbstractGitSCMSource;
 import jenkins.scm.api.*;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.*;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.*;
 
 import java.io.IOException;
 import java.util.logging.Logger;

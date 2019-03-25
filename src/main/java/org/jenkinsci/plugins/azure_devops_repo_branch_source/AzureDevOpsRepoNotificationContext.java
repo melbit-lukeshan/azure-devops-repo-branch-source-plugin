@@ -31,7 +31,7 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMSource;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitStatusState;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitStatusState;
 import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
 
 /**

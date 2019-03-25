@@ -37,7 +37,11 @@ import jenkins.plugins.git.AbstractGitSCMSource;
 import jenkins.plugins.git.GitTagSCMRevision;
 import jenkins.scm.api.*;
 import org.apache.commons.lang.time.FastDateFormat;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.*;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitCommit;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitCommitRef;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitRef;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitRepositoryWithAzureContext;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -148,7 +152,7 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
         }
         // this is the format expected by GitSCM, so we need to format each GHCommit with the same format
         // commit %H%ntree %T%nparent %P%nauthor %aN <%aE> %ai%ncommitter %cN <%cE> %ci%n%n%w(76,4,4)%s%n%n%b
-        List<GitCommitRef> commitRefList = AzureConnector.INSTANCE.getCommits(repo);
+        List<GitCommitRef> commitRefList = AzureConnector.INSTANCE.listCommits(repo);
         if (commitRefList != null) {
             for (GitCommitRef commit : commitRefList) {
 //            for (GHCommit commit : repo.queryCommits().from(ref).pageSize(GitSCM.MAX_CHANGELOG).list()) {

@@ -24,7 +24,7 @@
 
 package org.jenkinsci.plugins.azure_devops_repo_branch_source;
 
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzurePermissionType;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.AzurePermissionType;
 
 import java.io.IOException;
 

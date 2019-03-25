@@ -33,10 +33,11 @@ import jenkins.scm.api.SCMHeadOrigin;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
 import jenkins.scm.api.mixin.ChangeRequestSCMHead2;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitForkRef;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitPullRequest;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitRepository;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.github.GHPullRequest;
-import org.kohsuke.github.GHRepository;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -77,20 +78,24 @@ public class PullRequestSCMHead extends SCMHead implements ChangeRequestSCMHead2
         this.metadata = copy.metadata;
     }
 
-    PullRequestSCMHead(GHPullRequest pr, String name, boolean merge) {
+    PullRequestSCMHead(GitPullRequest pr, String name, boolean merge) {
         super(name);
         // the merge flag is encoded into the name, so safe to store here
         this.merge = merge;
-        this.number = pr.getNumber();
-        this.target = new BranchSCMHead(pr.getBase().getRef());
+        this.number = pr.getPullRequestId();
+        this.target = new BranchSCMHead(pr.getTargetRefName());
         // the source stuff is immutable for a pull request on github, so safe to store here
-        GHRepository repository = pr.getHead().getRepository(); // may be null for deleted forks JENKINS-41246
-        this.sourceOwner = repository == null ? null : repository.getOwnerName();
-        this.sourceRepo = repository == null ? null : repository.getName();
-        this.sourceBranch = pr.getHead().getRef();
-        this.origin = pr.getRepository().getOwnerName().equalsIgnoreCase(sourceOwner)
-                ? SCMHeadOrigin.DEFAULT
-                : new SCMHeadOrigin.Fork(this.sourceOwner);
+        GitForkRef gitForkRef = pr.getForkSource();
+        GitRepository repository = pr.getRepository();
+        if (gitForkRef != null) {
+            this.sourceOwner = gitForkRef.getCreator().getUniqueName();//TODO unique name or id?
+            this.sourceRepo = gitForkRef.getRepository().getName();
+        } else {
+            this.sourceOwner = pr.getCreatedBy().getUniqueName();//TODO unique name or id?
+            this.sourceRepo = repository.getName();
+        }
+        this.sourceBranch = pr.getSourceRefName();
+        this.origin = (gitForkRef == null) ? SCMHeadOrigin.DEFAULT : new SCMHeadOrigin.Fork(this.sourceOwner);
     }
 
     public PullRequestSCMHead(@NonNull String name, String sourceOwner, String sourceRepo, String sourceBranch, int number,

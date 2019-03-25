@@ -72,7 +72,8 @@ import jenkins.scm.impl.trait.WildcardSCMHeadFilterTrait;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.lib.Constants;
 import org.jenkinsci.Symbol;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.*;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.*;
 import org.jenkinsci.plugins.github.config.GitHubServerConfig;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -90,6 +91,7 @@ import java.io.Closeable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectStreamException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -198,7 +200,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     @NonNull
     private transient /*effectively final*/ Map<Integer, ObjectMetadataAction> pullRequestMetadataCache;
     /**
-     * The cache of {@link ObjectMetadataAction} instances for each open PR.
+     * The cache of {@link ContributorMetadataAction} instances for each open PR.
      */
     @NonNull
     private transient /*effectively final*/ Map<Integer, ContributorMetadataAction> pullRequestContributorCache;
@@ -740,7 +742,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                     request.setRepository(ghRepository);
                     if (request.isFetchPRs()) {
                         //TODO uncomment below
-                        //request.setPullRequests(new LazyPullRequests(request, ghRepository));
+                        request.setPullRequests(new LazyPullRequestsAzure(request, gitRepository));
                     }
                     if (request.isFetchBranches()) {
                         request.setBranches(new LazyBranchesAzure(request, gitRepository));
@@ -790,11 +792,11 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                         int count = 0;
                         Map<Boolean, Set<ChangeRequestCheckoutStrategy>> strategies = request.getPRStrategies();
                         PRs:
-                        for (final GHPullRequest pr : request.getPullRequests()) {
-                            int number = pr.getNumber();
-                            boolean fork = !ghRepository.getOwner().equals(pr.getHead().getUser());
+                        for (final GitPullRequest pr : request.getPullRequests()) {
+                            int number = pr.getPullRequestId();
+                            boolean fork = (pr.getForkSource() != null);
                             listener.getLogger().format("%n    Checking pull request %s%n",
-                                    HyperlinkNote.encodeTo(pr.getHtmlUrl().toString(), "#" + number));
+                                    HyperlinkNote.encodeTo(pr.getRemoteUrl(), "#" + number));
                             if (strategies.get(fork).isEmpty()) {
                                 if (fork) {
                                     listener.getLogger().format("    Submitted from fork, skipping%n%n");
@@ -811,9 +813,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                                     branchName = "PR-" + number + "-" + strategy.name().toLowerCase(Locale.ENGLISH);
                                 }
                                 count++;
-                                if (request.process(new PullRequestSCMHead(
-                                                pr, branchName, strategy == ChangeRequestCheckoutStrategy.MERGE
-                                        ),
+                                if (request.process(new PullRequestSCMHead(pr, branchName, strategy == ChangeRequestCheckoutStrategy.MERGE),
                                         null,
                                         new SCMSourceRequest.ProbeLambda<PullRequestSCMHead, Void>() {
                                             @NonNull
@@ -842,11 +842,12 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                                                                 "heads/" + pr.getBase().getRef()
                                                         );
                                                         return new PullRequestSCMRevision(head,
-                                                                mergeRef.getObject().getSha(),
-                                                                pr.getHead().getSha());
+                                                                pr.getLastMergeTargetCommit().getCommitId(),
+                                                                pr.getLastMergeSourceCommit().getCommitId());
                                                     default:
-                                                        return new PullRequestSCMRevision(head, pr.getBase().getSha(),
-                                                                pr.getHead().getSha());
+                                                        return new PullRequestSCMRevision(head,
+                                                                pr.getBase().getSha(),
+                                                                pr.getLastMergeSourceCommit().getCommitId());
                                                 }
                                             }
                                         },
@@ -1897,7 +1898,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                 }
                 request.listener().getLogger().format("%n  Getting remote branches...%n");
                 // local optimization: always try the default branch first in any search
-                List<GitRef> values = AzureConnector.INSTANCE.getBranches(repo);
+                List<GitRef> values = AzureConnector.INSTANCE.listBranches(repo);
                 final String defaultBranch = StringUtils.defaultIfBlank(repo.getGitRepository().getDefaultBranch(), "master");
                 Collections.sort(values, new Comparator<GitRef>() {
                     @Override
@@ -2177,6 +2178,130 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                 } catch (IOException | InterruptedException e) {
                     throw new WrappedException(e);
                 }
+                pullRequestMetadataKeys.add(number);
+            }
+
+            @Override
+            public void completed() {
+                // we have completed a full iteration of the PRs from the delegate
+                iterationCompleted = true;
+            }
+        }
+    }
+
+    private class LazyPullRequestsAzure extends LazyIterable<GitPullRequest> implements Closeable {
+        private final AzureDevOpsRepoSCMSourceRequest request;
+        private final GitRepositoryWithAzureContext repo;
+        private Set<Integer> pullRequestMetadataKeys = new HashSet<>();
+        private boolean fullScanRequested = false;
+        private boolean iterationCompleted = false;
+
+        public LazyPullRequestsAzure(AzureDevOpsRepoSCMSourceRequest request, GitRepositoryWithAzureContext repo) {
+            this.request = request;
+            this.repo = repo;
+        }
+
+        @Override
+        protected Iterable<GitPullRequest> create() {
+            try {
+                request.checkApiRateLimit();
+                Set<Integer> prs = request.getRequestedPullRequestNumbers();
+                if (prs != null && prs.size() == 1) {
+                    Integer number = prs.iterator().next();
+                    request.listener().getLogger().format("%n  Getting remote pull request #%d...%n", number);
+                    //GitRef pullRequest = repo.getPullRequest(number);
+                    GitPullRequest pullRequest = AzureConnector.INSTANCE.getPullRequest(repo, number);
+                    if (pullRequest != null && pullRequest.getStatus() != PullRequestStatus.active) {
+                        return Collections.emptyList();
+                    }
+                    return new CacheUdatingIterable(Collections.singletonList(pullRequest));
+                }
+                Set<String> branchNames = request.getRequestedOriginBranchNames();
+                if (branchNames != null && branchNames.size() == 1) { // TODO flag to check PRs are all origin PRs
+                    // if we were including multiple PRs and they are not all from the same origin branch
+                    // then branchNames would have a size > 1 therefore if the size is 1 we must only
+                    // be after PRs that come from this named branch
+                    String branchName = branchNames.iterator().next();
+                    request.listener().getLogger().format(
+                            "%n  Getting remote pull requests from branch %s...%n", branchName
+                    );
+//                    return new CacheUdatingIterable(repo.queryPullRequests()
+//                            .state(GHIssueState.OPEN)
+//                            .head(repo.getOwnerName() + ":" + branchName)
+//                            .list());
+                    return new CacheUdatingIterable(AzureConnector.INSTANCE.listPullRequests(repo, PullRequestStatus.active, branchName));
+                }
+                request.listener().getLogger().format("%n  Getting remote pull requests...%n");
+                fullScanRequested = true;
+//                return new CacheUdatingIterable(LazyPullRequestsAzure.this.repo.queryPullRequests()
+//                        .state(GHIssueState.OPEN)
+//                        .list());
+                return new CacheUdatingIterable(AzureConnector.INSTANCE.listPullRequests(repo, PullRequestStatus.active, null));
+            } catch (IOException | InterruptedException e) {
+                throw new AzureDevOpsRepoSCMSource.WrappedException(e);
+            }
+        }
+
+        @Override
+        public void close() throws IOException {
+            if (fullScanRequested && iterationCompleted) {
+                // we needed a full scan and the scan was completed, so trim the cache entries
+                pullRequestMetadataCache.keySet().retainAll(pullRequestMetadataKeys);
+                pullRequestContributorCache.keySet().retainAll(pullRequestMetadataKeys);
+                if (Jenkins.getActiveInstance().getInitLevel().compareTo(InitMilestone.JOB_LOADED) > 0) {
+                    // synchronization should be cheap as only writers would be looking for this just to
+                    // write null
+                    synchronized (pullRequestSourceMapLock) {
+                        pullRequestSourceMap = null; // all data has to have been migrated
+                    }
+                }
+            }
+        }
+
+        private class CacheUdatingIterable extends SinglePassIterable<GitPullRequest> {
+            /**
+             * A map of all fully populated {@link GHUser} entries we have fetched, keyed by {@link GHUser#getLogin()}.
+             */
+            private Map<String, GHUser> users = new HashMap<>();
+
+            CacheUdatingIterable(Iterable<GitPullRequest> delegate) {
+                super(delegate);
+            }
+
+            @Override
+            public void observe(GitPullRequest pr) {
+                int number = pr.getPullRequestId();
+                try {
+                    pullRequestMetadataCache.put(number,
+                            new ObjectMetadataAction(
+                                    pr.getTitle(),
+                                    pr.getDescription(),
+                                    new URL(pr.getRemoteUrl()).toExternalForm()
+                            )
+                    );
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+//                try {
+                //TODO Uncomment below lines
+//                    GHUser user = pr.getUser();
+//                    if (users.containsKey(user.getLogin())) {
+//                        // looked up this user already
+//                        user = users.get(user.getLogin());
+//                    } else {
+//                        // going to be making a request to populate the user record
+//                        request.checkApiRateLimit();
+//                    }
+//                    pullRequestContributorCache.put(number, new ContributorMetadataAction(
+//                            user.getLogin(),
+//                            user.getName(),
+//                            user.getEmail()
+//                    ));
+//                    // store the populated user record now that we have it
+//                    users.put(user.getLogin(), user);
+//                } catch (IOException | InterruptedException e) {
+//                    throw new WrappedException(e);
+//                }
                 pullRequestMetadataKeys.add(number);
             }
 

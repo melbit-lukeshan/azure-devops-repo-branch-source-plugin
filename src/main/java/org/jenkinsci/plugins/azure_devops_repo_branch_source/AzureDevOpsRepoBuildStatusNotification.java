@@ -38,7 +38,11 @@ import jenkins.model.Jenkins;
 import jenkins.plugins.git.AbstractGitSCMSource.SCMRevisionImpl;
 import jenkins.scm.api.*;
 import org.apache.commons.lang.StringUtils;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.*;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitRepositoryWithAzureContext;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitStatus;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitStatusContext;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitStatusForCreation;
 
 import java.io.File;
 import java.io.FileNotFoundException;

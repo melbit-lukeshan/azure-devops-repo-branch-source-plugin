@@ -33,9 +33,9 @@ import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
 import jenkins.scm.api.trait.SCMSourceRequest;
 import net.jcip.annotations.GuardedBy;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzurePermissionType;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitRef;
-import org.kohsuke.github.GHPullRequest;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.AzurePermissionType;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitPullRequest;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitRef;
 import org.kohsuke.github.GHRef;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
@@ -95,7 +95,7 @@ public class AzureDevOpsRepoSCMSourceRequest extends SCMSourceRequest {
      * The pull request details or {@code null} if not {@link #isFetchPRs()}.
      */
     @CheckForNull
-    private Iterable<GHPullRequest> pullRequests;
+    private Iterable<GitPullRequest> pullRequests;
     /**
      * The branch details or {@code null} if not {@link #isFetchBranches()}.
      */
@@ -304,15 +304,6 @@ public class AzureDevOpsRepoSCMSourceRequest extends SCMSourceRequest {
     }
 
     /**
-     * Provides the requests with the pull request details.
-     *
-     * @param pullRequests the pull request details.
-     */
-    public void setPullRequests(@CheckForNull Iterable<GHPullRequest> pullRequests) {
-        this.pullRequests = pullRequests;
-    }
-
-    /**
      * Returns the pull request details or an empty list if either the request did not specify to {@link #isFetchPRs()}
      * or if the pull request details have not been provided by {@link #setPullRequests(Iterable)} yet.
      *
@@ -320,8 +311,17 @@ public class AzureDevOpsRepoSCMSourceRequest extends SCMSourceRequest {
      * may be empty if not {@link #isFetchPRs()}
      */
     @NonNull
-    public Iterable<GHPullRequest> getPullRequests() {
+    public Iterable<GitPullRequest> getPullRequests() {
         return Util.fixNull(pullRequests);
+    }
+
+    /**
+     * Provides the requests with the pull request details.
+     *
+     * @param pullRequests the pull request details.
+     */
+    public void setPullRequests(@CheckForNull Iterable<GitPullRequest> pullRequests) {
+        this.pullRequests = pullRequests;
     }
 
     /**

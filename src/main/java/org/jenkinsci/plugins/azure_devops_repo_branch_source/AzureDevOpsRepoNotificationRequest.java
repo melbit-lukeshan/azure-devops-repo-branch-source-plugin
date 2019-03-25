@@ -24,7 +24,7 @@
 
 package org.jenkinsci.plugins.azure_devops_repo_branch_source;
 
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.GitStatusState;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitStatusState;
 
 /**
  * Details of a Azure DevOps status notification to be sent.

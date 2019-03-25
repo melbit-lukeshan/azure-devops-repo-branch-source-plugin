@@ -1,5 +1,7 @@
 package org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api
 
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.Refs
+
 class ListRefsRequest(collectionUrl: String, pat: String, val projectName: String, val repository: String, val filter: String)
     : AzureBaseRequest<Refs, Any>(collectionUrl, pat) {
     override val method = Method.GET

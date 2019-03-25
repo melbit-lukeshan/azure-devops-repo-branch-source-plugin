@@ -45,7 +45,7 @@ import jenkins.scm.api.mixin.TagSCMHead;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.transport.RefSpec;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureDevOpsWeb;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.AzureDevOpsWeb;
 
 import java.net.URL;
 import java.util.HashSet;
