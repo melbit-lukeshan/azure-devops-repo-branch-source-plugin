@@ -741,7 +741,6 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                     request.setGitHub(github);
                     request.setRepository(ghRepository);
                     if (request.isFetchPRs()) {
-                        //TODO uncomment below
                         request.setPullRequests(new LazyPullRequestsAzure(request, gitRepository));
                     }
                     if (request.isFetchBranches()) {
@@ -838,15 +837,17 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                                                 switch (strategy) {
                                                     case MERGE:
                                                         request.checkApiRateLimit();
-                                                        GHRef mergeRef = ghRepository.getRef(
-                                                                "heads/" + pr.getBase().getRef()
-                                                        );
+//                                                        GHRef mergeRef = ghRepository.getRef(
+//                                                                "heads/" + pr.getBase().getRef()
+//                                                        );
+                                                        //TODO: not sure how to set the base hash and pull hash
                                                         return new PullRequestSCMRevision(head,
                                                                 pr.getLastMergeTargetCommit().getCommitId(),
                                                                 pr.getLastMergeSourceCommit().getCommitId());
                                                     default:
+                                                        //TODO: not sure how to set the base hash and pull hash
                                                         return new PullRequestSCMRevision(head,
-                                                                pr.getBase().getSha(),
+                                                                pr.getLastMergeTargetCommit().getCommitId(),
                                                                 pr.getLastMergeSourceCommit().getCommitId());
                                                 }
                                             }
@@ -1034,174 +1035,161 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
             throws IOException, InterruptedException {
         StandardCredentials credentials = Connector.lookupScanCredentials((Item) getOwner(), collectionUrl, credentialsId);
         // Github client and validation
-        final GitHub github = Connector.connect(collectionUrl, credentials);
-        try {
-            checkApiUrlValidity(credentials);
-            Connector.checkApiRateLimit(listener, github);
-            // Input data validation
-            if (StringUtils.isBlank(repository)) {
-                throw new AbortException("No repository selected, skipping");
-            }
-
-            String fullName = projectName + "/" + repository;
-            ghRepository = github.getRepository(fullName);
-            final GHRepository ghRepository = this.ghRepository;
-            listener.getLogger().format("Examining %s%n",
-                    HyperlinkNote.encodeTo(ghRepository.getHtmlUrl().toString(), fullName));
-            AzureDevOpsRepoSCMSourceContext context = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none())
-                    .withTraits(traits);
-            Matcher prMatcher = Pattern.compile("^PR-(\\d+)(?:-(.*))?$").matcher(headName);
-            if (prMatcher.matches()) {
-                // it's a looking very much like a PR
-                int number = Integer.parseInt(prMatcher.group(1));
-                listener.getLogger().format("Attempting to resolve %s as pull request %d%n", headName, number);
-                try {
-                    GHPullRequest pr = ghRepository.getPullRequest(number);
-                    if (pr != null) {
-                        boolean fork = !ghRepository.getOwner().equals(pr.getHead().getUser());
-                        Set<ChangeRequestCheckoutStrategy> strategies;
-                        if (context.wantPRs()) {
-                            strategies = fork
-                                    ? context.forkPRStrategies()
-                                    : context.originPRStrategies();
-                        } else {
-                            // if not configured, we go with merge
-                            strategies = EnumSet.of(ChangeRequestCheckoutStrategy.MERGE);
-                        }
-                        ChangeRequestCheckoutStrategy strategy;
-                        if (prMatcher.group(2) == null) {
-                            if (strategies.size() == 1) {
-                                strategy = strategies.iterator().next();
-                            } else {
-                                // invalid name
-                                listener.getLogger().format(
-                                        "Resolved %s as pull request %d but indeterminate checkout strategy, "
-                                                + "please try %s or %s%n",
-                                        headName,
-                                        number,
-                                        headName + "-" + ChangeRequestCheckoutStrategy.HEAD.name(),
-                                        headName + "-" + ChangeRequestCheckoutStrategy.MERGE.name()
-                                );
-                                return null;
-                            }
-                        } else {
-                            strategy = null;
-                            for (ChangeRequestCheckoutStrategy s : strategies) {
-                                if (s.name().toLowerCase(Locale.ENGLISH).equals(prMatcher.group(2))) {
-                                    strategy = s;
-                                    break;
-                                }
-                            }
-                            if (strategy == null) {
-                                // invalid name;
-                                listener.getLogger().format(
-                                        "Resolved %s as pull request %d but unknown checkout strategy %s, "
-                                                + "please try %s or %s%n",
-                                        headName,
-                                        number,
-                                        prMatcher.group(2),
-                                        headName + "-" + ChangeRequestCheckoutStrategy.HEAD.name(),
-                                        headName + "-" + ChangeRequestCheckoutStrategy.MERGE.name()
-                                );
-                                return null;
-                            }
-                        }
-                        PullRequestSCMHead head = new PullRequestSCMHead(
-                                pr, headName, strategy == ChangeRequestCheckoutStrategy.MERGE
-                        );
-                        switch (strategy) {
-                            case MERGE:
-                                Connector.checkApiRateLimit(listener, github);
-                                GHRef mergeRef = ghRepository.getRef(
-                                        "heads/" + pr.getBase().getRef()
-                                );
-                                listener.getLogger().format(
-                                        "Resolved %s as pull request %d at revision %s merged onto %s%n",
-                                        headName,
-                                        number,
-                                        pr.getHead().getSha(),
-                                        pr.getBase().getSha()
-                                );
-                                return new PullRequestSCMRevision(head,
-                                        mergeRef.getObject().getSha(),
-                                        pr.getHead().getSha());
-                            default:
-                                listener.getLogger().format(
-                                        "Resolved %s as pull request %d at revision %s%n",
-                                        headName,
-                                        number,
-                                        pr.getHead().getSha()
-                                );
-                                return new PullRequestSCMRevision(head, pr.getBase().getSha(),
-                                        pr.getHead().getSha());
-                        }
-                    } else {
-                        listener.getLogger().format(
-                                "Could not resolve %s as pull request %d%n",
-                                headName,
-                                number
-                        );
-                    }
-                } catch (FileNotFoundException e) {
-                    // maybe some ****er created a branch or a tag called PR-_
-                    listener.getLogger().format(
-                            "Could not resolve %s as pull request %d%n",
-                            headName,
-                            number
-                    );
-                }
-            }
-            try {
-                listener.getLogger().format("Attempting to resolve %s as a branch%n", headName);
-                GHBranch branch = ghRepository.getBranch(headName);
-                if (branch != null) {
-                    listener.getLogger().format("Resolved %s as branch %s at revision %s%n", headName, branch.getName(), branch.getSHA1());
-                    return new SCMRevisionImpl(new BranchSCMHead(headName), branch.getSHA1());
-                }
-            } catch (FileNotFoundException e) {
-                // maybe it's a tag
-            }
-            try {
-                listener.getLogger().format("Attempting to resolve %s as a tag%n", headName);
-                GHRef tag = ghRepository.getRef("tags/" + headName);
-                if (tag != null) {
-                    long tagDate = 0L;
-                    String tagSha = tag.getObject().getSha();
-                    if ("tag".equalsIgnoreCase(tag.getObject().getType())) {
-                        // annotated tag object
-                        try {
-                            GHTagObject tagObject = ghRepository.getTagObject(tagSha);
-                            tagDate = tagObject.getTagger().getDate().getTime();
-                        } catch (IOException e) {
-                            // ignore, if the tag doesn't exist, the probe will handle that correctly
-                            // we just need enough of a date value to allow for probing
-                        }
-                    } else {
-                        try {
-                            GHCommit commit = ghRepository.getCommit(tagSha);
-                            tagDate = commit.getCommitDate().getTime();
-                        } catch (IOException e) {
-                            // ignore, if the tag doesn't exist, the probe will handle that correctly
-                            // we just need enough of a date value to allow for probing
-                        }
-                    }
-                    listener.getLogger().format("Resolved %s as tag %s at revision %s%n", headName, headName,
-                            tagSha);
-                    return new GitTagSCMRevision(new AzureDevOpsRepoTagSCMHead(headName, tagDate), tagSha);
-                }
-            } catch (FileNotFoundException e) {
-                // ok it doesn't exist
-            }
-            listener.error("Could not resolve %s", headName);
-
-            // TODO try and resolve as a revision, but right now we'd need to know what branch the revision belonged to
-            // once GitSCMSource has support for arbitrary refs, we could just use that... but given that
-            // GitHubSCMBuilder constructs the refspec based on the branch name, without a specific "arbitrary ref"
-            // SCMHead subclass we cannot do anything here
-            return null;
-        } finally {
-            Connector.release(github);
+        //final GitHub github = Connector.connect(collectionUrl, credentials);
+        checkApiUrlValidity(credentials);
+        // Input data validation
+        if (StringUtils.isBlank(repository)) {
+            throw new AbortException("No repository selected, skipping");
         }
+
+        String fullName = projectName + "/" + repository;
+        //ghRepository = github.getRepository(fullName);
+        gitRepository = AzureConnector.INSTANCE.getRepository(collectionUrl, credentials, projectName, repository);
+        //final GHRepository ghRepository = this.ghRepository;
+        final GitRepositoryWithAzureContext gitRepository = this.gitRepository;
+        listener.getLogger().format("Examining %s%n",
+                HyperlinkNote.encodeTo(gitRepository.getGitRepository().getRemoteUrl(), fullName));
+        AzureDevOpsRepoSCMSourceContext context = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none()).withTraits(traits);
+        Matcher prMatcher = Pattern.compile("^PR-(\\d+)(?:-(.*))?$").matcher(headName);
+        if (prMatcher.matches()) {
+            // it's a looking very much like a PR
+            int number = Integer.parseInt(prMatcher.group(1));
+            listener.getLogger().format("Attempting to resolve %s as pull request %d%n", headName, number);
+            GitPullRequest pr = AzureConnector.INSTANCE.getPullRequest(gitRepository, number);
+            if (pr != null) {
+                boolean fork = gitRepository.getGitRepository().isFork();
+                Set<ChangeRequestCheckoutStrategy> strategies;
+                if (context.wantPRs()) {
+                    strategies = fork
+                            ? context.forkPRStrategies()
+                            : context.originPRStrategies();
+                } else {
+                    // if not configured, we go with merge
+                    strategies = EnumSet.of(ChangeRequestCheckoutStrategy.MERGE);
+                }
+                ChangeRequestCheckoutStrategy strategy;
+                if (prMatcher.group(2) == null) {
+                    if (strategies.size() == 1) {
+                        strategy = strategies.iterator().next();
+                    } else {
+                        // invalid name
+                        listener.getLogger().format(
+                                "Resolved %s as pull request %d but indeterminate checkout strategy, "
+                                        + "please try %s or %s%n",
+                                headName,
+                                number,
+                                headName + "-" + ChangeRequestCheckoutStrategy.HEAD.name(),
+                                headName + "-" + ChangeRequestCheckoutStrategy.MERGE.name()
+                        );
+                        return null;
+                    }
+                } else {
+                    strategy = null;
+                    for (ChangeRequestCheckoutStrategy s : strategies) {
+                        if (s.name().toLowerCase(Locale.ENGLISH).equals(prMatcher.group(2))) {
+                            strategy = s;
+                            break;
+                        }
+                    }
+                    if (strategy == null) {
+                        // invalid name;
+                        listener.getLogger().format(
+                                "Resolved %s as pull request %d but unknown checkout strategy %s, "
+                                        + "please try %s or %s%n",
+                                headName,
+                                number,
+                                prMatcher.group(2),
+                                headName + "-" + ChangeRequestCheckoutStrategy.HEAD.name(),
+                                headName + "-" + ChangeRequestCheckoutStrategy.MERGE.name()
+                        );
+                        return null;
+                    }
+                }
+                PullRequestSCMHead head = new PullRequestSCMHead(pr, headName, strategy == ChangeRequestCheckoutStrategy.MERGE);
+                switch (strategy) {
+                    case MERGE:
+//                                GHRef mergeRef = ghRepository.getRef(
+//                                        "heads/" + pr.getBase().getRef()
+//                                );
+                        listener.getLogger().format(
+                                "Resolved %s as pull request %d at revision %s merged onto %s%n",
+                                headName,
+                                number,
+                                pr.getLastMergeSourceCommit().getCommitId(),
+                                pr.getLastMergeTargetCommit().getCommitId()
+                        );
+                        //TODO: not sure how to set the base hash and pull hash
+                        return new PullRequestSCMRevision(head,
+                                pr.getLastMergeTargetCommit().getCommitId(),
+                                pr.getLastMergeSourceCommit().getCommitId());
+                    default:
+                        listener.getLogger().format(
+                                "Resolved %s as pull request %d at revision %s%n",
+                                headName,
+                                number,
+                                pr.getLastMergeSourceCommit().getCommitId()
+                        );
+                        //TODO: not sure how to set the base hash and pull hash
+                        return new PullRequestSCMRevision(head,
+                                pr.getLastMergeTargetCommit().getCommitId(),
+                                pr.getLastMergeSourceCommit().getCommitId());
+                }
+            } else {
+                listener.getLogger().format(
+                        "Could not resolve %s as pull request %d%n",
+                        headName,
+                        number
+                );
+            }
+        }
+        try {
+            listener.getLogger().format("Attempting to resolve %s as a branch%n", headName);
+            GHBranch branch = ghRepository.getBranch(headName);
+            if (branch != null) {
+                listener.getLogger().format("Resolved %s as branch %s at revision %s%n", headName, branch.getName(), branch.getSHA1());
+                return new SCMRevisionImpl(new BranchSCMHead(headName), branch.getSHA1());
+            }
+        } catch (FileNotFoundException e) {
+            // maybe it's a tag
+        }
+        try {
+            listener.getLogger().format("Attempting to resolve %s as a tag%n", headName);
+            GHRef tag = ghRepository.getRef("tags/" + headName);
+            if (tag != null) {
+                long tagDate = 0L;
+                String tagSha = tag.getObject().getSha();
+                if ("tag".equalsIgnoreCase(tag.getObject().getType())) {
+                    // annotated tag object
+                    try {
+                        GHTagObject tagObject = ghRepository.getTagObject(tagSha);
+                        tagDate = tagObject.getTagger().getDate().getTime();
+                    } catch (IOException e) {
+                        // ignore, if the tag doesn't exist, the probe will handle that correctly
+                        // we just need enough of a date value to allow for probing
+                    }
+                } else {
+                    try {
+                        GHCommit commit = ghRepository.getCommit(tagSha);
+                        tagDate = commit.getCommitDate().getTime();
+                    } catch (IOException e) {
+                        // ignore, if the tag doesn't exist, the probe will handle that correctly
+                        // we just need enough of a date value to allow for probing
+                    }
+                }
+                listener.getLogger().format("Resolved %s as tag %s at revision %s%n", headName, headName,
+                        tagSha);
+                return new GitTagSCMRevision(new AzureDevOpsRepoTagSCMHead(headName, tagDate), tagSha);
+            }
+        } catch (FileNotFoundException e) {
+            // ok it doesn't exist
+        }
+        listener.error("Could not resolve %s", headName);
+
+        // TODO try and resolve as a revision, but right now we'd need to know what branch the revision belonged to
+        // once GitSCMSource has support for arbitrary refs, we could just use that... but given that
+        // GitHubSCMBuilder constructs the refspec based on the branch name, without a specific "arbitrary ref"
+        // SCMHead subclass we cannot do anything here
+        return null;
     }
 
     @NonNull
@@ -2022,11 +2010,11 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
 
     private static class MergabilityWitness
             implements SCMSourceRequest.Witness<PullRequestSCMHead, PullRequestSCMRevision> {
-        private final GHPullRequest pr;
+        private final GitPullRequest pr;
         private final ChangeRequestCheckoutStrategy strategy;
         private final TaskListener listener;
 
-        public MergabilityWitness(GHPullRequest pr, ChangeRequestCheckoutStrategy strategy, TaskListener listener) {
+        public MergabilityWitness(GitPullRequest pr, ChangeRequestCheckoutStrategy strategy, TaskListener listener) {
             this.pr = pr;
             this.strategy = strategy;
             this.listener = listener;
@@ -2037,11 +2025,12 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                            PullRequestSCMRevision revision, boolean isMatch) {
             if (isMatch) {
                 Boolean mergeable;
-                try {
-                    mergeable = pr.getMergeable();
-                } catch (IOException e) {
-                    throw new AzureDevOpsRepoSCMSource.WrappedException(e);
-                }
+                //try {
+                //TODO how do we know - luke.
+                mergeable = (pr.getMergeStatus() == PullRequestAsyncStatus.succeeded);
+                //} catch (IOException e) {
+                //    throw new AzureDevOpsRepoSCMSource.WrappedException(e);
+                //}
                 if (Boolean.FALSE.equals(mergeable)) {
                     switch (strategy) {
                         case MERGE:

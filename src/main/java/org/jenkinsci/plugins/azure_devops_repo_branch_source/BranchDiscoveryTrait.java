@@ -30,10 +30,10 @@ import jenkins.scm.api.*;
 import jenkins.scm.api.trait.*;
 import jenkins.scm.impl.trait.Discovery;
 import org.jenkinsci.Symbol;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitPullRequest;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitRepository;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.github.GHPullRequest;
-import org.kohsuke.github.GHRepository;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -225,11 +225,11 @@ public class BranchDiscoveryTrait extends SCMSourceTrait {
         @Override
         public boolean isExcluded(@NonNull SCMSourceRequest request, @NonNull SCMHead head) {
             if (head instanceof BranchSCMHead && request instanceof AzureDevOpsRepoSCMSourceRequest) {
-                for (GHPullRequest p : ((AzureDevOpsRepoSCMSourceRequest) request).getPullRequests()) {
-                    GHRepository headRepo = p.getHead().getRepository();
+                for (GitPullRequest p : ((AzureDevOpsRepoSCMSourceRequest) request).getPullRequests()) {
+                    GitRepository headRepo = p.getRepository(); //TODO we don't know how to get source repo yet. For now use target repo. - Luke
                     if (headRepo != null // head repo can be null if the PR is from a repo that has been deleted
-                            && p.getBase().getRepository().getFullName().equalsIgnoreCase(headRepo.getFullName())
-                            && p.getHead().getRef().equals(head.getName())) {
+                            && p.getRepository().getRemoteUrl().equalsIgnoreCase(headRepo.getRemoteUrl())
+                            && p.getSourceRefName().equals(head.getName())) {
                         return true;
                     }
                 }
@@ -248,11 +248,11 @@ public class BranchDiscoveryTrait extends SCMSourceTrait {
         @Override
         public boolean isExcluded(@NonNull SCMSourceRequest request, @NonNull SCMHead head) {
             if (head instanceof BranchSCMHead && request instanceof AzureDevOpsRepoSCMSourceRequest) {
-                for (GHPullRequest p : ((AzureDevOpsRepoSCMSourceRequest) request).getPullRequests()) {
-                    GHRepository headRepo = p.getHead().getRepository();
+                for (GitPullRequest p : ((AzureDevOpsRepoSCMSourceRequest) request).getPullRequests()) {
+                    GitRepository headRepo = p.getRepository(); //TODO we don't know how to get source repo yet. For now use target repo. - Luke
                     if (headRepo != null // head repo can be null if the PR is from a repo that has been deleted
-                            && p.getBase().getRepository().getFullName().equalsIgnoreCase(headRepo.getFullName())
-                            && p.getHead().getRef().equals(head.getName())) {
+                            && p.getRepository().getRemoteUrl().equalsIgnoreCase(headRepo.getRemoteUrl())
+                            && p.getSourceRefName().equals(head.getName())) {
                         return false;
                     }
                 }

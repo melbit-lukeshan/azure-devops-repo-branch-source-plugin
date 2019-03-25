@@ -33,9 +33,13 @@ import jenkins.plugins.git.AbstractGitSCMSource;
 import jenkins.scm.api.*;
 import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
 import jenkins.scm.api.trait.SCMHeadPrefilter;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitPullRequest;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitRepository;
 import org.jenkinsci.plugins.github.extension.GHEventsSubscriber;
 import org.jenkinsci.plugins.github.extension.GHSubscriberEvent;
-import org.kohsuke.github.*;
+import org.kohsuke.github.GHEvent;
+import org.kohsuke.github.GHEventPayload;
+import org.kohsuke.github.GitHub;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -55,9 +59,9 @@ import static org.kohsuke.github.GHEvent.PULL_REQUEST;
  * This subscriber manages {@link org.kohsuke.github.GHEvent} PULL_REQUEST.
  */
 @Extension
-public class PullRequestGHEventSubscriber extends GHEventsSubscriber {
+public class PullRequestAzureDevOpsEventSubscriber extends GHEventsSubscriber {
 
-    private static final Logger LOGGER = Logger.getLogger(PullRequestGHEventSubscriber.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(PullRequestAzureDevOpsEventSubscriber.class.getName());
     private static final Pattern REPOSITORY_NAME_PATTERN = Pattern.compile("https?://([^/]+)/([^/]+)/([^/]+)");
 
     @Override
@@ -244,31 +248,34 @@ public class PullRequestGHEventSubscriber extends GHEventsSubscriber {
                 return Collections.emptyMap();
             }
             AzureDevOpsRepoSCMSource src = (AzureDevOpsRepoSCMSource) source;
-            GHEventPayload.PullRequest pullRequest = getPayload();
-            GHPullRequest ghPullRequest = pullRequest.getPullRequest();
-            GHRepository repo = pullRequest.getRepository();
+            //GHEventPayload.PullRequest pullRequest = getPayload();
+            //GHPullRequest ghPullRequest = pullRequest.getPullRequest();
+            //GHRepository repo = pullRequest.getRepository();
+            //TODO we need to populate the GitPullRequest - Luke
+            GitPullRequest gitPullRequest = null;
+            GitRepository repo = gitPullRequest.getRepository();
             String prRepoName = repo.getName();
             if (!prRepoName.matches(AzureDevOpsRepoSCMSource.VALID_GITHUB_REPO_NAME)) {
                 // fake repository name
                 return Collections.emptyMap();
             }
-            GHUser user;
-            try {
-                user = ghPullRequest.getHead().getUser();
-            } catch (IOException e) {
-                // fake owner name
-                return Collections.emptyMap();
-            }
-            String prOwnerName = user.getLogin();
+//            GHUser user;
+//            try {
+//                user = ghPullRequest.getHead().getUser();
+//            } catch (IOException e) {
+//                // fake owner name
+//                return Collections.emptyMap();
+//            }
+            String prOwnerName = gitPullRequest.getCreatedBy().getUniqueName();//TODO unique name or id? - Luke
             if (!prOwnerName.matches(AzureDevOpsRepoSCMSource.VALID_GITHUB_USER_NAME)) {
                 // fake owner name
                 return Collections.emptyMap();
             }
-            if (!ghPullRequest.getBase().getSha().matches(AzureDevOpsRepoSCMSource.VALID_GIT_SHA1)) {
+            if (!gitPullRequest.getLastMergeTargetCommit().getCommitId().matches(AzureDevOpsRepoSCMSource.VALID_GIT_SHA1)) {
                 // fake base sha1
                 return Collections.emptyMap();
             }
-            if (!ghPullRequest.getHead().getSha().matches(AzureDevOpsRepoSCMSource.VALID_GIT_SHA1)) {
+            if (!gitPullRequest.getLastMergeSourceCommit().getCommitId().matches(AzureDevOpsRepoSCMSource.VALID_GIT_SHA1)) {
                 // fake head sha1
                 return Collections.emptyMap();
             }
@@ -279,7 +286,7 @@ public class PullRequestGHEventSubscriber extends GHEventsSubscriber {
             AzureDevOpsRepoSCMSourceContext context = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none())
                     .withTraits(src.getTraits());
             if (!fork && context.wantBranches()) {
-                final String branchName = ghPullRequest.getHead().getRef();
+                final String branchName = gitPullRequest.getSourceRefName();
                 SCMHead head = new BranchSCMHead(branchName);
                 boolean excluded = false;
                 for (SCMHeadPrefilter prefilter : context.prefilters()) {
@@ -290,12 +297,12 @@ public class PullRequestGHEventSubscriber extends GHEventsSubscriber {
                 }
                 if (!excluded) {
                     SCMRevision hash =
-                            new AbstractGitSCMSource.SCMRevisionImpl(head, ghPullRequest.getHead().getSha());
+                            new AbstractGitSCMSource.SCMRevisionImpl(head, gitPullRequest.getLastMergeSourceCommit().getCommitId());
                     result.put(head, hash);
                 }
             }
             if (context.wantPRs()) {
-                int number = pullRequest.getNumber();
+                int number = gitPullRequest.getPullRequestId();
                 Set<ChangeRequestCheckoutStrategy> strategies = fork ? context.forkPRStrategies() : context.originPRStrategies();
                 for (ChangeRequestCheckoutStrategy strategy : strategies) {
                     final String branchName;
@@ -308,17 +315,17 @@ public class PullRequestGHEventSubscriber extends GHEventsSubscriber {
                     PullRequestSCMRevision revision;
                     switch (strategy) {
                         case MERGE:
-                            // it will take a call to GitHub to get the merge commit, so let the event receiver poll
-                            head = new PullRequestSCMHead(ghPullRequest, branchName, true);
+                            // it will take a call to Azure DevOps to get the merge commit, so let the event receiver poll
+                            head = new PullRequestSCMHead(gitPullRequest, branchName, true);
                             revision = null;
                             break;
                         default:
                             // Give the event receiver the data we have so they can revalidate
-                            head = new PullRequestSCMHead(ghPullRequest, branchName, false);
+                            head = new PullRequestSCMHead(gitPullRequest, branchName, false);
                             revision = new PullRequestSCMRevision(
                                     head,
-                                    ghPullRequest.getBase().getSha(),
-                                    ghPullRequest.getHead().getSha()
+                                    gitPullRequest.getLastMergeTargetCommit().getCommitId(),
+                                    gitPullRequest.getLastMergeTargetCommit().getCommitId()
                             );
                             break;
                     }

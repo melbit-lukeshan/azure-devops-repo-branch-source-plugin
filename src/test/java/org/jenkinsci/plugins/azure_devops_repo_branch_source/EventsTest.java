@@ -99,7 +99,7 @@ public class EventsTest {
 
     @Test
     public void given_ghPullRequestEventOpened_then_createdHeadEventFired() throws Exception {
-        PullRequestGHEventSubscriber subscriber = new PullRequestGHEventSubscriber();
+        PullRequestAzureDevOpsEventSubscriber subscriber = new PullRequestAzureDevOpsEventSubscriber();
 
         firedEventType = SCMEvent.Type.CREATED;
         ghEvent = callOnEvent(subscriber, "EventsTest/pullRequestEventCreated.json");
@@ -108,7 +108,7 @@ public class EventsTest {
 
     @Test
     public void given_ghPullRequestEventClosed_then_removedHeadEventFired() throws Exception {
-        PullRequestGHEventSubscriber subscriber = new PullRequestGHEventSubscriber();
+        PullRequestAzureDevOpsEventSubscriber subscriber = new PullRequestAzureDevOpsEventSubscriber();
 
         firedEventType = SCMEvent.Type.REMOVED;
         ghEvent = callOnEvent(subscriber, "EventsTest/pullRequestEventRemoved.json");
@@ -117,7 +117,7 @@ public class EventsTest {
 
     @Test
     public void given_ghPullRequestEventReopened_then_updatedHeadEventFired() throws Exception {
-        PullRequestGHEventSubscriber subscriber = new PullRequestGHEventSubscriber();
+        PullRequestAzureDevOpsEventSubscriber subscriber = new PullRequestAzureDevOpsEventSubscriber();
 
         firedEventType = SCMEvent.Type.UPDATED;
         ghEvent = callOnEvent(subscriber, "EventsTest/pullRequestEventUpdated.json");
@@ -126,7 +126,7 @@ public class EventsTest {
 
     @Test
     public void given_ghPullRequestEventSync_then_updatedHeadEventFired() throws Exception {
-        PullRequestGHEventSubscriber subscriber = new PullRequestGHEventSubscriber();
+        PullRequestAzureDevOpsEventSubscriber subscriber = new PullRequestAzureDevOpsEventSubscriber();
 
         firedEventType = SCMEvent.Type.UPDATED;
         ghEvent = callOnEvent(subscriber, "EventsTest/pullRequestEventUpdatedSync.json");
@@ -164,7 +164,7 @@ public class EventsTest {
         return event;
     }
 
-    private GHSubscriberEvent callOnEvent(PullRequestGHEventSubscriber subscriber, String eventPayloadFile) throws IOException {
+    private GHSubscriberEvent callOnEvent(PullRequestAzureDevOpsEventSubscriber subscriber, String eventPayloadFile) throws IOException {
         GHSubscriberEvent event = createEvent(eventPayloadFile);
         subscriber.onEvent(event);
         return event;
