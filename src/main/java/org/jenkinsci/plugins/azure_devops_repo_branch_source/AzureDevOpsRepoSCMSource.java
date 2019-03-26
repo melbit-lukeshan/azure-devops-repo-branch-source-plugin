@@ -1288,7 +1288,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         if (head instanceof PullRequestSCMHead) {
             PullRequestSCMHead prhead = (PullRequestSCMHead) head;
             int number = prhead.getNumber();
-            GHPullRequest pr = ghRepository.getPullRequest(number);
+            GHPullRequest pr = ghRepository.getPullRequest(number);//TODO 明天从这里开始
             String baseHash;
             switch (prhead.getCheckoutStrategy()) {
                 case MERGE:
