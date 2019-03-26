@@ -74,6 +74,7 @@ import org.eclipse.jgit.lib.Constants;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.*;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.gson.GsonProcessor;
 import org.jenkinsci.plugins.github.config.GitHubServerConfig;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -198,7 +199,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
      * The cache of {@link ObjectMetadataAction} instances for each open PR.
      */
     @NonNull
-    private transient /*effectively final*/ Map<Integer, ObjectMetadataAction> pullRequestMetadataCache;
+    private Map<Integer, ObjectMetadataAction> pullRequestMetadataCache;
     /**
      * The cache of {@link ContributorMetadataAction} instances for each open PR.
      */
@@ -231,6 +232,8 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         pullRequestMetadataCache = new ConcurrentHashMap<>();
         pullRequestContributorCache = new ConcurrentHashMap<>();
         this.traits = new ArrayList<>();
+        System.out.println("pullRequestMetadataCache in AzureDevOpsRepoSCMSource:" + pullRequestMetadataCache);
+        System.out.println("AzureDevOpsRepoSCMSource instance:" + this);
     }
 
     /**
@@ -707,232 +710,229 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                                   @NonNull final TaskListener listener) throws IOException, InterruptedException {
         StandardCredentials credentials = Connector.lookupScanCredentials((Item) getOwner(), collectionUrl, credentialsId);
         // Github client and validation
-        final GitHub github = Connector.connect(collectionUrl, credentials);
+        //final GitHub github = Connector.connect(collectionUrl, credentials);
+        checkApiUrlValidity(credentials);
+        //Connector.checkApiRateLimit(listener, github);
+
         try {
-            checkApiUrlValidity(credentials);
-            Connector.checkApiRateLimit(listener, github);
+            // Input data validation
+            //Connector.checkConnectionValidity(collectionUrl, listener, credentials, github);
+            AzureConnector.INSTANCE.checkConnectionValidity(collectionUrl, listener, credentials);
 
-            try {
-                // Input data validation
-                //Connector.checkConnectionValidity(collectionUrl, listener, credentials, github);
-                AzureConnector.INSTANCE.checkConnectionValidity(collectionUrl, listener, credentials);
+            // Input data validation
+            if (StringUtils.isBlank(repository)) {
+                throw new AbortException("No repository selected, skipping");
+            }
 
-                // Input data validation
-                if (StringUtils.isBlank(repository)) {
-                    throw new AbortException("No repository selected, skipping");
+            this.gitRepository = AzureConnector.INSTANCE.getRepository(collectionUrl, credentials, projectName, repository);
+
+            String fullName = projectName + "/" + repository;
+            //ghRepository = github.getRepository(fullName);
+            //final GHRepository ghRepository = this.ghRepository;
+            final GitRepositoryWithAzureContext gitRepository = this.gitRepository;
+
+            listener.getLogger().format("Examining %s%n", HyperlinkNote.encodeTo(gitRepository.getGitRepository().getRemoteUrl(), fullName));
+
+            //repositoryUrl = ghRepository.getHtmlUrl();
+            repositoryUrl = new URL(gitRepository.getGitRepository().getRemoteUrl());
+
+            try (final AzureDevOpsRepoSCMSourceRequest request = new AzureDevOpsRepoSCMSourceContext(criteria, observer)
+                    .withTraits(traits)
+                    .newRequest(this, listener)) {
+                // populate the request with its data sources
+                //request.setGitHub(github);
+                //request.setRepository(ghRepository);
+                if (request.isFetchPRs()) {
+                    request.setPullRequests(new LazyPullRequestsAzure(request, gitRepository));
                 }
-
-                this.gitRepository = AzureConnector.INSTANCE.getRepository(collectionUrl, credentials, projectName, repository);
-
-                String fullName = projectName + "/" + repository;
-                //ghRepository = github.getRepository(fullName);
-                //final GHRepository ghRepository = this.ghRepository;
-                final GitRepositoryWithAzureContext gitRepository = this.gitRepository;
-
-                listener.getLogger().format("Examining %s%n", HyperlinkNote.encodeTo(gitRepository.getGitRepository().getRemoteUrl(), fullName));
-
-                //repositoryUrl = ghRepository.getHtmlUrl();
-                repositoryUrl = new URL(gitRepository.getGitRepository().getRemoteUrl());
-
-                try (final AzureDevOpsRepoSCMSourceRequest request = new AzureDevOpsRepoSCMSourceContext(criteria, observer)
-                        .withTraits(traits)
-                        .newRequest(this, listener)) {
-                    // populate the request with its data sources
-                    request.setGitHub(github);
-                    request.setRepository(ghRepository);
-                    if (request.isFetchPRs()) {
-                        request.setPullRequests(new LazyPullRequestsAzure(request, gitRepository));
+                if (request.isFetchBranches()) {
+                    request.setBranches(new LazyBranchesAzure(request, gitRepository));
+                }
+                if (request.isFetchTags()) {
+                    //TODO uncomment below
+                    //request.setTags(new LazyTags(request, ghRepository));
+                }
+                //TODO uncomment below
+                //request.setCollaboratorNames(new LazyContributorNames(request, listener, github, ghRepository, credentials));
+                request.setPermissionsSource(new AzureDevOpsRepoPermissionsSource() {
+                    @Override
+                    public AzurePermissionType fetch(String username) throws IOException, InterruptedException {
+                        //return ghRepository.getPermission(username);
+                        return AzurePermissionType.ADMIN;
                     }
-                    if (request.isFetchBranches()) {
-                        request.setBranches(new LazyBranchesAzure(request, gitRepository));
-                    }
-                    if (request.isFetchTags()) {
-                        //TODO uncomment below
-                        //request.setTags(new LazyTags(request, ghRepository));
-                    }
-                    request.setCollaboratorNames(new LazyContributorNames(request, listener, github, ghRepository, credentials));
-                    request.setPermissionsSource(new AzureDevOpsRepoPermissionsSource() {
-                        @Override
-                        public AzurePermissionType fetch(String username) throws IOException, InterruptedException {
-                            //return ghRepository.getPermission(username);
-                            return AzurePermissionType.ADMIN;
+                });
+
+                if (request.isFetchBranches() && !request.isComplete()) {
+                    listener.getLogger().format("%n  Checking branches...%n");
+                    int count = 0;
+                    for (final GitRef branch : request.getBranches()) {
+                        count++;
+                        String branchName = branch.getBranchName();
+                        //listener.getLogger().format("%n    Checking branch %s%n", HyperlinkNote.encodeTo(repositoryUrl + "/tree/" + branchName, branchName));
+                        listener.getLogger().format("%n    Checking branch %s%n", HyperlinkNote.encodeTo(repositoryUrl + "?version=GB" + branchName, branchName));
+                        BranchSCMHead head = new BranchSCMHead(branchName);
+                        if (request.process(head, new SCMRevisionImpl(head, branch.getObjectId()),
+                                new SCMSourceRequest.ProbeLambda<BranchSCMHead, SCMRevisionImpl>() {
+                                    @NonNull
+                                    @Override
+                                    public SCMSourceCriteria.Probe create(@NonNull BranchSCMHead head,
+                                                                          @Nullable SCMRevisionImpl revisionInfo)
+                                            throws IOException, InterruptedException {
+                                        return new AzureDevOpsRepoSCMProbe(gitRepository, head, revisionInfo);
+                                    }
+                                }, new CriteriaWitness(listener))) {
+                            listener.getLogger().format("%n  %d branches were processed (query completed)%n", count);
+                            break;
+                        } else {
+                            request.checkApiRateLimit();
                         }
-                    });
-
-                    if (request.isFetchBranches() && !request.isComplete()) {
-                        listener.getLogger().format("%n  Checking branches...%n");
-                        int count = 0;
-                        for (final GitRef branch : request.getBranches()) {
+                    }
+                    listener.getLogger().format("%n  %d branches were processed%n", count);
+                }
+                if (request.isFetchPRs() && !request.isComplete()) {
+                    listener.getLogger().format("%n  Checking pull-requests...%n");
+                    int count = 0;
+                    Map<Boolean, Set<ChangeRequestCheckoutStrategy>> strategies = request.getPRStrategies();
+                    PRs:
+                    for (final GitPullRequest pr : request.getPullRequests()) {
+                        int number = pr.getPullRequestId();
+                        boolean fork = (pr.getForkSource() != null);
+                        listener.getLogger().format("%n    Checking pull request %s%n",
+                                HyperlinkNote.encodeTo(pr.getRemoteUrl(), "#" + number));
+                        if (strategies.get(fork).isEmpty()) {
+                            if (fork) {
+                                listener.getLogger().format("    Submitted from fork, skipping%n%n");
+                            } else {
+                                listener.getLogger().format("    Submitted from origin repository, skipping%n%n");
+                            }
+                            continue;
+                        }
+                        for (final ChangeRequestCheckoutStrategy strategy : strategies.get(fork)) {
+                            final String branchName;
+                            if (strategies.get(fork).size() == 1) {
+                                branchName = "PR-" + number;
+                            } else {
+                                branchName = "PR-" + number + "-" + strategy.name().toLowerCase(Locale.ENGLISH);
+                            }
                             count++;
-                            String branchName = branch.getBranchName();
-                            //listener.getLogger().format("%n    Checking branch %s%n", HyperlinkNote.encodeTo(repositoryUrl + "/tree/" + branchName, branchName));
-                            listener.getLogger().format("%n    Checking branch %s%n", HyperlinkNote.encodeTo(repositoryUrl + "?version=GB" + branchName, branchName));
-                            BranchSCMHead head = new BranchSCMHead(branchName);
-                            if (request.process(head, new SCMRevisionImpl(head, branch.getObjectId()),
-                                    new SCMSourceRequest.ProbeLambda<BranchSCMHead, SCMRevisionImpl>() {
+                            if (request.process(new PullRequestSCMHead(pr, branchName, strategy == ChangeRequestCheckoutStrategy.MERGE),
+                                    null,
+                                    new SCMSourceRequest.ProbeLambda<PullRequestSCMHead, Void>() {
                                         @NonNull
                                         @Override
-                                        public SCMSourceCriteria.Probe create(@NonNull BranchSCMHead head,
-                                                                              @Nullable SCMRevisionImpl revisionInfo)
+                                        public SCMSourceCriteria.Probe create(@NonNull PullRequestSCMHead head,
+                                                                              @Nullable Void revisionInfo)
                                                 throws IOException, InterruptedException {
-                                            return new AzureDevOpsRepoSCMProbe(gitRepository, head, revisionInfo);
-                                        }
-                                    }, new CriteriaWitness(listener))) {
-                                listener.getLogger().format("%n  %d branches were processed (query completed)%n", count);
-                                break;
-                            } else {
-                                request.checkApiRateLimit();
-                            }
-                        }
-                        listener.getLogger().format("%n  %d branches were processed%n", count);
-                    }
-                    if (request.isFetchPRs() && !request.isComplete()) {
-                        listener.getLogger().format("%n  Checking pull-requests...%n");
-                        int count = 0;
-                        Map<Boolean, Set<ChangeRequestCheckoutStrategy>> strategies = request.getPRStrategies();
-                        PRs:
-                        for (final GitPullRequest pr : request.getPullRequests()) {
-                            int number = pr.getPullRequestId();
-                            boolean fork = (pr.getForkSource() != null);
-                            listener.getLogger().format("%n    Checking pull request %s%n",
-                                    HyperlinkNote.encodeTo(pr.getRemoteUrl(), "#" + number));
-                            if (strategies.get(fork).isEmpty()) {
-                                if (fork) {
-                                    listener.getLogger().format("    Submitted from fork, skipping%n%n");
-                                } else {
-                                    listener.getLogger().format("    Submitted from origin repository, skipping%n%n");
-                                }
-                                continue;
-                            }
-                            for (final ChangeRequestCheckoutStrategy strategy : strategies.get(fork)) {
-                                final String branchName;
-                                if (strategies.get(fork).size() == 1) {
-                                    branchName = "PR-" + number;
-                                } else {
-                                    branchName = "PR-" + number + "-" + strategy.name().toLowerCase(Locale.ENGLISH);
-                                }
-                                count++;
-                                if (request.process(new PullRequestSCMHead(pr, branchName, strategy == ChangeRequestCheckoutStrategy.MERGE),
-                                        null,
-                                        new SCMSourceRequest.ProbeLambda<PullRequestSCMHead, Void>() {
-                                            @NonNull
-                                            @Override
-                                            public SCMSourceCriteria.Probe create(@NonNull PullRequestSCMHead head,
-                                                                                  @Nullable Void revisionInfo)
-                                                    throws IOException, InterruptedException {
-                                                boolean trusted = request.isTrusted(head);
-                                                if (!trusted) {
-                                                    listener.getLogger().format("    (not from a trusted source)%n");
-                                                }
-                                                return new AzureDevOpsRepoSCMProbe(gitRepository,
-                                                        trusted ? head : head.getTarget(), null);
+                                            boolean trusted = request.isTrusted(head);
+                                            if (!trusted) {
+                                                listener.getLogger().format("    (not from a trusted source)%n");
                                             }
-                                        },
-                                        new SCMSourceRequest.LazyRevisionLambda<PullRequestSCMHead, SCMRevision, Void>() {
-                                            @NonNull
-                                            @Override
-                                            public SCMRevision create(@NonNull PullRequestSCMHead head,
-                                                                      @Nullable Void ignored)
-                                                    throws IOException, InterruptedException {
-                                                switch (strategy) {
-                                                    case MERGE:
-                                                        request.checkApiRateLimit();
+                                            return new AzureDevOpsRepoSCMProbe(gitRepository,
+                                                    trusted ? head : head.getTarget(), null);
+                                        }
+                                    },
+                                    new SCMSourceRequest.LazyRevisionLambda<PullRequestSCMHead, SCMRevision, Void>() {
+                                        @NonNull
+                                        @Override
+                                        public SCMRevision create(@NonNull PullRequestSCMHead head,
+                                                                  @Nullable Void ignored)
+                                                throws IOException, InterruptedException {
+                                            switch (strategy) {
+                                                case MERGE:
+                                                    request.checkApiRateLimit();
 //                                                        GHRef mergeRef = ghRepository.getRef(
 //                                                                "heads/" + pr.getBase().getRef()
 //                                                        );
-                                                        //TODO: not sure how to set the base hash and pull hash
-                                                        return new PullRequestSCMRevision(head,
-                                                                pr.getLastMergeTargetCommit().getCommitId(),
-                                                                pr.getLastMergeSourceCommit().getCommitId());
-                                                    default:
-                                                        //TODO: not sure how to set the base hash and pull hash
-                                                        return new PullRequestSCMRevision(head,
-                                                                pr.getLastMergeTargetCommit().getCommitId(),
-                                                                pr.getLastMergeSourceCommit().getCommitId());
-                                                }
+                                                    //TODO: not sure how to set the base hash and pull hash
+                                                    return new PullRequestSCMRevision(head,
+                                                            pr.getLastMergeTargetCommit().getCommitId(),
+                                                            pr.getLastMergeSourceCommit().getCommitId());
+                                                default:
+                                                    //TODO: not sure how to set the base hash and pull hash
+                                                    return new PullRequestSCMRevision(head,
+                                                            pr.getLastMergeTargetCommit().getCommitId(),
+                                                            pr.getLastMergeSourceCommit().getCommitId());
                                             }
-                                        },
-                                        new MergabilityWitness(pr, strategy, listener),
-                                        new CriteriaWitness(listener)
-                                )) {
-                                    listener.getLogger().format(
-                                            "%n  %d pull requests were processed (query completed)%n",
-                                            count
-                                    );
-                                    break PRs;
-                                } else {
-                                    request.checkApiRateLimit();
-                                }
-                            }
-                        }
-                        listener.getLogger().format("%n  %d pull requests were processed%n", count);
-                    }
-                    if (request.isFetchTags() && !request.isComplete()) {
-                        listener.getLogger().format("%n  Checking tags...%n");
-                        int count = 0;
-                        for (final GHRef tag : request.getTags()) {
-                            String tagName = tag.getRef();
-                            if (!tagName.startsWith(Constants.R_TAGS)) {
-                                // should never happen, but if it does we should skip
-                                continue;
-                            }
-                            tagName = tagName.substring(Constants.R_TAGS.length());
-                            count++;
-                            listener.getLogger().format("%n    Checking tag %s%n", HyperlinkNote
-                                    .encodeTo(repositoryUrl + "/tree/" + tagName, tagName));
-                            long tagDate = 0L;
-                            String sha = tag.getObject().getSha();
-                            if ("tag".equalsIgnoreCase(tag.getObject().getType())) {
-                                // annotated tag object
-                                try {
-                                    GHTagObject tagObject = request.getRepository().getTagObject(sha);
-                                    tagDate = tagObject.getTagger().getDate().getTime();
-                                    // we want the sha of the tagged commit not the tag object
-                                    sha = tagObject.getObject().getSha();
-                                } catch (IOException e) {
-                                    // ignore, if the tag doesn't exist, the probe will handle that correctly
-                                    // we just need enough of a date value to allow for probing
-                                }
-                            } else {
-                                try {
-                                    GHCommit commit = request.getRepository().getCommit(sha);
-                                    tagDate = commit.getCommitDate().getTime();
-                                } catch (IOException e) {
-                                    // ignore, if the tag doesn't exist, the probe will handle that correctly
-                                    // we just need enough of a date value to allow for probing
-                                }
-                            }
-                            AzureDevOpsRepoTagSCMHead head = new AzureDevOpsRepoTagSCMHead(tagName, tagDate);
-                            if (request.process(head, new GitTagSCMRevision(head, sha),
-                                    new SCMSourceRequest.ProbeLambda<AzureDevOpsRepoTagSCMHead, GitTagSCMRevision>() {
-                                        @NonNull
-                                        @Override
-                                        public SCMSourceCriteria.Probe create(@NonNull AzureDevOpsRepoTagSCMHead head,
-                                                                              @Nullable GitTagSCMRevision revisionInfo)
-                                                throws IOException, InterruptedException {
-                                            return new AzureDevOpsRepoSCMProbe(gitRepository, head, revisionInfo);
                                         }
-                                    }, new CriteriaWitness(listener))) {
-                                listener.getLogger()
-                                        .format("%n  %d tags were processed (query completed)%n", count);
-                                break;
+                                    },
+                                    new MergabilityWitness(pr, strategy, listener),
+                                    new CriteriaWitness(listener)
+                            )) {
+                                listener.getLogger().format(
+                                        "%n  %d pull requests were processed (query completed)%n",
+                                        count
+                                );
+                                break PRs;
                             } else {
                                 request.checkApiRateLimit();
                             }
                         }
-                        listener.getLogger().format("%n  %d tags were processed%n", count);
                     }
+                    listener.getLogger().format("%n  %d pull requests were processed%n", count);
                 }
-                listener.getLogger().format("%nFinished examining %s%n%n", fullName);
-            } catch (WrappedException e) {
-                try {
-                    e.unwrap();
-                } catch (RateLimitExceededException rle) {
-                    throw new AbortException(rle.getMessage());
+                if (request.isFetchTags() && !request.isComplete()) {
+                    listener.getLogger().format("%n  Checking tags...%n");
+                    int count = 0;
+                    for (final GHRef tag : request.getTags()) {
+                        String tagName = tag.getRef();
+                        if (!tagName.startsWith(Constants.R_TAGS)) {
+                            // should never happen, but if it does we should skip
+                            continue;
+                        }
+                        tagName = tagName.substring(Constants.R_TAGS.length());
+                        count++;
+                        listener.getLogger().format("%n    Checking tag %s%n", HyperlinkNote
+                                .encodeTo(repositoryUrl + "/tree/" + tagName, tagName));
+                        long tagDate = 0L;
+                        String sha = tag.getObject().getSha();
+                        if ("tag".equalsIgnoreCase(tag.getObject().getType())) {
+                            // annotated tag object
+                            try {
+                                GHTagObject tagObject = request.getRepository().getTagObject(sha);
+                                tagDate = tagObject.getTagger().getDate().getTime();
+                                // we want the sha of the tagged commit not the tag object
+                                sha = tagObject.getObject().getSha();
+                            } catch (IOException e) {
+                                // ignore, if the tag doesn't exist, the probe will handle that correctly
+                                // we just need enough of a date value to allow for probing
+                            }
+                        } else {
+                            try {
+                                GHCommit commit = request.getRepository().getCommit(sha);
+                                tagDate = commit.getCommitDate().getTime();
+                            } catch (IOException e) {
+                                // ignore, if the tag doesn't exist, the probe will handle that correctly
+                                // we just need enough of a date value to allow for probing
+                            }
+                        }
+                        AzureDevOpsRepoTagSCMHead head = new AzureDevOpsRepoTagSCMHead(tagName, tagDate);
+                        if (request.process(head, new GitTagSCMRevision(head, sha),
+                                new SCMSourceRequest.ProbeLambda<AzureDevOpsRepoTagSCMHead, GitTagSCMRevision>() {
+                                    @NonNull
+                                    @Override
+                                    public SCMSourceCriteria.Probe create(@NonNull AzureDevOpsRepoTagSCMHead head,
+                                                                          @Nullable GitTagSCMRevision revisionInfo)
+                                            throws IOException, InterruptedException {
+                                        return new AzureDevOpsRepoSCMProbe(gitRepository, head, revisionInfo);
+                                    }
+                                }, new CriteriaWitness(listener))) {
+                            listener.getLogger()
+                                    .format("%n  %d tags were processed (query completed)%n", count);
+                            break;
+                        } else {
+                            request.checkApiRateLimit();
+                        }
+                    }
+                    listener.getLogger().format("%n  %d tags were processed%n", count);
                 }
             }
-        } finally {
-            Connector.release(github);
+            listener.getLogger().format("%nFinished examining %s%n%n", fullName);
+        } catch (WrappedException e) {
+            try {
+                e.unwrap();
+            } catch (RateLimitExceededException rle) {
+                throw new AbortException(rle.getMessage());
+            }
         }
     }
 
@@ -1510,28 +1510,24 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         List<Action> result = new ArrayList<>();
         result.add(new AzureDevOpsRepoRepoMetadataAction());
         StandardCredentials credentials = AzureConnector.INSTANCE.lookupCredentials(getOwner(), collectionUrl, credentialsId);
-        GitHub hub = Connector.connect(collectionUrl, credentials);
+        //GitHub hub = Connector.connect(collectionUrl, credentials);
+        //Connector.checkConnectionValidity(collectionUrl, listener, credentials, hub);
+        AzureConnector.INSTANCE.checkConnectionValidity(collectionUrl, listener, credentials);
         try {
-            //Connector.checkConnectionValidity(collectionUrl, listener, credentials, hub);
-            AzureConnector.INSTANCE.checkConnectionValidity(collectionUrl, listener, credentials);
-            try {
-                gitRepository = AzureConnector.INSTANCE.getRepository(collectionUrl, credentials, getProjectName(), repository);
-                repositoryUrl = new URL(gitRepository.getGitRepository().getRemoteUrl());
-                //ghRepository = hub.getRepository(getProjectName() + '/' + repository);
-                //repositoryUrl = ghRepository.getHtmlUrl();
-            } catch (Exception e) {
-                throw new AbortException(
-                        String.format("Invalid scan credentials when using %s to connect to %s/%s on %s", CredentialsNameProvider.name(credentials), projectName, repository, collectionUrl));
-            }
-            result.add(new ObjectMetadataAction(null, gitRepository.getGitRepository().getProject().getDescription(), Util.fixEmpty(gitRepository.getGitRepository().getRemoteUrl())));
-            result.add(new AzureDevOpsRepoLink("icon-github-repo", gitRepository.getGitRepository().getRemoteUrl()));
-            if (StringUtils.isNotBlank(gitRepository.getGitRepository().getDefaultBranch())) {
-                result.add(new AzureDevOpsRepoDefaultBranch(getProjectName(), repository, gitRepository.getGitRepository().getDefaultBranch()));
-            }
-            return result;
-        } finally {
-            Connector.release(hub);
+            gitRepository = AzureConnector.INSTANCE.getRepository(collectionUrl, credentials, getProjectName(), repository);
+            repositoryUrl = new URL(gitRepository.getGitRepository().getRemoteUrl());
+            //ghRepository = hub.getRepository(getProjectName() + '/' + repository);
+            //repositoryUrl = ghRepository.getHtmlUrl();
+        } catch (Exception e) {
+            throw new AbortException(
+                    String.format("Invalid scan credentials when using %s to connect to %s/%s on %s", CredentialsNameProvider.name(credentials), projectName, repository, collectionUrl));
         }
+        result.add(new ObjectMetadataAction(null, gitRepository.getGitRepository().getProject().getDescription(), Util.fixEmpty(gitRepository.getGitRepository().getRemoteUrl())));
+        result.add(new AzureDevOpsRepoLink("icon-github-repo", gitRepository.getGitRepository().getRemoteUrl()));
+        if (StringUtils.isNotBlank(gitRepository.getGitRepository().getDefaultBranch())) {
+            result.add(new AzureDevOpsRepoDefaultBranch(getProjectName(), repository, gitRepository.getGitRepository().getDefaultBranch()));
+        }
+        return result;
     }
 
     /**
@@ -2211,9 +2207,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                     // then branchNames would have a size > 1 therefore if the size is 1 we must only
                     // be after PRs that come from this named branch
                     String branchName = branchNames.iterator().next();
-                    request.listener().getLogger().format(
-                            "%n  Getting remote pull requests from branch %s...%n", branchName
-                    );
+                    request.listener().getLogger().format("%n  Getting remote pull requests from branch %s...%n", branchName);
 //                    return new CacheUdatingIterable(repo.queryPullRequests()
 //                            .state(GHIssueState.OPEN)
 //                            .head(repo.getOwnerName() + ":" + branchName)
@@ -2237,7 +2231,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                 // we needed a full scan and the scan was completed, so trim the cache entries
                 pullRequestMetadataCache.keySet().retainAll(pullRequestMetadataKeys);
                 pullRequestContributorCache.keySet().retainAll(pullRequestMetadataKeys);
-                if (Jenkins.getActiveInstance().getInitLevel().compareTo(InitMilestone.JOB_LOADED) > 0) {
+                if (Jenkins.get().getInitLevel().compareTo(InitMilestone.JOB_LOADED) > 0) {
                     // synchronization should be cheap as only writers would be looking for this just to
                     // write null
                     synchronized (pullRequestSourceMapLock) {
@@ -2261,11 +2255,18 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
             public void observe(GitPullRequest pr) {
                 int number = pr.getPullRequestId();
                 try {
+                    System.out.println(GsonProcessor.INSTANCE.instanceToJson(pr));
+                    System.out.println("pullRequestMetadataCache in CacheUdatingIterable:" + pullRequestMetadataCache);
+                    System.out.println("collectionUrl:" + collectionUrl);
+                    System.out.println("repository:" + repository);
+                    System.out.println("request:" + request);
+                    System.out.println("repo:" + repo);
+
                     pullRequestMetadataCache.put(number,
                             new ObjectMetadataAction(
                                     pr.getTitle(),
                                     pr.getDescription(),
-                                    new URL(pr.getRemoteUrl()).toExternalForm()
+                                    new URL(pr.getUrl()).toExternalForm()
                             )
                     );
                 } catch (MalformedURLException e) {

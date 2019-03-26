@@ -111,11 +111,11 @@ abstract class Request<T, R>(_category: String? = null, _id: String? = null) {
     }
 
     private fun String?.resolvePlaceholdersNotEncoded(): String? = this?.replace(REGEX_PLACEHOLDER) {
-        it.groupValues[1].getPropertyValue(this@Request).toString()
+        it.groupValues[1].getPropertyValue(this@Request)?.toString().orEmpty()
     }
 
     private fun String?.resolvePlaceholders(): String? = this?.replace(REGEX_PLACEHOLDER) {
-        it.groupValues[1].getPropertyValue(this@Request).toString().urlEncoded().orEmpty()
+        it.groupValues[1].getPropertyValue(this@Request)?.toString().urlEncoded().orEmpty()
     }
 
     private fun String?.resolvePlaceholdersByJsonProcessor(): String? = this?.replace(REGEX_PLACEHOLDER) {
@@ -131,7 +131,7 @@ abstract class Request<T, R>(_category: String? = null, _id: String? = null) {
                     put(it.groupValues[1], it.groupValues[2].urlEncoded().orEmpty())
                 }
                 REGEX_NAME_VALUE_PLACEHOLDER_PAIR.findAll(theString).forEach {
-                    put(it.groupValues[1], it.groupValues[2].getPropertyValue(this@Request).toString().urlEncoded().orEmpty())
+                    put(it.groupValues[1], it.groupValues[2].getPropertyValue(this@Request)?.toString().urlEncoded().orEmpty())
                 }
             }
         }
@@ -144,7 +144,7 @@ abstract class Request<T, R>(_category: String? = null, _id: String? = null) {
                     add(it.groupValues[1] to it.groupValues[2])
                 }
                 REGEX_NAME_VALUE_PLACEHOLDER_PAIR.findAll(theString).forEach {
-                    add(it.groupValues[1] to it.groupValues[2].getPropertyValue(this@Request).toString())
+                    add(it.groupValues[1] to it.groupValues[2].getPropertyValue(this@Request)?.toString().orEmpty())
                 }
             }
         }

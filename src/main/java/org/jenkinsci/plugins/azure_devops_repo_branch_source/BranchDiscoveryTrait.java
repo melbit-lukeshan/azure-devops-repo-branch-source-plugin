@@ -228,7 +228,7 @@ public class BranchDiscoveryTrait extends SCMSourceTrait {
                 for (GitPullRequest p : ((AzureDevOpsRepoSCMSourceRequest) request).getPullRequests()) {
                     GitRepository headRepo = p.getRepository(); //TODO we don't know how to get source repo yet. For now use target repo. - Luke
                     if (headRepo != null // head repo can be null if the PR is from a repo that has been deleted
-                            && p.getRepository().getRemoteUrl().equalsIgnoreCase(headRepo.getRemoteUrl())
+                            && p.getRepository().getUrl().equalsIgnoreCase(headRepo.getUrl())
                             && p.getSourceRefName().equals(head.getName())) {
                         return true;
                     }
@@ -251,7 +251,7 @@ public class BranchDiscoveryTrait extends SCMSourceTrait {
                 for (GitPullRequest p : ((AzureDevOpsRepoSCMSourceRequest) request).getPullRequests()) {
                     GitRepository headRepo = p.getRepository(); //TODO we don't know how to get source repo yet. For now use target repo. - Luke
                     if (headRepo != null // head repo can be null if the PR is from a repo that has been deleted
-                            && p.getRepository().getRemoteUrl().equalsIgnoreCase(headRepo.getRemoteUrl())
+                            && p.getRepository().getUrl().equalsIgnoreCase(headRepo.getUrl())
                             && p.getSourceRefName().equals(head.getName())) {
                         return false;
                     }

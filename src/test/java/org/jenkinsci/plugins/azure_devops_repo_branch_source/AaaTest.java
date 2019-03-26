@@ -2,6 +2,7 @@ package org.jenkinsci.plugins.azure_devops_repo_branch_source;
 
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.*;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.*;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.gson.GsonProcessor;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support.OkHttp2Helper;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support.Result;
 import org.junit.Test;
@@ -131,13 +132,14 @@ public class AaaTest {
 
     @Test
     public void aTest9() throws Exception {
-        ListPullRequestStatusesRequest listPullRequestStatusesRequest = new ListPullRequestStatusesRequest(collectionUrl, pat, projectName, repositoryName, pullRequestId);
+        ListPullRequestsRequest listPullRequestsRequest = new ListPullRequestsRequest(collectionUrl, pat, projectName, repositoryName, PullRequestStatus.active, null);
         OkHttp2Helper.INSTANCE.setDebugMode(true);
-        Result<PullRequestStatuses, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(listPullRequestStatusesRequest, PullRequestStatuses.class, Object.class);
-        PullRequestStatuses pullRequestStatuses = result.getGoodValueOrNull();
-        if (pullRequestStatuses != null) {
-            for (GitPullRequestStatus gitPullRequestStatus : pullRequestStatuses.getValue()) {
-                System.out.println(gitPullRequestStatus.getId() + " -> " + gitPullRequestStatus.getDescription());
+        Result<PullRequests, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(listPullRequestsRequest, PullRequests.class, Object.class);
+        PullRequests pullRequests = result.getGoodValueOrNull();
+        if (pullRequests != null) {
+            for (GitPullRequest gitPullRequest : pullRequests.getValue()) {
+                System.out.println(GsonProcessor.INSTANCE.instanceToJson(gitPullRequest));
+                //System.out.println(gitPullRequest.getPullRequestId() + " -> " + gitPullRequest.getTitle()+ " -> " + gitPullRequest.getUrl());
             }
         }
     }
