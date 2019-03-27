@@ -39,11 +39,14 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @since FIXME
  */
 public class BranchSCMHead extends SCMHead {
+    public RealBranchType realBranchType;
+
     /**
      * {@inheritDoc}
      */
-    public BranchSCMHead(@NonNull String name) {
+    public BranchSCMHead(@NonNull String name, RealBranchType realBranchType) {
         super(name);
+        this.realBranchType = realBranchType;
     }
 
     /**
@@ -52,6 +55,10 @@ public class BranchSCMHead extends SCMHead {
     @Override
     public String getPronoun() {
         return Messages.BranchSCMHead_Pronoun();
+    }
+
+    public enum RealBranchType {
+        branch, pr, tag
     }
 
     @Restricted(NoExternalUse.class)
@@ -63,7 +70,7 @@ public class BranchSCMHead extends SCMHead {
 
         @Override
         public SCMHead migrate(@NonNull AzureDevOpsRepoSCMSource source, @NonNull SCMHead head) {
-            return new BranchSCMHead(head.getName());
+            return new BranchSCMHead(head.getName(), RealBranchType.branch);
         }
 
         @Override

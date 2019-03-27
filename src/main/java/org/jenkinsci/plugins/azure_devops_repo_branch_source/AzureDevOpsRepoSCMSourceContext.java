@@ -162,7 +162,7 @@ public class AzureDevOpsRepoSCMSourceContext
      */
     public final List<AbstractAzureDevOpsNotificationStrategy> notificationStrategies() {
         if (notificationStrategies.isEmpty()) {
-            return Collections.<AbstractAzureDevOpsNotificationStrategy>singletonList(new DefaultAzureDevOpsNotificationStrategy());
+            return Collections.singletonList(new DefaultAzureDevOpsNotificationStrategy());
         }
         return Collections.unmodifiableList(notificationStrategies);
     }
@@ -253,9 +253,9 @@ public class AzureDevOpsRepoSCMSourceContext
     }
 
     /**
-     * Replaces the list of strategies used to notify Github of build status.
+     * Replaces the list of strategies used to notify Azure DevOps of build status.
      *
-     * @param strategies the strategies used to notify Github of build status.
+     * @param strategies the strategies used to notify Azure DevOps of build status.
      * @return {@code this} for method chaining.
      * @since TODO
      */
@@ -271,9 +271,9 @@ public class AzureDevOpsRepoSCMSourceContext
     }
 
     /**
-     * Add a strategy used to notify Github of build status.
+     * Add a strategy used to notify Azure DevOps of build status.
      *
-     * @param strategy a strategy used to notify Github of build status.
+     * @param strategy a strategy used to notify Azure DevOps of build status.
      * @return {@code this} for method chaining.
      * @since TODO
      */

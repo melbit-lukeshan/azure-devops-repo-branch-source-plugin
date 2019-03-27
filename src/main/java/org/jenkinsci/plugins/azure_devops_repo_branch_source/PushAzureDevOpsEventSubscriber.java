@@ -301,9 +301,9 @@ public class PushAzureDevOpsEventSubscriber extends GHEventsSubscriber {
                 BranchSCMHead head;
                 if (ref.startsWith(R_HEADS)) {
                     // GitHub is consistent in inconsistency, this ref is the full ref... other refs are not!
-                    head = new BranchSCMHead(ref.substring(R_HEADS.length()));
+                    head = new BranchSCMHead(ref.substring(R_HEADS.length()), BranchSCMHead.RealBranchType.branch);
                 } else {
-                    head = new BranchSCMHead(ref);
+                    head = new BranchSCMHead(ref, BranchSCMHead.RealBranchType.branch);
                 }
                 boolean excluded = false;
                 for (SCMHeadPrefilter prefilter : context.prefilters()) {

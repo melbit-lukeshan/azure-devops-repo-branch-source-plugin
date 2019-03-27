@@ -86,6 +86,6 @@ final class PullRequestAction extends InvisibleAction {
 
     @NonNull
     public SCMHead getTarget() {
-        return new BranchSCMHead(baseRef);
+        return new BranchSCMHead(baseRef, BranchSCMHead.RealBranchType.branch);
     }
 }

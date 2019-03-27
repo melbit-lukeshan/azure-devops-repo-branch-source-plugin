@@ -197,17 +197,20 @@ public final class AzureDevOpsRepoNotificationContext {
         if (null != build) {
             Result result = build.getResult();
             if (Result.SUCCESS.equals(result)) {
-                return Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatus_Good();
+                //return Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatus_Good();
+                return build.getParent().getDisplayName() + "#" + build.getNumber() + ": SUCCESS";
             } else if (Result.UNSTABLE.equals(result)) {
                 return Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatus_Unstable();
             } else if (Result.FAILURE.equals(result)) {
-                return Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatus_Failure();
+                //return Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatus_Failure();
+                return build.getParent().getDisplayName() + "#" + build.getNumber() + ": FAILURE";
             } else if (Result.ABORTED.equals(result)) {
                 return Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatus_Aborted();
             } else if (result != null) { // NOT_BUILT etc.
                 return Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatus_Other();
             } else {
-                return Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatus_Pending();
+                //return Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatus_Pending();
+                return build.getParent().getDisplayName() + "#" + build.getNumber() + ": PENDING";
             }
         }
         return Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatus_Queued();

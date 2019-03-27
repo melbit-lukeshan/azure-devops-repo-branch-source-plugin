@@ -287,7 +287,7 @@ public class PullRequestAzureDevOpsEventSubscriber extends GHEventsSubscriber {
                     .withTraits(src.getTraits());
             if (!fork && context.wantBranches()) {
                 final String branchName = gitPullRequest.getSourceRefName();
-                SCMHead head = new BranchSCMHead(branchName);
+                SCMHead head = new BranchSCMHead(branchName, BranchSCMHead.RealBranchType.branch);
                 boolean excluded = false;
                 for (SCMHeadPrefilter prefilter : context.prefilters()) {
                     if (prefilter.isExcluded(source, head)) {

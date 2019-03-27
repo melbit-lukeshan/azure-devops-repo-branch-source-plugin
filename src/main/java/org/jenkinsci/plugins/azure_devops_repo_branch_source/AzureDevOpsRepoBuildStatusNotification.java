@@ -53,7 +53,7 @@ import java.util.logging.Logger;
 
 
 /**
- * Manages GitHub Statuses.
+ * Manages Azure DevOps Statuses.
  * <p>
  * Job (associated to a PR) scheduled: PENDING
  * Build doing a checkout: PENDING
@@ -87,7 +87,18 @@ public class AzureDevOpsRepoBuildStatusNotification {
                             boolean ignoreError = request.isIgnoreError();
                             //repo.createCommitStatus(revisionToNotify, request.getState(), request.getUrl(), request.getMessage(), request.getContext());
                             final String instanceUrl = StringUtils.stripEnd(Jenkins.get().getRootUrl(), "/");
-                            final String projectDisplayName = build.getParent().getParent().getFullName() + "/" + build.getParent().getDisplayName();
+                            String projectDisplayName = build.getParent().getParent().getFullName() + "/" + build.getParent().getDisplayName();
+                            //TODO debug info. Remove later. - Luke
+                            System.out.println("AzureDevOpsRepoBuildStatusNotification createBuildCommitStatus");
+                            if (head instanceof PullRequestSCMHead) {
+                                projectDisplayName = build.getParent().getParent().getFullName() + "/pr-merge";
+                            } else if (head instanceof BranchSCMHead) {
+                                BranchSCMHead branchSCMHead = (BranchSCMHead) head;
+                                if (branchSCMHead.realBranchType == BranchSCMHead.RealBranchType.pr) {
+                                    projectDisplayName = build.getParent().getParent().getFullName() + "/pr-merge";
+                                }
+                            }
+                            //TODO end
                             GitStatusContext context = new GitStatusContext(instanceUrl, projectDisplayName);
                             GitStatusForCreation status = new GitStatusForCreation(request.getState(), request.getMessage(), request.getUrl(), context);
                             GitStatus ret = AzureConnector.INSTANCE.createCommitStatus(repo, revisionToNotify, status);
@@ -146,14 +157,14 @@ public class AzureDevOpsRepoBuildStatusNotification {
     }
 
     /**
-     * With this listener one notifies to GitHub when a Job has been scheduled.
+     * With this listener one notifies to Azure DevOps when a Job has been scheduled.
      * Sends: GHCommitState.PENDING
      */
     @Extension
     public static class JobScheduledListener extends QueueListener {
 
         /**
-         * Manages the GitHub Commit Pending GitStatus.
+         * Manages the Azure DevOps Commit Pending GitStatus.
          */
         @Override
         public void onEnterWaiting(Queue.WaitingItem wi) {
@@ -186,7 +197,7 @@ public class AzureDevOpsRepoBuildStatusNotification {
                         GitRepositoryWithAzureContext repo = lookUpRepo(job);
                         if (repo != null) {
                             // The submitter might push another commit before this build even starts.
-                            if (Jenkins.getActiveInstance().getQueue().getItem(taskId) instanceof Queue.LeftItem) {
+                            if (Jenkins.get().getQueue().getItem(taskId) instanceof Queue.LeftItem) {
                                 // we took too long and the item has left the queue, no longer valid to apply pending
 
                                 // status. JobCheckOutListener is now responsible for setting the pending status.
@@ -202,7 +213,11 @@ public class AzureDevOpsRepoBuildStatusNotification {
                                     boolean ignoreErrors = request.isIgnoreError();
                                     //repo.createCommitStatus(hash, request.getState(), request.getUrl(), request.getMessage(), request.getContext());
                                     final String instanceUrl = StringUtils.stripEnd(Jenkins.get().getRootUrl(), "/");
-                                    final String projectDisplayName = job.getParent().getFullName() + "/" + job.getDisplayName();
+                                    String projectDisplayName = job.getParent().getFullName() + "/" + job.getDisplayName();
+                                    //TODO debug info. Remove later. - Luke
+                                    System.out.println("AzureDevOpsRepoBuildStatusNotification JobScheduledListener");
+                                    projectDisplayName = job.getParent().getFullName() + "/pr-merge";
+                                    //TODO end
                                     GitStatusContext context = new GitStatusContext(instanceUrl, projectDisplayName);
                                     GitStatusForCreation status = new GitStatusForCreation(request.getState(), request.getMessage(), request.getUrl(), context);
                                     GitStatus ret = AzureConnector.INSTANCE.createCommitStatus(repo, hash, status);

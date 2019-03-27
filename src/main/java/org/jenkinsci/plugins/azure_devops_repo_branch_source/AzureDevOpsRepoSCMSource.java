@@ -767,10 +767,22 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                     int count = 0;
                     for (final GitRef branch : request.getBranches()) {
                         count++;
-                        String branchName = branch.getBranchName();
+                        String branchName;
+                        BranchSCMHead.RealBranchType realBranchType;
+                        if (branch.isBranch()) {
+                            branchName = branch.getBranchName();
+                            realBranchType = BranchSCMHead.RealBranchType.branch;
+                        } else if (branch.isPullRequest()) {
+                            branchName = branch.getPullRequestName();//Note we may treat PR as branch, so we may actually get the PR name here
+                            realBranchType = BranchSCMHead.RealBranchType.pr;
+                        } else {
+                            branchName = branch.getTagName();//Note we may treat tag as branch, so we may actually get the tag name here
+                            realBranchType = BranchSCMHead.RealBranchType.tag;
+                        }
+
                         //listener.getLogger().format("%n    Checking branch %s%n", HyperlinkNote.encodeTo(repositoryUrl + "/tree/" + branchName, branchName));
                         listener.getLogger().format("%n    Checking branch %s%n", HyperlinkNote.encodeTo(repositoryUrl + "?version=GB" + branchName, branchName));
-                        BranchSCMHead head = new BranchSCMHead(branchName);
+                        BranchSCMHead head = new BranchSCMHead(branchName, realBranchType);
                         if (request.process(head, new SCMRevisionImpl(head, branch.getObjectId()),
                                 new SCMSourceRequest.ProbeLambda<BranchSCMHead, SCMRevisionImpl>() {
                                     @NonNull
@@ -1147,7 +1159,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
             GHBranch branch = ghRepository.getBranch(headName);
             if (branch != null) {
                 listener.getLogger().format("Resolved %s as branch %s at revision %s%n", headName, branch.getName(), branch.getSHA1());
-                return new SCMRevisionImpl(new BranchSCMHead(headName), branch.getSHA1());
+                return new SCMRevisionImpl(new BranchSCMHead(headName, BranchSCMHead.RealBranchType.branch), branch.getSHA1());
             }
         } catch (FileNotFoundException e) {
             // maybe it's a tag
@@ -1327,7 +1339,20 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
             return new GitTagSCMRevision(tagHead, sha);
         } else {
             //return new SCMRevisionImpl(head, ghRepository.getRef("heads/" + head.getName()).getObject().getSha());
-            GitRef branch = AzureConnector.INSTANCE.getRef(gitRepository, "heads/" + head.getName());
+            BranchSCMHead branchSCMHead = (BranchSCMHead) head;
+            String filter;
+            switch (branchSCMHead.realBranchType) {
+                case branch:
+                    filter = "heads/" + head.getName();
+                    break;
+                case pr:
+                    filter = "pull/" + head.getName();
+                    break;
+                default:
+                    filter = "tags/" + head.getName();
+                    break;
+            }
+            GitRef branch = AzureConnector.INSTANCE.getRef(gitRepository, filter);
             if (branch != null) {
                 return new SCMRevisionImpl(head, branch.getObjectId());
             } else {
@@ -1896,8 +1921,13 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                     }
                 }
                 request.listener().getLogger().format("%n  Getting remote branches...%n");
-                // local optimization: always try the default branch first in any search
                 List<GitRef> values = AzureConnector.INSTANCE.listBranches(repo);
+                //TODO We may treat PR as branch - luke
+                List<GitRef> values2 = AzureConnector.INSTANCE.listPullRequestsAsRefs(repo);
+                if (values != null && values2 != null) {
+                    values.addAll(values2);
+                }
+                //TODO end
                 final String defaultBranch = StringUtils.defaultIfBlank(repo.getGitRepository().getDefaultBranch(), "master");
                 Collections.sort(values, new Comparator<GitRef>() {
                     @Override
