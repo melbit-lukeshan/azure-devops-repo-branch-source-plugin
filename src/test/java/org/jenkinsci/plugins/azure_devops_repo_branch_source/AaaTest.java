@@ -57,7 +57,7 @@ public class AaaTest {
 
     @Test
     public void aTest3() throws Exception {
-        ListRefsRequest listRefsRequest = new ListRefsRequest(collectionUrl, pat, projectName, repositoryName, "heads/b3");
+        ListRefsRequest listRefsRequest = new ListRefsRequest(collectionUrl, pat, projectName, repositoryName, "");
         OkHttp2Helper.INSTANCE.setDebugMode(true);
         Result<Refs, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(listRefsRequest, Refs.class, Object.class);
         Refs refs = result.getGoodValueOrNull();
@@ -67,7 +67,6 @@ public class AaaTest {
                 System.out.println(gitRef.getName() + "->" + gitRef.getObjectId() + "->" + gitRef.getUrl());
             }
         }
-        assertThat(refs.getCount(), is(1));
     }
 
     @Test
@@ -139,7 +138,7 @@ public class AaaTest {
         if (pullRequests != null) {
             for (GitPullRequest gitPullRequest : pullRequests.getValue()) {
                 System.out.println(GsonProcessor.INSTANCE.instanceToJson(gitPullRequest));
-                //System.out.println(gitPullRequest.getPullRequestId() + " -> " + gitPullRequest.getTitle()+ " -> " + gitPullRequest.getUrl());
+                System.out.println(gitPullRequest.getPullRequestId() + " -> " + gitPullRequest.getLastMergeSourceCommit() + " -> " + gitPullRequest.getLastMergeTargetCommit() + " -> " + gitPullRequest.getLastMergeCommit());
             }
         }
     }

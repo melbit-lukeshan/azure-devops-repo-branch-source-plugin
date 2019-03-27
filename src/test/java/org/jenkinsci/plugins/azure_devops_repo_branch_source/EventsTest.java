@@ -72,7 +72,7 @@ public class EventsTest {
 
     @Test
     public void given_ghPushEventCreated_then_createdHeadEventFired() throws Exception {
-        PushGHEventSubscriber subscriber = new PushGHEventSubscriber();
+        PushAzureDevOpsEventSubscriber subscriber = new PushAzureDevOpsEventSubscriber();
 
         firedEventType = SCMEvent.Type.CREATED;
         ghEvent = callOnEvent(subscriber, "EventsTest/pushEventCreated.json");
@@ -81,7 +81,7 @@ public class EventsTest {
 
     @Test
     public void given_ghPushEventDeleted_then_removedHeadEventFired() throws Exception {
-        PushGHEventSubscriber subscriber = new PushGHEventSubscriber();
+        PushAzureDevOpsEventSubscriber subscriber = new PushAzureDevOpsEventSubscriber();
 
         firedEventType = SCMEvent.Type.REMOVED;
         ghEvent = callOnEvent(subscriber, "EventsTest/pushEventRemoved.json");
@@ -90,7 +90,7 @@ public class EventsTest {
 
     @Test
     public void given_ghPushEventUpdated_then_updatedHeadEventFired() throws Exception {
-        PushGHEventSubscriber subscriber = new PushGHEventSubscriber();
+        PushAzureDevOpsEventSubscriber subscriber = new PushAzureDevOpsEventSubscriber();
 
         firedEventType = SCMEvent.Type.UPDATED;
         ghEvent = callOnEvent(subscriber, "EventsTest/pushEventUpdated.json");
@@ -158,7 +158,7 @@ public class EventsTest {
         waitAndAssertReceived(false);
     }
 
-    private GHSubscriberEvent callOnEvent(PushGHEventSubscriber subscriber, String eventPayloadFile) throws IOException {
+    private GHSubscriberEvent callOnEvent(PushAzureDevOpsEventSubscriber subscriber, String eventPayloadFile) throws IOException {
         GHSubscriberEvent event = createEvent(eventPayloadFile);
         subscriber.onEvent(event);
         return event;

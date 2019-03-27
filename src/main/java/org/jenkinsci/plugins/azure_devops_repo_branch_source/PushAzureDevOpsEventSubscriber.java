@@ -59,12 +59,12 @@ import static org.kohsuke.github.GHEvent.PUSH;
  * This subscriber manages {@link GHEvent} PUSH.
  */
 @Extension
-public class PushGHEventSubscriber extends GHEventsSubscriber {
+public class PushAzureDevOpsEventSubscriber extends GHEventsSubscriber {
 
     /**
      * Our logger.
      */
-    private static final Logger LOGGER = Logger.getLogger(PushGHEventSubscriber.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(PushAzureDevOpsEventSubscriber.class.getName());
     /**
      * Pattern to parse github repository urls.
      */

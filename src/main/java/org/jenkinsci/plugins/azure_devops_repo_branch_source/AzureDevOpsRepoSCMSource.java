@@ -1288,17 +1288,32 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         if (head instanceof PullRequestSCMHead) {
             PullRequestSCMHead prhead = (PullRequestSCMHead) head;
             int number = prhead.getNumber();
-            GHPullRequest pr = ghRepository.getPullRequest(number);//TODO 明天从这里开始
+            //GHPullRequest pr = ghRepository.getPullRequest(number);
+            GitPullRequest pr = AzureConnector.INSTANCE.getPullRequest(gitRepository, number);
             String baseHash;
             switch (prhead.getCheckoutStrategy()) {
                 case MERGE:
-                    baseHash = ghRepository.getRef("heads/" + prhead.getTarget().getName()).getObject().getSha();
+                    //baseHash = ghRepository.getRef("heads/" + prhead.getTarget().getName()).getObject().getSha();
+                    baseHash = pr.getLastMergeTargetCommit().getCommitId();
                     break;
                 default:
-                    baseHash = pr.getBase().getSha();
+                    //baseHash = pr.getBase().getSha();
+                    baseHash = pr.getLastMergeTargetCommit().getCommitId();
                     break;
             }
-            return new PullRequestSCMRevision(prhead, baseHash, pr.getHead().getSha());
+            //return new PullRequestSCMRevision(prhead, baseHash, pr.getHead().getSha());
+            //TODO I am printing the content of the head, remove this after all work
+            System.out.println("PullRequestSCMHead getId:" + prhead.getId());
+            System.out.println("PullRequestSCMHead getOriginName:" + prhead.getOriginName());
+            System.out.println("PullRequestSCMHead getOrigin:" + prhead.getOrigin());
+            System.out.println("PullRequestSCMHead getPronoun:" + prhead.getPronoun());
+            System.out.println("PullRequestSCMHead getSourceBranch:" + prhead.getSourceBranch());
+            System.out.println("PullRequestSCMHead getSourceOwner:" + prhead.getSourceOwner());
+            System.out.println("PullRequestSCMHead getSourceRepo:" + prhead.getSourceRepo());
+            System.out.println("PullRequestSCMHead getCheckoutStrategy:" + prhead.getCheckoutStrategy());
+            System.out.println("PullRequestSCMHead getNumber:" + prhead.getNumber());
+            System.out.println("PullRequestSCMHead getTarget:" + prhead.getTarget());
+            return new PullRequestSCMRevision(prhead, baseHash, pr.getLastMergeSourceCommit().getCommitId());
         } else if (head instanceof AzureDevOpsRepoTagSCMHead) {
             AzureDevOpsRepoTagSCMHead tagHead = (AzureDevOpsRepoTagSCMHead) head;
             GHRef tag = ghRepository.getRef("tags/" + tagHead.getName());

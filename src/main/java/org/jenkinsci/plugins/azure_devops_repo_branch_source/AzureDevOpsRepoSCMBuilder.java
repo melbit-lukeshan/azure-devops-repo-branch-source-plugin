@@ -52,8 +52,6 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
-//import org.jenkinsci.plugins.github.config.GitHubServerConfig;
-
 /**
  * Builds a {@link GitSCM} for {@link AzureDevOpsRepoSCMSource}.
  *
@@ -124,8 +122,9 @@ public class AzureDevOpsRepoSCMBuilder extends GitSCMBuilder<AzureDevOpsRepoSCMB
         String repoUrl;
         if (head instanceof PullRequestSCMHead) {
             PullRequestSCMHead h = (PullRequestSCMHead) head;
-            withRefSpec("+refs/pull/" + h.getId() + "/head:refs/remotes/@{remote}/" + head
-                    .getName());
+            //withRefSpec("+refs/pull/" + h.getId() + "/head:refs/remotes/@{remote}/" + head.getName());
+            //TODO experimental. Make sure this is correct - Luke
+            withRefSpec("+refs/pull/" + h.getId() + "/merge:refs/remotes/@{remote}/" + head.getName());
             repoUrl = repositoryUrl(h.getSourceOwner(), h.getSourceRepo());
         } else if (head instanceof TagSCMHead) {
             withRefSpec("+refs/tags/" + head.getName() + ":refs/tags/" + head.getName());
@@ -166,7 +165,7 @@ public class AzureDevOpsRepoSCMBuilder extends GitSCMBuilder<AzureDevOpsRepoSCMB
                 return repositoryUrl.toExternalForm();
             }
             // hack!
-            return repositoryUrl.toExternalForm().replace(projectName + "/" + repository, project + "/" + repo);
+            return repositoryUrl.toExternalForm().replace(projectName + "/_git/" + repository, project + "/_git/" + repo);
         }
         String apiUri = StringUtils.removeEnd(collectionUrl, "/");
         return apiUri + "/" + project + "/_git/" + repo;
@@ -272,11 +271,21 @@ public class AzureDevOpsRepoSCMBuilder extends GitSCMBuilder<AzureDevOpsRepoSCMB
                 if (head.isMerge()) {
                     // add the target branch to ensure that the revision we want to merge is also available
                     String name = head.getTarget().getName();
+                    //TODO this is debug info. Remove it after all work. - Luke
+                    System.out.println("AzureDevOpsRepoSCMBuilder old name:" + name);
+                    name = name.replace("refs/heads/", "");
+                    //TODO this is debug info. Remove it after all work. - Luke
+                    System.out.println("AzureDevOpsRepoSCMBuilder adjusted name:" + name);
                     String localName = "remotes/" + remoteName() + "/" + name;
                     Set<String> localNames = new HashSet<>();
                     boolean match = false;
                     String targetSrc = Constants.R_HEADS + name;
                     String targetDst = Constants.R_REMOTES + remoteName() + "/" + name;
+                    //TODO this is debug info. Remove it after all work. - Luke
+                    System.out.println("AzureDevOpsRepoSCMBuilder localName:" + localName);
+                    System.out.println("AzureDevOpsRepoSCMBuilder remoteName():" + remoteName());
+                    System.out.println("AzureDevOpsRepoSCMBuilder targetSrc:" + targetSrc);
+                    System.out.println("AzureDevOpsRepoSCMBuilder targetDst:" + targetDst);
                     for (RefSpec b : asRefSpecs()) {
                         String dst = b.getDestination();
                         assert dst.startsWith(Constants.R_REFS)

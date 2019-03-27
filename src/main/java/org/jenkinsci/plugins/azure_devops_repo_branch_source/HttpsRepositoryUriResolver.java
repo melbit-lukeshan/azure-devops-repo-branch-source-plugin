@@ -34,10 +34,15 @@ public class HttpsRepositoryUriResolver extends RepositoryUriResolver {
      */
     @Override
     public String getRepositoryUri(String apiUri, String owner, String repository) {
-        if (apiUri == null || apiUri.startsWith("https://")) {
-            return "https://" + hostnameFromApiUri(apiUri) + "/" + owner + "/" + repository + ".git";
-        } else {
-            return "http://" + hostnameFromApiUri(apiUri) + "/" + owner + "/" + repository + ".git";
-        }
+        //TODO this debug info, remove it after all work
+        System.out.println("HttpsRepositoryUriResolver apiUri:" + apiUri);
+        System.out.println("HttpsRepositoryUriResolver owner:" + owner);
+        System.out.println("HttpsRepositoryUriResolver repository:" + repository);
+//        if (apiUri == null || apiUri.startsWith("https://")) {
+//            return "https://" + hostnameFromApiUri(apiUri) + "/" + owner + "/" + repository + ".git";
+//        } else {
+//            return "http://" + hostnameFromApiUri(apiUri) + "/" + owner + "/" + repository + ".git";
+//        }
+        return apiUri + "/" + owner + "/_git/" + repository;
     }
 }

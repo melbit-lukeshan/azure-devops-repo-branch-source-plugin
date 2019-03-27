@@ -17,4 +17,8 @@ data class GitCommitRef(
         val statuses: List<GitStatus>,
         val url: String,
         val workItems: List<ResourceRef>
-)
+) {
+    override fun toString(): String {
+        return "GitCommitRef[$commitId, $url]"
+    }
+}

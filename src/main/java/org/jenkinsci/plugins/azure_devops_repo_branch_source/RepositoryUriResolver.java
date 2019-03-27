@@ -31,12 +31,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
- * Resolves the URI of a GitHub repositort from the API URI and repository name.
+ * Resolves the URI of a Azure DevOps repository from the API URI and repository name.
  */
 public abstract class RepositoryUriResolver {
 
     /**
-     * Helper method that returns the hostname of a GitHub server from its API URL.
+     * Helper method that returns the hostname of a Azure DevOps server from its API URL.
      *
      * @param collectionUrl the Azure DevOps collection url.
      * @return the hostname of a Azure DevOps server
