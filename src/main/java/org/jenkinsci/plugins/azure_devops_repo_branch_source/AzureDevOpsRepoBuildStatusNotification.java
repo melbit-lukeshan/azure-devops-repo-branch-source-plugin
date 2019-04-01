@@ -150,7 +150,9 @@ public class AzureDevOpsRepoBuildStatusNotification {
         if (revision instanceof SCMRevisionImpl) {
             return ((SCMRevisionImpl) revision).getHash();
         } else if (revision instanceof PullRequestSCMRevision) {
-            return ((PullRequestSCMRevision) revision).getPullHash();
+//            return ((PullRequestSCMRevision) revision).getPullHash();
+            //TODO: We use the pr's last merge commit to notify Azure DevOps
+            return ((PullRequestSCMRevision) revision).getMergeHash();
         } else {
             throw new IllegalArgumentException("did not recognize " + revision);
         }
