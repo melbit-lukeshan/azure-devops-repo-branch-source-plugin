@@ -296,7 +296,8 @@ public class PullRequestSCMHead extends SCMHead implements ChangeRequestSCMHead2
             return head != null ? new PullRequestSCMRevision(
                     head,
                     revision.getBaseHash(),
-                    revision.getPullHash()
+                    revision.getPullHash(),
+                    revision.getMergeHash()
             ) : null;
         }
     }
@@ -347,7 +348,8 @@ public class PullRequestSCMHead extends SCMHead implements ChangeRequestSCMHead2
             return head != null ? new PullRequestSCMRevision(
                     head,
                     revision.getBaseHash(),
-                    revision.getPullHash()
+                    revision.getPullHash(),
+                    revision.getMergeHash()
             ) : null;
         }
     }

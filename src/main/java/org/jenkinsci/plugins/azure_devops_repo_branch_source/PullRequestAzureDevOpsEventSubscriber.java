@@ -325,7 +325,8 @@ public class PullRequestAzureDevOpsEventSubscriber extends GHEventsSubscriber {
                             revision = new PullRequestSCMRevision(
                                     head,
                                     gitPullRequest.getLastMergeTargetCommit().getCommitId(),
-                                    gitPullRequest.getLastMergeTargetCommit().getCommitId()
+                                    gitPullRequest.getLastMergeSourceCommit().getCommitId(),
+                                    gitPullRequest.getLastMergeCommit().getCommitId()
                             );
                             break;
                     }
