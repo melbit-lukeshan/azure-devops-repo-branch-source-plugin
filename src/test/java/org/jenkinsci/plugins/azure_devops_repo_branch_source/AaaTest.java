@@ -159,8 +159,8 @@ public class AaaTest {
 
     @Test
     public void aTest11() throws Exception {
-        GitPullRequestStatusForCreation gitPullRequestStatusForCreation = new GitPullRequestStatusForCreation(new GitStatusContext(jenkinsUrl, "asdfdsaf/pr-merge-12"), "PR-12#1: SUCCESS GOOD", GitStatusState.succeeded, "http://8bc00b3e.ngrok.io/jenkins/job/asdfdsaf/view/change-requests/job/PR-12/");
-        CreatePullRequestStatusRequest createPullRequestStatusRequest = new CreatePullRequestStatusRequest(collectionUrl, pat, projectName, repositoryName, 12, gitPullRequestStatusForCreation);
+        GitPullRequestStatusForCreation gitPullRequestStatusForCreation = new GitPullRequestStatusForCreation(new GitStatusContext(jenkinsUrl, "asdfdsaf/pr-merge"), "14/merge#1: SUCCESS", GitStatusState.succeeded, "http://8bc00b3e.ngrok.io/jenkins/job/asdfdsaf/job/14%252Fmerge/");
+        CreatePullRequestStatusRequest createPullRequestStatusRequest = new CreatePullRequestStatusRequest(collectionUrl, pat, projectName, repositoryName, 14, gitPullRequestStatusForCreation);
         OkHttp2Helper.INSTANCE.setDebugMode(true);
         Result<GitPullRequestStatus, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(createPullRequestStatusRequest, GitPullRequestStatus.class, Object.class);
         GitPullRequestStatus gitPullRequestStatus = result.getGoodValueOrNull();

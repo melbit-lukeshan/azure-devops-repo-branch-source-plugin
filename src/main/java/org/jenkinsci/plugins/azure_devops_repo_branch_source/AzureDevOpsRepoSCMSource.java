@@ -1713,8 +1713,10 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                                                    @QueryParameter String credentialsId) throws IOException {
             ListBoxModel result = new ListBoxModel();
             List<String> projectNameList = AzureConnector.INSTANCE.getProjectNames(context, collectionUrl, credentialsId);
-            for (String projectName : projectNameList) {
-                result.add(projectName, projectName);
+            if (projectNameList != null) {
+                for (String projectName : projectNameList) {
+                    result.add(projectName, projectName);
+                }
             }
             return result;
         }
@@ -2337,6 +2339,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
 //                } catch (IOException | InterruptedException e) {
 //                    throw new WrappedException(e);
 //                }
+                System.out.println("pullRequestMetadataKeys in CacheUdatingIterable:" + pullRequestMetadataKeys);
                 pullRequestMetadataKeys.add(number);
             }
 
