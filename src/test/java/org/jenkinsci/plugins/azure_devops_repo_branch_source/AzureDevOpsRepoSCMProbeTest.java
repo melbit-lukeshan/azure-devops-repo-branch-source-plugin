@@ -45,7 +45,7 @@ public class AzureDevOpsRepoSCMProbeTest {
         //final GHRepository repo = github.getRepository("cloudbeers/yolo");
         final GitRepositoryWithAzureContext repo =
                 AzureConnector.INSTANCE.getRepository("http://localhost:" + githubApi.port(), null, "cloudbeers", "yolo");
-        final PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "cloudbeers", "yolo", "b", 1, new BranchSCMHead("master"), new SCMHeadOrigin.Fork("rsandell"), ChangeRequestCheckoutStrategy.MERGE);
+        final PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "cloudbeers", "yolo", "b", 1, new BranchSCMHead("master", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("rsandell"), ChangeRequestCheckoutStrategy.MERGE);
         probe = new AzureDevOpsRepoSCMProbe(repo,
                 head,
                 new PullRequestSCMRevision(head, "a", "b"));

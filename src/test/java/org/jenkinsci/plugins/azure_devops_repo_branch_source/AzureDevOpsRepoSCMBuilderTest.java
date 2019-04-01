@@ -75,7 +75,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__cloud_branch_rev_anon__when__build__then__scmBuilt() throws Exception {
-        BranchSCMHead head = new BranchSCMHead("test-branch");
+        BranchSCMHead head = new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch);
         SCMRevisionImpl revision =
                 new SCMRevisionImpl(head, "cafebabedeadbeefcafebabedeadbeefcafebabe");
         source.setCredentialsId(null);
@@ -128,7 +128,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__cloud_branch_rev_userpass__when__build__then__scmBuilt() throws Exception {
-        BranchSCMHead head = new BranchSCMHead("test-branch");
+        BranchSCMHead head = new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch);
         SCMRevisionImpl revision =
                 new SCMRevisionImpl(head, "cafebabedeadbeefcafebabedeadbeefcafebabe");
         source.setCredentialsId("user-pass");
@@ -181,7 +181,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__cloud_branch_rev_userkey__when__build__then__scmBuilt() throws Exception {
-        BranchSCMHead head = new BranchSCMHead("test-branch");
+        BranchSCMHead head = new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch);
         SCMRevisionImpl revision =
                 new SCMRevisionImpl(head, "cafebabedeadbeefcafebabedeadbeefcafebabe");
         source.setCredentialsId("user-key");
@@ -234,7 +234,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__cloud_branch_rev_anon_sshtrait_anon__when__build__then__scmBuilt() throws Exception {
-        BranchSCMHead head = new BranchSCMHead("test-branch");
+        BranchSCMHead head = new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch);
         SCMRevisionImpl revision =
                 new SCMRevisionImpl(head, "cafebabedeadbeefcafebabedeadbeefcafebabe");
         source.setCredentialsId(null);
@@ -294,7 +294,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__cloud_branch_rev_userpass_sshtrait_anon__when__build__then__scmBuilt() throws Exception {
-        BranchSCMHead head = new BranchSCMHead("test-branch");
+        BranchSCMHead head = new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch);
         SCMRevisionImpl revision =
                 new SCMRevisionImpl(head, "cafebabedeadbeefcafebabedeadbeefcafebabe");
         source.setCredentialsId("user-pass");
@@ -353,7 +353,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__cloud_branch_rev_userkey_sshtrait_anon__when__build__then__scmBuilt() throws Exception {
-        BranchSCMHead head = new BranchSCMHead("test-branch");
+        BranchSCMHead head = new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch);
         SCMRevisionImpl revision =
                 new SCMRevisionImpl(head, "cafebabedeadbeefcafebabedeadbeefcafebabe");
         source.setCredentialsId("user-key");
@@ -412,7 +412,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__cloud_branch_rev_anon_sshtrait_userkey__when__build__then__scmBuilt() throws Exception {
-        BranchSCMHead head = new BranchSCMHead("test-branch");
+        BranchSCMHead head = new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch);
         SCMRevisionImpl revision =
                 new SCMRevisionImpl(head, "cafebabedeadbeefcafebabedeadbeefcafebabe");
         source.setCredentialsId(null);
@@ -471,7 +471,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__cloud_branch_rev_userpass_sshtrait_userkey__when__build__then__scmBuilt() throws Exception {
-        BranchSCMHead head = new BranchSCMHead("test-branch");
+        BranchSCMHead head = new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch);
         SCMRevisionImpl revision =
                 new SCMRevisionImpl(head, "cafebabedeadbeefcafebabedeadbeefcafebabe");
         source.setCredentialsId("user-pass");
@@ -530,7 +530,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__cloud_branch_rev_userkey_sshtrait_userkey__when__build__then__scmBuilt() throws Exception {
-        BranchSCMHead head = new BranchSCMHead("test-branch");
+        BranchSCMHead head = new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch);
         SCMRevisionImpl revision =
                 new SCMRevisionImpl(head, "cafebabedeadbeefcafebabedeadbeefcafebabe");
         source.setCredentialsId("user-key");
@@ -589,7 +589,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__cloud_branch_norev_anon__when__build__then__scmBuilt() throws Exception {
-        BranchSCMHead head = new BranchSCMHead("test-branch");
+        BranchSCMHead head = new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch);
         source.setCredentialsId(null);
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, null);
         assertThat(instance.credentialsId(), is(nullValue()));
@@ -628,7 +628,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__cloud_branch_norev_userpass__when__build__then__scmBuilt() throws Exception {
-        BranchSCMHead head = new BranchSCMHead("test-branch");
+        BranchSCMHead head = new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch);
         source.setCredentialsId("user-pass");
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, null);
         assertThat(instance.credentialsId(), is("user-pass"));
@@ -667,7 +667,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__cloud_branch_norev_userkey__when__build__then__scmBuilt() throws Exception {
-        BranchSCMHead head = new BranchSCMHead("test-branch");
+        BranchSCMHead head = new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch);
         source.setCredentialsId("user-key");
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, null);
         assertThat(instance.credentialsId(), is("user-key"));
@@ -706,7 +706,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__server_branch_rev_anon__when__build__then__scmBuilt() throws Exception {
-        BranchSCMHead head = new BranchSCMHead("test-branch");
+        BranchSCMHead head = new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch);
         AbstractGitSCMSource.SCMRevisionImpl revision =
                 new AbstractGitSCMSource.SCMRevisionImpl(head, "cafebabedeadbeefcafebabedeadbeefcafebabe");
         source.setCredentialsId(null);
@@ -760,7 +760,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__server_branch_rev_userpass__when__build__then__scmBuilt() throws Exception {
-        BranchSCMHead head = new BranchSCMHead("test-branch");
+        BranchSCMHead head = new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch);
         AbstractGitSCMSource.SCMRevisionImpl revision =
                 new AbstractGitSCMSource.SCMRevisionImpl(head, "cafebabedeadbeefcafebabedeadbeefcafebabe");
         source.setCredentialsId("user-pass");
@@ -813,7 +813,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
 
     @Test
     public void given__server_branch_rev_userkey__when__build__then__scmBuilt() throws Exception {
-        BranchSCMHead head = new BranchSCMHead("test-branch");
+        BranchSCMHead head = new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch);
         AbstractGitSCMSource.SCMRevisionImpl revision =
                 new AbstractGitSCMSource.SCMRevisionImpl(head, "cafebabedeadbeefcafebabedeadbeefcafebabe");
         source.setCredentialsId("user-key");
@@ -867,7 +867,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     @Test
     public void given__server_branch_norev_anon__when__build__then__scmBuilt() throws Exception {
 //        source.setApiUri("https://github.test/api/v3");
-        BranchSCMHead head = new BranchSCMHead("test-branch");
+        BranchSCMHead head = new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch);
         source.setCredentialsId(null);
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, null);
         assertThat(instance.credentialsId(), is(nullValue()));
@@ -907,7 +907,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     @Test
     public void given__server_branch_norev_userpass__when__build__then__scmBuilt() throws Exception {
         //source.setApiUri("https://github.test/api/v3");
-        BranchSCMHead head = new BranchSCMHead("test-branch");
+        BranchSCMHead head = new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch);
         source.setCredentialsId("user-pass");
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, null);
         assertThat(instance.credentialsId(), is("user-pass"));
@@ -947,7 +947,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     @Test
     public void given__server_branch_norev_userkey__when__build__then__scmBuilt() throws Exception {
 //        source.setApiUri("https://github.test/api/v3");
-        BranchSCMHead head = new BranchSCMHead("test-branch");
+        BranchSCMHead head = new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch);
         source.setCredentialsId("user-key");
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, null);
         assertThat(instance.credentialsId(), is("user-key"));
@@ -987,7 +987,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     @Test
     public void given__cloud_pullHead_rev_anon__when__build__then__scmBuilt() throws Exception {
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
-                new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
+                new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.HEAD);
         PullRequestSCMRevision revision = new PullRequestSCMRevision(
                 head,
@@ -1045,7 +1045,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     @Test
     public void given__cloud_pullHead_rev_userpass__when__build__then__scmBuilt() throws Exception {
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
-                new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
+                new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.HEAD);
         PullRequestSCMRevision revision = new PullRequestSCMRevision(
                 head,
@@ -1103,7 +1103,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     @Test
     public void given__cloud_pullHead_rev_userkey__when__build__then__scmBuilt() throws Exception {
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
-                new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
+                new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.HEAD);
         PullRequestSCMRevision revision = new PullRequestSCMRevision(
                 head,
@@ -1161,7 +1161,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     @Test
     public void given__cloud_pullHead_norev_anon__when__build__then__scmBuilt() throws Exception {
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
-                new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
+                new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.HEAD);
         source.setCredentialsId(null);
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, null);
@@ -1202,7 +1202,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     @Test
     public void given__cloud_pullHead_norev_userpass__when__build__then__scmBuilt() throws Exception {
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
-                new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
+                new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.HEAD);
         source.setCredentialsId("user-pass");
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, null);
@@ -1243,7 +1243,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     @Test
     public void given__cloud_pullHead_norev_userkey__when__build__then__scmBuilt() throws Exception {
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
-                new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
+                new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.HEAD);
         source.setCredentialsId("user-key");
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, null);
@@ -1285,7 +1285,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     public void given__server_pullHead_rev_anon__when__build__then__scmBuilt() throws Exception {
 //        source.setApiUri("https://github.test/api/v3");
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
-                new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
+                new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.HEAD);
         PullRequestSCMRevision revision = new PullRequestSCMRevision(
                 head,
@@ -1345,7 +1345,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     public void given__server_pullHead_rev_userpass__when__build__then__scmBuilt() throws Exception {
 //        source.setApiUri("https://github.test/api/v3");
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
-                new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
+                new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.HEAD);
         PullRequestSCMRevision revision = new PullRequestSCMRevision(
                 head,
@@ -1404,7 +1404,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     public void given__server_pullHead_rev_userkey__when__build__then__scmBuilt() throws Exception {
 //        source.setApiUri("https://github.test/api/v3");
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
-                new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
+                new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.HEAD);
         PullRequestSCMRevision revision = new PullRequestSCMRevision(
                 head,
@@ -1463,7 +1463,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     public void given__server_pullHead_norev_anon__when__build__then__scmBuilt() throws Exception {
 //        source.setApiUri("https://github.test/api/v3");
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
-                new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
+                new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.HEAD);
         source.setCredentialsId(null);
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, null);
@@ -1505,7 +1505,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     public void given__server_pullHead_norev_userpass__when__build__then__scmBuilt() throws Exception {
 //        source.setApiUri("https://github.test/api/v3");
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
-                new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
+                new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.HEAD);
         source.setCredentialsId("user-pass");
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, null);
@@ -1547,7 +1547,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     public void given__server_pullHead_norev_userkey__when__build__then__scmBuilt() throws Exception {
 //        source.setApiUri("https://github.test/api/v3");
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
-                new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
+                new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.HEAD);
         source.setCredentialsId("user-key");
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, null);
@@ -1588,7 +1588,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     @Test
     public void given__cloud_pullMerge_rev_anon__when__build__then__scmBuilt() throws Exception {
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
-                new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
+                new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.MERGE);
         PullRequestSCMRevision revision = new PullRequestSCMRevision(
                 head,
@@ -1657,7 +1657,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     @Test
     public void given__cloud_pullMerge_rev_userpass__when__build__then__scmBuilt() throws Exception {
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
-                new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
+                new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.MERGE);
         PullRequestSCMRevision revision = new PullRequestSCMRevision(
                 head,
@@ -1726,7 +1726,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     @Test
     public void given__cloud_pullMerge_rev_userkey__when__build__then__scmBuilt() throws Exception {
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
-                new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
+                new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.MERGE);
         PullRequestSCMRevision revision = new PullRequestSCMRevision(
                 head,
@@ -1795,7 +1795,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     @Test
     public void given__cloud_pullMerge_norev_anon__when__build__then__scmBuilt() throws Exception {
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
-                new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
+                new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.MERGE);
         source.setCredentialsId(null);
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, null);
@@ -1847,7 +1847,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     @Test
     public void given__cloud_pullMerge_norev_userpass__when__build__then__scmBuilt() throws Exception {
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
-                new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
+                new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.MERGE);
         source.setCredentialsId("user-pass");
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, null);
@@ -1899,7 +1899,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     @Test
     public void given__cloud_pullMerge_norev_userkey__when__build__then__scmBuilt() throws Exception {
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
-                new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
+                new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.MERGE);
         source.setCredentialsId("user-key");
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, null);
@@ -1952,7 +1952,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     public void given__server_pullMerge_rev_anon__when__build__then__scmBuilt() throws Exception {
 //        source.setApiUri("https://github.test/api/v3");
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
-                new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
+                new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.MERGE);
         PullRequestSCMRevision revision = new PullRequestSCMRevision(
                 head,
@@ -2023,7 +2023,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     public void given__server_pullMerge_rev_userpass__when__build__then__scmBuilt() throws Exception {
 //        source.setApiUri("https://github.test/api/v3");
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
-                new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
+                new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.MERGE);
         PullRequestSCMRevision revision = new PullRequestSCMRevision(
                 head,
@@ -2093,7 +2093,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     public void given__server_pullMerge_rev_userkey__when__build__then__scmBuilt() throws Exception {
 //        source.setApiUri("https://github.test/api/v3");
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
-                new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
+                new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.MERGE);
         PullRequestSCMRevision revision = new PullRequestSCMRevision(
                 head,
@@ -2163,7 +2163,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     public void given__server_pullMerge_norev_anon__when__build__then__scmBuilt() throws Exception {
 //        source.setApiUri("https://github.test/api/v3");
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
-                new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
+                new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.MERGE);
         source.setCredentialsId(null);
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, null);
@@ -2217,7 +2217,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     public void given__server_pullMerge_norev_userpass__when__build__then__scmBuilt() throws Exception {
 //        source.setApiUri("https://github.test/api/v3");
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
-                new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
+                new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.MERGE);
         source.setCredentialsId("user-pass");
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, null);
@@ -2271,7 +2271,7 @@ public class AzureDevOpsRepoSCMBuilderTest {
     public void given__server_pullMerge_norev_userkey__when__build__then__scmBuilt() throws Exception {
 //        source.setApiUri("https://github.test/api/v3");
         PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "qa", "qa-repo", "qa-branch", 1,
-                new BranchSCMHead("test-branch"), new SCMHeadOrigin.Fork("qa/qa-repo"),
+                new BranchSCMHead("test-branch", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("qa/qa-repo"),
                 ChangeRequestCheckoutStrategy.MERGE);
         source.setCredentialsId("user-key");
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, null);

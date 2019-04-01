@@ -11,4 +11,5 @@ class ListPullRequestStatusesRequest(
 ) : AzureBaseRequest<PullRequestStatuses, Any>(collectionUrl, pat) {
     override val method = Method.GET
     override val path = "/{projectName}/_apis/git/repositories/{repositoryName}/pullRequests/{pullRequestId}/statuses"
+    override val parameters: String = "api-version=5.0-preview.1"
 }

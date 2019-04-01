@@ -67,7 +67,7 @@ public class AzureDevOpsRepoSCMFileSystemTest {
     public static JenkinsRule r = new JenkinsRule();
 
     public static WireMockRuleFactory factory = new WireMockRuleFactory();
-    public static SCMHead master = new BranchSCMHead("master");
+    public static SCMHead master = new BranchSCMHead("master", BranchSCMHead.RealBranchType.branch);
     private final SCMRevision revision;
     @Rule
     public WireMockRule githubRaw = factory.getRule(WireMockConfiguration.options()

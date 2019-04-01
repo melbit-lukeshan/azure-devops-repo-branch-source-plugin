@@ -25,6 +25,7 @@ public class AaaTest {
     public static final String branchHeadHashB3 = "f1e1e49a8d5e1a3fa3a0edc2801ce21030e8fdc8";
     public static final String branchHeadHashMaster = "bc8618289aca9809b5073e0f32a4ea6d68dfcb0e";
     public static final String itemPath = "/tests/Jenkinsfile";
+    public static final String jenkinsUrl = "http://8bc00b3e.ngrok.io/jenkins";
     public static final String scopePath = "/tests";
     public static final int pullRequestId = 8;
 
@@ -140,6 +141,31 @@ public class AaaTest {
                 System.out.println(GsonProcessor.INSTANCE.instanceToJson(gitPullRequest));
                 System.out.println(gitPullRequest.getPullRequestId() + " -> " + gitPullRequest.getLastMergeSourceCommit() + " -> " + gitPullRequest.getLastMergeTargetCommit() + " -> " + gitPullRequest.getLastMergeCommit());
             }
+        }
+    }
+
+    @Test
+    public void aTest10() throws Exception {
+        ListPullRequestStatusesRequest listPullRequestStatusesRequest = new ListPullRequestStatusesRequest(collectionUrl, pat, projectName, repositoryName, 8);
+        OkHttp2Helper.INSTANCE.setDebugMode(true);
+        Result<PullRequestStatuses, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(listPullRequestStatusesRequest, PullRequestStatuses.class, Object.class);
+        PullRequestStatuses pullRequestStatuses = result.getGoodValueOrNull();
+        if (pullRequestStatuses != null) {
+            for (GitPullRequestStatus gitPullRequestStatus : pullRequestStatuses.getValue()) {
+                System.out.println(GsonProcessor.INSTANCE.instanceToJson(gitPullRequestStatus));
+            }
+        }
+    }
+
+    @Test
+    public void aTest11() throws Exception {
+        GitPullRequestStatusForCreation gitPullRequestStatusForCreation = new GitPullRequestStatusForCreation(new GitStatusContext(jenkinsUrl, "asdfdsaf/pr-merge-12"), "PR-12#1: SUCCESS GOOD", GitStatusState.succeeded, "http://8bc00b3e.ngrok.io/jenkins/job/asdfdsaf/view/change-requests/job/PR-12/");
+        CreatePullRequestStatusRequest createPullRequestStatusRequest = new CreatePullRequestStatusRequest(collectionUrl, pat, projectName, repositoryName, 12, gitPullRequestStatusForCreation);
+        OkHttp2Helper.INSTANCE.setDebugMode(true);
+        Result<GitPullRequestStatus, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(createPullRequestStatusRequest, GitPullRequestStatus.class, Object.class);
+        GitPullRequestStatus gitPullRequestStatus = result.getGoodValueOrNull();
+        if (gitPullRequestStatus != null) {
+            System.out.println(GsonProcessor.INSTANCE.instanceToJson(gitPullRequestStatus));
         }
     }
 }

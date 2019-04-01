@@ -269,7 +269,7 @@ public class AzureDevOpsRepoSCMSourceTest {
     }
 
     private PullRequestSCMRevision createRevision(String sourceOwner) {
-        PullRequestSCMHead head = new PullRequestSCMHead("", sourceOwner, "yolo", "", 0, new BranchSCMHead("non-null"),
+        PullRequestSCMHead head = new PullRequestSCMHead("", sourceOwner, "yolo", "", 0, new BranchSCMHead("non-null", BranchSCMHead.RealBranchType.branch),
                 SCMHeadOrigin.DEFAULT, ChangeRequestCheckoutStrategy.HEAD);
         return new PullRequestSCMRevision(head, "non-null", null);
     }

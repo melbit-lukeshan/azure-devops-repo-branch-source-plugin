@@ -32,7 +32,7 @@ public class SSHCheckoutTraitTest {
         SSHCheckoutTrait instance = new SSHCheckoutTrait("keyId");
         AzureDevOpsRepoSCMSource source = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "example", "spring");
         source.setCredentialsId("scanId");
-        AzureDevOpsRepoSCMBuilder probe = new AzureDevOpsRepoSCMBuilder(source, new BranchSCMHead("master"), null);
+        AzureDevOpsRepoSCMBuilder probe = new AzureDevOpsRepoSCMBuilder(source, new BranchSCMHead("master", BranchSCMHead.RealBranchType.branch), null);
         assumeThat(probe.credentialsId(), is("scanId"));
         instance.decorateBuilder(probe);
         assertThat(probe.credentialsId(), is("keyId"));
@@ -43,7 +43,7 @@ public class SSHCheckoutTraitTest {
         SSHCheckoutTrait instance = new SSHCheckoutTrait(null);
         AzureDevOpsRepoSCMSource source = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "example", "spring");
         source.setCredentialsId("scanId");
-        AzureDevOpsRepoSCMBuilder probe = new AzureDevOpsRepoSCMBuilder(source, new BranchSCMHead("master"), null);
+        AzureDevOpsRepoSCMBuilder probe = new AzureDevOpsRepoSCMBuilder(source, new BranchSCMHead("master", BranchSCMHead.RealBranchType.branch), null);
         assumeThat(probe.credentialsId(), is("scanId"));
         instance.decorateBuilder(probe);
         assertThat(probe.credentialsId(), is(nullValue()));

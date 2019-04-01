@@ -52,7 +52,7 @@ public class DefaultGitHubNotificationStrategyTest {
         FreeStyleBuild run = j.buildAndAssertSuccess(job);
         DefaultAzureDevOpsNotificationStrategy instance = new DefaultAzureDevOpsNotificationStrategy();
         List<AzureDevOpsRepoNotificationRequest> notifications =
-                instance.notifications(AzureDevOpsRepoNotificationContext.build(job, run, src, new BranchSCMHead("master")),
+                instance.notifications(AzureDevOpsRepoNotificationContext.build(job, run, src, new BranchSCMHead("master", BranchSCMHead.RealBranchType.branch)),
                         new LogTaskListener(
                                 Logger.getLogger(getClass().getName()), Level.INFO));
         assertThat(notifications, hasSize(1));
@@ -64,7 +64,7 @@ public class DefaultGitHubNotificationStrategyTest {
         AzureDevOpsRepoSCMSource src = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "example", "spring");
         FreeStyleBuild run = j.buildAndAssertSuccess(job);
         DefaultAzureDevOpsNotificationStrategy instance = new DefaultAzureDevOpsNotificationStrategy();
-        BranchSCMHead testBranch = new BranchSCMHead("master");
+        BranchSCMHead testBranch = new BranchSCMHead("master", BranchSCMHead.RealBranchType.branch);
         List<AzureDevOpsRepoNotificationRequest> notificationsA =
                 instance.notifications(AzureDevOpsRepoNotificationContext.build(job, run, src, testBranch),
                         new LogTaskListener(Logger.getLogger(getClass().getName()), Level.INFO));
@@ -89,9 +89,9 @@ public class DefaultGitHubNotificationStrategyTest {
         AzureDevOpsRepoSCMSource src = new AzureDevOpsRepoSCMSource("https://dev.azure.com/lukeshan", "example", "spring");
         FreeStyleBuild run = j.buildAndAssertSuccess(job);
         DefaultAzureDevOpsNotificationStrategy instance = new DefaultAzureDevOpsNotificationStrategy();
-        String urlA = instance.notifications(AzureDevOpsRepoNotificationContext.build(null, run, src, new BranchSCMHead("master")),
+        String urlA = instance.notifications(AzureDevOpsRepoNotificationContext.build(null, run, src, new BranchSCMHead("master", BranchSCMHead.RealBranchType.branch)),
                 new LogTaskListener(Logger.getLogger(getClass().getName()), Level.INFO)).get(0).getUrl();
-        String urlB = instance.notifications(AzureDevOpsRepoNotificationContext.build(job, null, src, new BranchSCMHead("master")),
+        String urlB = instance.notifications(AzureDevOpsRepoNotificationContext.build(job, null, src, new BranchSCMHead("master", BranchSCMHead.RealBranchType.branch)),
                 new LogTaskListener(Logger.getLogger(getClass().getName()), Level.INFO)).get(0).getUrl();
         assertNotEquals(urlA, urlB);
     }

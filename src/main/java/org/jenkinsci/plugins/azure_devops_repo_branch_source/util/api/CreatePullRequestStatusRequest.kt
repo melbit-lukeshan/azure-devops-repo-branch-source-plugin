@@ -1,0 +1,12 @@
+package org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api
+
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitPullRequestStatus
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitPullRequestStatusForCreation
+
+class CreatePullRequestStatusRequest(collectionUrl: String, pat: String, val projectName: String, val repositoryName: String, val pullRequestId: Int, val status: GitPullRequestStatusForCreation)
+    : AzureBaseRequest<GitPullRequestStatus, Any>(collectionUrl, pat) {
+    override val method = Method.POST
+    override val path = "/{projectName}/_apis/git/repositories/{repositoryName}/pullRequests/{pullRequestId}/statuses"
+    override val body = "{status}"
+    override val parameters: String = "api-version=5.0-preview.1"
+}
