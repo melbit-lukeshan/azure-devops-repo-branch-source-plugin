@@ -1919,10 +1919,10 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                 request.listener().getLogger().format("%n  Getting remote branches...%n");
                 List<GitRef> values = AzureConnector.INSTANCE.listBranches(repo);
                 //TODO We may treat PR as branch - luke
-                List<GitRef> values2 = AzureConnector.INSTANCE.listPullRequestsAsRefs(repo);
-                if (values != null && values2 != null) {
-                    values.addAll(values2);
-                }
+//                List<GitRef> values2 = AzureConnector.INSTANCE.listPullRequestsAsRefs(repo);
+//                if (values != null && values2 != null) {
+//                    values.addAll(values2);
+//                }
                 //TODO end
                 final String defaultBranch = StringUtils.defaultIfBlank(repo.getGitRepository().getDefaultBranch(), "master");
                 Collections.sort(values, new Comparator<GitRef>() {

@@ -219,6 +219,10 @@ object AzureConnector {
         return OkHttp2Helper.executeRequest(ListPullRequestsRequest(collectionUrl, pat, projectName, repositoryName, pullRequestStatus, sourceBranchRefName))
     }
 
+    private fun createPullRequestStatusR(collectionUrl: String, pat: String, projectName: String, repositoryName: String, pullRequestId: Int, status: GitPullRequestStatusForCreation): Result<GitPullRequestStatus, Any> {
+        return OkHttp2Helper.executeRequest(CreatePullRequestStatusRequest(collectionUrl, pat, projectName, repositoryName, pullRequestId, status))
+    }
+
     fun getProjectNames(context: Item?, collectionUrl: String?, credentialsId: String?): List<String>? {
         return fixCollectionUrl(collectionUrl)?.let { fixedCollectionUrl ->
             lookupCredentials(context, collectionUrl, credentialsId)?.let { credentials ->
@@ -403,6 +407,16 @@ object AzureConnector {
                 gitRepositoryWithAzureContext.projectName,
                 gitRepositoryWithAzureContext.repositoryName,
                 pullRequestId).getGoodValueOrNull()
+    }
+
+    fun createPullRequestStatus(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, pullRequestId: Int, status: GitPullRequestStatusForCreation): GitPullRequestStatus? {
+        return createPullRequestStatusR(
+                gitRepositoryWithAzureContext.collectionUrl,
+                getPat(gitRepositoryWithAzureContext.credentials),
+                gitRepositoryWithAzureContext.projectName,
+                gitRepositoryWithAzureContext.repositoryName,
+                pullRequestId,
+                status).getGoodValueOrNull()
     }
 
     @Throws(IOException::class)

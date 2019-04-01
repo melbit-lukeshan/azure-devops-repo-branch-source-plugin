@@ -39,10 +39,7 @@ import jenkins.plugins.git.AbstractGitSCMSource.SCMRevisionImpl;
 import jenkins.scm.api.*;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitRepositoryWithAzureContext;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitStatus;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitStatusContext;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitStatusForCreation;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -107,6 +104,20 @@ public class AzureDevOpsRepoBuildStatusNotification {
                                     listener.getLogger().format("%nCould not update commit status, please check if your scan " +
                                             "credentials belong to a member of the organization or a collaborator of the " +
                                             "repository and repo:status scope is selected%n%n");
+                                }
+                            }
+                            //If this is a pull request, we create a pr status in azure - Luke
+                            if (head instanceof PullRequestSCMHead) {
+                                PullRequestSCMHead pullRequestSCMHead = (PullRequestSCMHead) head;
+                                GitPullRequestStatusForCreation gitPullRequestStatusForCreation =
+                                        new GitPullRequestStatusForCreation(context, request.getMessage(), request.getState(), request.getUrl());
+                                GitPullRequestStatus gitPullRequestStatus = AzureConnector.INSTANCE.createPullRequestStatus(repo, pullRequestSCMHead.getNumber(), gitPullRequestStatusForCreation);
+                                if (gitPullRequestStatus == null) {
+                                    if (!ignoreError) {
+                                        listener.getLogger().format("%nCould not create pull request status, please check if your scan " +
+                                                "credentials belong to a member of the organization or a collaborator of the " +
+                                                "repository and repo:status scope is selected%n%n");
+                                    }
                                 }
                             }
                         }
@@ -176,12 +187,15 @@ public class AzureDevOpsRepoBuildStatusNotification {
             final long taskId = wi.getId();
             final Job<?, ?> job = (Job) wi.task;
             final SCMSource source = SCMSource.SourceByItem.findSource(job);
+            final PullRequestSCMHead pullRequestSCMHead;
             if (!(source instanceof AzureDevOpsRepoSCMSource)) {
                 return;
             }
             final SCMHead head = SCMHead.HeadByItem.findHead(job);
             if (!(head instanceof PullRequestSCMHead)) {
                 return;
+            } else {
+                pullRequestSCMHead = (PullRequestSCMHead) head;
             }
             final AzureDevOpsRepoSCMSourceContext sourceContext = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none())
                     .withTraits(((AzureDevOpsRepoSCMSource) source).getTraits());
@@ -195,6 +209,11 @@ public class AzureDevOpsRepoBuildStatusNotification {
                     //GitHub gitHub = null;
                     try {
                         //gitHub = lookUpGitHub(job);
+//                        PullRequestSCMRevision pullRequestSCMRevision=null;
+//                        SCMRevision scmRevision=source.fetch(head, null);
+//                        if(scmRevision instanceof PullRequestSCMRevision){
+//                            pullRequestSCMRevision= (PullRequestSCMRevision) scmRevision;
+//                        }
                         String hash = resolveHeadCommit(source.fetch(head, null));
                         GitRepositoryWithAzureContext repo = lookUpRepo(job);
                         if (repo != null) {
@@ -213,7 +232,6 @@ public class AzureDevOpsRepoBuildStatusNotification {
                                 List<AzureDevOpsRepoNotificationRequest> details = strategy.notifications(notificationContext, null);
                                 for (AzureDevOpsRepoNotificationRequest request : details) {
                                     boolean ignoreErrors = request.isIgnoreError();
-                                    //repo.createCommitStatus(hash, request.getState(), request.getUrl(), request.getMessage(), request.getContext());
                                     final String instanceUrl = StringUtils.stripEnd(Jenkins.get().getRootUrl(), "/");
                                     String projectDisplayName = job.getParent().getFullName() + "/" + job.getDisplayName();
                                     //TODO debug info. Remove later. - Luke
@@ -227,6 +245,16 @@ public class AzureDevOpsRepoBuildStatusNotification {
                                         if (!ignoreErrors) {
                                             LOGGER.log(Level.WARNING,
                                                     "Could not update commit status to PENDING. Valid scan credentials? Valid scopes?");
+                                        }
+                                    }
+                                    //Since this is a pull request, we create a pr status in azure - Luke
+                                    GitPullRequestStatusForCreation gitPullRequestStatusForCreation =
+                                            new GitPullRequestStatusForCreation(context, request.getMessage(), request.getState(), request.getUrl());
+                                    GitPullRequestStatus gitPullRequestStatus = AzureConnector.INSTANCE.createPullRequestStatus(repo, pullRequestSCMHead.getNumber(), gitPullRequestStatusForCreation);
+                                    if (gitPullRequestStatus == null) {
+                                        if (!ignoreErrors) {
+                                            LOGGER.log(Level.WARNING,
+                                                    "Could not create PENDING pull request status. Valid scan credentials? Valid scopes?");
                                         }
                                     }
                                 }
