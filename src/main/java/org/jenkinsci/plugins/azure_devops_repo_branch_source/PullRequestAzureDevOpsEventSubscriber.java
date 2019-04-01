@@ -313,6 +313,9 @@ public class PullRequestAzureDevOpsEventSubscriber extends GHEventsSubscriber {
                     }
                     PullRequestSCMHead head;
                     PullRequestSCMRevision revision;
+                    String baseSha = gitPullRequest.getLastMergeTargetCommit().getCommitId();
+                    String pullSha = gitPullRequest.getLastMergeSourceCommit().getCommitId();
+                    String mergeSha = gitPullRequest.getLastMergeCommit().getCommitId();
                     switch (strategy) {
                         case MERGE:
                             // it will take a call to Azure DevOps to get the merge commit, so let the event receiver poll
@@ -324,9 +327,9 @@ public class PullRequestAzureDevOpsEventSubscriber extends GHEventsSubscriber {
                             head = new PullRequestSCMHead(gitPullRequest, branchName, false);
                             revision = new PullRequestSCMRevision(
                                     head,
-                                    gitPullRequest.getLastMergeTargetCommit().getCommitId(),
-                                    gitPullRequest.getLastMergeSourceCommit().getCommitId(),
-                                    gitPullRequest.getLastMergeCommit().getCommitId()
+                                    baseSha,
+                                    pullSha,
+                                    mergeSha
                             );
                             break;
                     }

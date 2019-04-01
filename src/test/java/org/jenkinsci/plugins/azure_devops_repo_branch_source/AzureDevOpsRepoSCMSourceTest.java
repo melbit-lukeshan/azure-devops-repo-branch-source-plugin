@@ -199,7 +199,8 @@ public class AzureDevOpsRepoSCMSourceTest {
         assertThat(byName.get("PR-2"), instanceOf(PullRequestSCMHead.class));
         assertThat(revByName.get("PR-2"), is((SCMRevision) new PullRequestSCMRevision((PullRequestSCMHead)(byName.get("PR-2")),
                 "8f1314fc3c8284d8c6d5886d473db98f2126071c",
-                "c0e024f89969b976da165eecaa71e09dc60c3da1"
+                "c0e024f89969b976da165eecaa71e09dc60c3da1",
+                null
         )));
 
         assertThat(byName.get("master"), instanceOf(BranchSCMHead.class));
@@ -235,7 +236,8 @@ public class AzureDevOpsRepoSCMSourceTest {
         assertThat(byName.get("PR-2"), instanceOf(PullRequestSCMHead.class));
         assertThat(revByName.get("PR-2"), is((SCMRevision) new PullRequestSCMRevision((PullRequestSCMHead)(byName.get("PR-2")),
                 "8f1314fc3c8284d8c6d5886d473db98f2126071c",
-                "c0e024f89969b976da165eecaa71e09dc60c3da1"
+                "c0e024f89969b976da165eecaa71e09dc60c3da1",
+                null
         )));
 
         assertThat(byName.get("master"), instanceOf(BranchSCMHead.class));
@@ -271,7 +273,7 @@ public class AzureDevOpsRepoSCMSourceTest {
     private PullRequestSCMRevision createRevision(String sourceOwner) {
         PullRequestSCMHead head = new PullRequestSCMHead("", sourceOwner, "yolo", "", 0, new BranchSCMHead("non-null", BranchSCMHead.RealBranchType.branch),
                 SCMHeadOrigin.DEFAULT, ChangeRequestCheckoutStrategy.HEAD);
-        return new PullRequestSCMRevision(head, "non-null", null);
+        return new PullRequestSCMRevision(head, "non-null", null, null);
     }
 
     @Test

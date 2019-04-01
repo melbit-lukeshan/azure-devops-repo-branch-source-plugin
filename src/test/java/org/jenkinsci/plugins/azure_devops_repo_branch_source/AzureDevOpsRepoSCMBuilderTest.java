@@ -992,7 +992,8 @@ public class AzureDevOpsRepoSCMBuilderTest {
         PullRequestSCMRevision revision = new PullRequestSCMRevision(
                 head,
                 "deadbeefcafebabedeadbeefcafebabedeadbeef",
-                "cafebabedeadbeefcafebabedeadbeefcafebabe"
+                "cafebabedeadbeefcafebabedeadbeefcafebabe",
+                null
         );
         source.setCredentialsId(null);
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, revision);
@@ -1050,7 +1051,8 @@ public class AzureDevOpsRepoSCMBuilderTest {
         PullRequestSCMRevision revision = new PullRequestSCMRevision(
                 head,
                 "deadbeefcafebabedeadbeefcafebabedeadbeef",
-                "cafebabedeadbeefcafebabedeadbeefcafebabe"
+                "cafebabedeadbeefcafebabedeadbeefcafebabe",
+                null
         );
         source.setCredentialsId("user-pass");
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, revision);
@@ -1108,7 +1110,8 @@ public class AzureDevOpsRepoSCMBuilderTest {
         PullRequestSCMRevision revision = new PullRequestSCMRevision(
                 head,
                 "deadbeefcafebabedeadbeefcafebabedeadbeef",
-                "cafebabedeadbeefcafebabedeadbeefcafebabe"
+                "cafebabedeadbeefcafebabedeadbeefcafebabe",
+                null
         );
         source.setCredentialsId("user-key");
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, revision);
@@ -1290,7 +1293,8 @@ public class AzureDevOpsRepoSCMBuilderTest {
         PullRequestSCMRevision revision = new PullRequestSCMRevision(
                 head,
                 "deadbeefcafebabedeadbeefcafebabedeadbeef",
-                "cafebabedeadbeefcafebabedeadbeefcafebabe"
+                "cafebabedeadbeefcafebabedeadbeefcafebabe",
+                null
         );
         source.setCredentialsId(null);
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, revision);
@@ -1350,7 +1354,8 @@ public class AzureDevOpsRepoSCMBuilderTest {
         PullRequestSCMRevision revision = new PullRequestSCMRevision(
                 head,
                 "deadbeefcafebabedeadbeefcafebabedeadbeef",
-                "cafebabedeadbeefcafebabedeadbeefcafebabe"
+                "cafebabedeadbeefcafebabedeadbeefcafebabe",
+                null
         );
         source.setCredentialsId("user-pass");
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, revision);
@@ -1409,7 +1414,8 @@ public class AzureDevOpsRepoSCMBuilderTest {
         PullRequestSCMRevision revision = new PullRequestSCMRevision(
                 head,
                 "deadbeefcafebabedeadbeefcafebabedeadbeef",
-                "cafebabedeadbeefcafebabedeadbeefcafebabe"
+                "cafebabedeadbeefcafebabedeadbeefcafebabe",
+                null
         );
         source.setCredentialsId("user-key");
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, revision);
@@ -1593,7 +1599,8 @@ public class AzureDevOpsRepoSCMBuilderTest {
         PullRequestSCMRevision revision = new PullRequestSCMRevision(
                 head,
                 "deadbeefcafebabedeadbeefcafebabedeadbeef",
-                "cafebabedeadbeefcafebabedeadbeefcafebabe"
+                "cafebabedeadbeefcafebabedeadbeefcafebabe",
+                null
         );
         source.setCredentialsId(null);
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, revision);
@@ -1662,7 +1669,8 @@ public class AzureDevOpsRepoSCMBuilderTest {
         PullRequestSCMRevision revision = new PullRequestSCMRevision(
                 head,
                 "deadbeefcafebabedeadbeefcafebabedeadbeef",
-                "cafebabedeadbeefcafebabedeadbeefcafebabe"
+                "cafebabedeadbeefcafebabedeadbeefcafebabe",
+                null
         );
         source.setCredentialsId("user-pass");
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, revision);
@@ -1731,7 +1739,8 @@ public class AzureDevOpsRepoSCMBuilderTest {
         PullRequestSCMRevision revision = new PullRequestSCMRevision(
                 head,
                 "deadbeefcafebabedeadbeefcafebabedeadbeef",
-                "cafebabedeadbeefcafebabedeadbeefcafebabe"
+                "cafebabedeadbeefcafebabedeadbeefcafebabe",
+                null
         );
         source.setCredentialsId("user-key");
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, revision);
@@ -1957,7 +1966,8 @@ public class AzureDevOpsRepoSCMBuilderTest {
         PullRequestSCMRevision revision = new PullRequestSCMRevision(
                 head,
                 "deadbeefcafebabedeadbeefcafebabedeadbeef",
-                "cafebabedeadbeefcafebabedeadbeefcafebabe"
+                "cafebabedeadbeefcafebabedeadbeefcafebabe",
+                null
         );
         source.setCredentialsId(null);
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, revision);
@@ -2028,7 +2038,8 @@ public class AzureDevOpsRepoSCMBuilderTest {
         PullRequestSCMRevision revision = new PullRequestSCMRevision(
                 head,
                 "deadbeefcafebabedeadbeefcafebabedeadbeef",
-                "cafebabedeadbeefcafebabedeadbeefcafebabe"
+                "cafebabedeadbeefcafebabedeadbeefcafebabe",
+                null
         );
         source.setCredentialsId("user-pass");
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, revision);
@@ -2098,7 +2109,8 @@ public class AzureDevOpsRepoSCMBuilderTest {
         PullRequestSCMRevision revision = new PullRequestSCMRevision(
                 head,
                 "deadbeefcafebabedeadbeefcafebabedeadbeef",
-                "cafebabedeadbeefcafebabedeadbeefcafebabe"
+                "cafebabedeadbeefcafebabedeadbeefcafebabe",
+                null
         );
         source.setCredentialsId("user-key");
         AzureDevOpsRepoSCMBuilder instance = new AzureDevOpsRepoSCMBuilder(source, head, revision);

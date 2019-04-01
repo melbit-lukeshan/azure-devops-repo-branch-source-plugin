@@ -48,7 +48,7 @@ public class AzureDevOpsRepoSCMProbeTest {
         final PullRequestSCMHead head = new PullRequestSCMHead("PR-1", "cloudbeers", "yolo", "b", 1, new BranchSCMHead("master", BranchSCMHead.RealBranchType.branch), new SCMHeadOrigin.Fork("rsandell"), ChangeRequestCheckoutStrategy.MERGE);
         probe = new AzureDevOpsRepoSCMProbe(repo,
                 head,
-                new PullRequestSCMRevision(head, "a", "b"));
+                new PullRequestSCMRevision(head, "a", "b", null));
     }
 
     @Issue("JENKINS-54126")

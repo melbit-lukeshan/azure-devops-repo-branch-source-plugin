@@ -849,24 +849,24 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                                         public SCMRevision create(@NonNull PullRequestSCMHead head,
                                                                   @Nullable Void ignored)
                                                 throws IOException, InterruptedException {
+                                            String baseSha = pr.getLastMergeTargetCommit().getCommitId();
+                                            String pullSha = pr.getLastMergeSourceCommit().getCommitId();
+                                            String mergeSha = pr.getLastMergeCommit().getCommitId();
                                             switch (strategy) {
                                                 case MERGE:
                                                     request.checkApiRateLimit();
-//                                                        GHRef mergeRef = ghRepository.getRef(
-//                                                                "heads/" + pr.getBase().getRef()
-//                                                        );
-                                                    //TODO: not sure how to set the base hash and pull hash
-                                                    return new PullRequestSCMRevision(head,
-                                                            pr.getLastMergeTargetCommit().getCommitId(),
-                                                            pr.getLastMergeSourceCommit().getCommitId(),
-                                                            pr.getLastMergeCommit().getCommitId());
+                                                    GitRef baseRef = AzureConnector.INSTANCE.getRef(gitRepository, pr.getTargetRefName().replace("refs/", ""));
+                                                    if (baseRef != null) {
+                                                        baseSha = baseRef.getObjectId();
+                                                    }
+                                                    break;
                                                 default:
-                                                    //TODO: not sure how to set the base hash and pull hash
-                                                    return new PullRequestSCMRevision(head,
-                                                            pr.getLastMergeTargetCommit().getCommitId(),
-                                                            pr.getLastMergeSourceCommit().getCommitId(),
-                                                            pr.getLastMergeCommit().getCommitId());
+                                                    break;
                                             }
+                                            return new PullRequestSCMRevision(head,
+                                                    baseSha,
+                                                    pullSha,
+                                                    mergeSha);
                                         }
                                     },
                                     new MergabilityWitness(pr, strategy, listener),
@@ -1120,37 +1120,36 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                     }
                 }
                 PullRequestSCMHead head = new PullRequestSCMHead(pr, headName, strategy == ChangeRequestCheckoutStrategy.MERGE);
+                String baseSha = pr.getLastMergeTargetCommit().getCommitId();
+                String pullSha = pr.getLastMergeSourceCommit().getCommitId();
+                String mergeSha = pr.getLastMergeCommit().getCommitId();
                 switch (strategy) {
                     case MERGE:
-//                                GHRef mergeRef = ghRepository.getRef(
-//                                        "heads/" + pr.getBase().getRef()
-//                                );
+                        GitRef baseRef = AzureConnector.INSTANCE.getRef(gitRepository, pr.getTargetRefName().replace("refs/", ""));
+                        if (baseRef != null) {
+                            baseSha = baseRef.getObjectId();
+                        }
                         listener.getLogger().format(
-                                "Resolved %s as pull request %d at revision %s merged onto %s ($s) %n",
+                                "Resolved %s as pull request %d at revision %s merged onto %s %n",
                                 headName,
                                 number,
-                                pr.getLastMergeSourceCommit().getCommitId(),
-                                pr.getLastMergeTargetCommit().getCommitId(),
-                                pr.getLastMergeCommit().getCommitId()
+                                pullSha,
+                                baseSha
                         );
-                        //TODO: not sure how to set the base hash and pull hash
-                        return new PullRequestSCMRevision(head,
-                                pr.getLastMergeTargetCommit().getCommitId(),
-                                pr.getLastMergeSourceCommit().getCommitId(),
-                                pr.getLastMergeCommit().getCommitId());
+                        break;
                     default:
                         listener.getLogger().format(
                                 "Resolved %s as pull request %d at revision %s%n",
                                 headName,
                                 number,
-                                pr.getLastMergeSourceCommit().getCommitId()
+                                pullSha
                         );
-                        //TODO: not sure how to set the base hash and pull hash
-                        return new PullRequestSCMRevision(head,
-                                pr.getLastMergeTargetCommit().getCommitId(),
-                                pr.getLastMergeSourceCommit().getCommitId(),
-                                pr.getLastMergeCommit().getCommitId());
+                        break;
                 }
+                return new PullRequestSCMRevision(head,
+                        baseSha,
+                        pullSha,
+                        mergeSha);
             } else {
                 listener.getLogger().format(
                         "Could not resolve %s as pull request %d%n",
@@ -1307,30 +1306,20 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
             int number = prhead.getNumber();
             //GHPullRequest pr = ghRepository.getPullRequest(number);
             GitPullRequest pr = AzureConnector.INSTANCE.getPullRequest(gitRepository, number);
-            String baseHash;
+            String baseSha = pr.getLastMergeTargetCommit().getCommitId();
+            String pullSha = pr.getLastMergeSourceCommit().getCommitId();
+            String mergeSha = pr.getLastMergeCommit().getCommitId();
             switch (prhead.getCheckoutStrategy()) {
                 case MERGE:
-                    //baseHash = ghRepository.getRef("heads/" + prhead.getTarget().getName()).getObject().getSha();
-                    baseHash = pr.getLastMergeTargetCommit().getCommitId();
+                    GitRef baseRef = AzureConnector.INSTANCE.getRef(gitRepository, pr.getTargetRefName().replace("refs/", ""));
+                    if (baseRef != null) {
+                        baseSha = baseRef.getObjectId();
+                    }
                     break;
                 default:
-                    //baseHash = pr.getBase().getSha();
-                    baseHash = pr.getLastMergeTargetCommit().getCommitId();
                     break;
             }
-            //return new PullRequestSCMRevision(prhead, baseHash, pr.getHead().getSha());
-            //TODO I am printing the content of the head, remove this after all work
-            System.out.println("PullRequestSCMHead getId:" + prhead.getId());
-            System.out.println("PullRequestSCMHead getOriginName:" + prhead.getOriginName());
-            System.out.println("PullRequestSCMHead getOrigin:" + prhead.getOrigin());
-            System.out.println("PullRequestSCMHead getPronoun:" + prhead.getPronoun());
-            System.out.println("PullRequestSCMHead getSourceBranch:" + prhead.getSourceBranch());
-            System.out.println("PullRequestSCMHead getSourceOwner:" + prhead.getSourceOwner());
-            System.out.println("PullRequestSCMHead getSourceRepo:" + prhead.getSourceRepo());
-            System.out.println("PullRequestSCMHead getCheckoutStrategy:" + prhead.getCheckoutStrategy());
-            System.out.println("PullRequestSCMHead getNumber:" + prhead.getNumber());
-            System.out.println("PullRequestSCMHead getTarget:" + prhead.getTarget());
-            return new PullRequestSCMRevision(prhead, baseHash, pr.getLastMergeSourceCommit().getCommitId(), pr.getLastMergeCommit().getCommitId());
+            return new PullRequestSCMRevision(prhead, baseSha, pullSha, mergeSha);
         } else if (head instanceof AzureDevOpsRepoTagSCMHead) {
             AzureDevOpsRepoTagSCMHead tagHead = (AzureDevOpsRepoTagSCMHead) head;
             GHRef tag = ghRepository.getRef("tags/" + tagHead.getName());
