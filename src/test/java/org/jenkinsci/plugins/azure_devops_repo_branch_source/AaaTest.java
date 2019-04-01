@@ -168,4 +168,18 @@ public class AaaTest {
             System.out.println(GsonProcessor.INSTANCE.instanceToJson(gitPullRequestStatus));
         }
     }
+
+    @Test
+    public void aTest12() throws Exception {
+        ListPolicyConfigurationsRequest listPolicyConfigurationsRequest = new ListPolicyConfigurationsRequest(collectionUrl, pat, projectName);
+        OkHttp2Helper.INSTANCE.setDebugMode(true);
+        Result<PolicyConfigurations, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(listPolicyConfigurationsRequest, PolicyConfigurations.class, Object.class);
+        PolicyConfigurations policyConfigurations = result.getGoodValueOrNull();
+        if (policyConfigurations != null) {
+            System.out.println(policyConfigurations.getValue().size());
+            for (PolicyConfiguration policyConfiguration : policyConfigurations.getValue()) {
+                System.out.println(GsonProcessor.INSTANCE.instanceToJson(policyConfiguration));
+            }
+        }
+    }
 }
