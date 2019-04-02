@@ -37,7 +37,7 @@ import static javax.servlet.http.HttpServletResponse.*;
 @Extension
 public class AzureDevOpsEventsEndpoint implements UnprotectedRootAction {
 
-    public static final String URL_NAME = "team-events";
+    public static final String URL_NAME = "azure-devops-events";
     static final String URL_PREFIX = "/" + URL_NAME + "/";
     private static final Logger LOGGER = Logger.getLogger(AzureDevOpsEventsEndpoint.class.getName());
     private static final Map<String, AbstractHookEvent.Factory> HOOK_EVENT_FACTORIES_BY_NAME;
@@ -153,7 +153,7 @@ public class AzureDevOpsEventsEndpoint implements UnprotectedRootAction {
     public HttpResponse doIndex(final HttpServletRequest request) throws IOException {
         final Class<? extends AzureDevOpsEventsEndpoint> me = this.getClass();
         final InputStream stream = me.getResourceAsStream("TeamEventsEndpoint.html");
-        final Jenkins instance = Jenkins.getActiveInstance();
+        final Jenkins instance = Jenkins.get();
         final String rootUrl = instance.getRootUrl();
         final String eventRows = describeEvents(HOOK_EVENT_FACTORIES_BY_NAME, URL_NAME);
         try {
@@ -202,8 +202,8 @@ public class AzureDevOpsEventsEndpoint implements UnprotectedRootAction {
             final StaplerResponse response,
             @StringBodyParameter @Nonnull final String body) {
         // Send telemetry
-        TelemetryHelper.sendEvent("team-events-git-pr-merged", new TelemetryHelper.PropertyMapBuilder()
-                .build());
+//        TelemetryHelper.sendEvent("team-events-git-pr-merged", new TelemetryHelper.PropertyMapBuilder()
+//                .build());
 
         dispatch(request, response, body);
     }
@@ -214,29 +214,8 @@ public class AzureDevOpsEventsEndpoint implements UnprotectedRootAction {
             final StaplerResponse response,
             @StringBodyParameter @Nonnull final String body) {
         // Send telemetry
-        TelemetryHelper.sendEvent("team-events-git-push", new TelemetryHelper.PropertyMapBuilder()
-                .build());
-        dispatch(request, response, body);
-    }
-
-    @RequirePOST
-    public void doConnect(
-            final StaplerRequest request,
-            final StaplerResponse response,
-            @StringBodyParameter @Nonnull final String body) {
-        // Send telemetry
-        TelemetryHelper.sendEvent("team-events-connect", new TelemetryHelper.PropertyMapBuilder()
-                .build());
-        dispatch(request, response, body);
-    }
-
-    @RequirePOST
-    public void doRmwebhook(
-            final StaplerRequest request,
-            final StaplerResponse response,
-            @StringBodyParameter @Nonnull final String body) {
-        // Send telemetry
-        TelemetryHelper.sendEvent("team-events-rmwebhook", new TelemetryHelper.PropertyMapBuilder().build());
+//        TelemetryHelper.sendEvent("team-events-git-push", new TelemetryHelper.PropertyMapBuilder()
+//                .build());
         dispatch(request, response, body);
     }
 
