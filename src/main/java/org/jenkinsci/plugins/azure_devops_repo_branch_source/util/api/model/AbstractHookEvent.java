@@ -12,7 +12,6 @@ import hudson.scm.SCM;
 import hudson.security.ACL;
 import hudson.triggers.SCMTrigger;
 import jenkins.model.Jenkins;
-import jenkins.plugins.git.GitSCMSource;
 import jenkins.scm.api.SCMSource;
 import jenkins.triggers.SCMTriggerItem;
 import net.sf.json.JSONArray;
@@ -23,6 +22,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.AzureDevOpsRepoSCMSource;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.ActionHelper;
 import org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition;
 import org.jenkinsci.plugins.workflow.flow.FlowDefinition;
@@ -81,7 +81,6 @@ public abstract class AbstractHookEvent {
         if (!(project instanceof AbstractProject && ((AbstractProject) project).isDisabled())) {
             if (project instanceof Job) {
                 final Job job = (Job) project;
-                final int quietPeriod = scmTriggerItem.getQuietPeriod();
 
                 final ArrayList<ParameterValue> values = getDefaultParameters(job);
                 final String vstsRefspec = getVstsRefspec(gitCodePushedEventArgs);
@@ -89,7 +88,7 @@ public abstract class AbstractHookEvent {
                 values.add(new StringParameterValue("vstsBranchOrCommit", gitCodePushedEventArgs.commit));
                 SafeParametersAction paraAction = new SafeParametersAction(values);
                 final Action[] actionsNew = ActionHelper.create(actions, paraAction);
-                final List<Action> actionsWithSafeParams = new ArrayList<Action>(Arrays.asList(actionsNew));
+                final List<Action> actionsWithSafeParams = new ArrayList<>(Arrays.asList(actionsNew));
 
                 final SCMTrigger scmTrigger = AzureDevOpsEventsEndpoint.findTrigger(job, SCMTrigger.class);
                 if (scmTrigger == null || !scmTrigger.isIgnorePostCommitHooks()) {
@@ -117,8 +116,11 @@ public abstract class AbstractHookEvent {
         boolean repositoryMatches = false;
 
         for (SCMSource scmSource : wmbp.getSCMSources()) {
-            if (scmSource instanceof GitSCMSource) {
-                GitSCMSource gitSCMSource = (GitSCMSource) scmSource;
+            //TODO debug - Luke
+            System.out.println("matchMultiBranchProject scmSource " + scmSource);
+            if (scmSource instanceof AzureDevOpsRepoSCMSource) {
+                AzureDevOpsRepoSCMSource gitSCMSource = (AzureDevOpsRepoSCMSource) scmSource;
+                System.out.println("matchMultiBranchProject gitSCMSource " + gitSCMSource.getRemote());
                 try {
                     if (UriHelper.areSameGitRepo(uri, new URIish(gitSCMSource.getRemote()))) {
                         repositoryMatches = true;
@@ -133,14 +135,19 @@ public abstract class AbstractHookEvent {
 
         if (repositoryMatches) {
             for (WorkflowJob workflowJob : wmbp.getItems()) {
+                //TODO debug - Luke
+                System.out.println("matchMultiBranchProject workflowJob " + workflowJob);
+                System.out.println("matchMultiBranchProject workflowJob.getName() " + workflowJob.getName());
                 final String branchName = workflowJob.getName();
 
                 final SCMTriggerItem scmTriggerItem = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(workflowJob);
 
                 if (scmTriggerItem != null) {
+                    System.out.println("matchMultiBranchProject scmTriggerItem " + scmTriggerItem);
+                    System.out.println("matchMultiBranchProject gitCodePushedEventArgs " + gitCodePushedEventArgs);
                     if (gitCodePushedEventArgs instanceof PullRequestMergeCommitCreatedEventArgs) {
                         PullRequestMergeCommitCreatedEventArgs p = (PullRequestMergeCommitCreatedEventArgs) gitCodePushedEventArgs;
-                        if (branchName.equalsIgnoreCase(p.targetBranch)) {
+                        if (branchName.equalsIgnoreCase("PR-" + p.pullRequestId)) {
                             matchStatus.branchMatchFound++;
                             GitStatus.ResponseContributor triggerResult = triggerJob(p, actions, bypassPolling, workflowJob, scmTriggerItem, true, false);
                             if (triggerResult != null) {
@@ -158,6 +165,8 @@ public abstract class AbstractHookEvent {
                             break;
                         }
                     }
+                } else {
+                    System.out.println("matchMultiBranchProject scmTriggerItem null");
                 }
             }
         }
@@ -169,9 +178,8 @@ public abstract class AbstractHookEvent {
 
         if (scmTriggerItem == null) {
             if (project instanceof WorkflowMultiBranchProject) {
-                // For now we will ignore multi-branch pipeline jobs
-//                WorkflowMultiBranchProject wmbp = (WorkflowMultiBranchProject) project;
-//                matchMultiBranchProject(gitCodePushedEventArgs, actions, bypassPolling, uri, wmbp, result, matchStatus);
+                WorkflowMultiBranchProject wmbp = (WorkflowMultiBranchProject) project;
+                matchMultiBranchProject(gitCodePushedEventArgs, actions, bypassPolling, uri, wmbp, result, matchStatus);
             } else {
                 if (project instanceof Folder) {
                     for (Job job : project.getAllJobs()) {
@@ -305,7 +313,7 @@ public abstract class AbstractHookEvent {
 
     // TODO: it would be easiest if pollOrQueueFromEvent built a JSONObject directly
     List<GitStatus.ResponseContributor> pollOrQueueFromEvent(final GitCodePushedEventArgs gitCodePushedEventArgs, final List<Action> actions, final boolean bypassPolling) {
-        List<GitStatus.ResponseContributor> result = new ArrayList<GitStatus.ResponseContributor>();
+        List<GitStatus.ResponseContributor> result = new ArrayList<>();
         final String commit = gitCodePushedEventArgs.commit;
         if (commit == null) {
             result.add(new GitStatus.MessageResponseContributor("No commits were pushed, skipping further event processing."));
@@ -313,7 +321,8 @@ public abstract class AbstractHookEvent {
         }
         final URIish uri = gitCodePushedEventArgs.getRepoURIish();
 
-        TeamGlobalStatusAction.addIfApplicable(actions);
+        //TODO we don't need this - Luke
+        //TeamGlobalStatusAction.addIfApplicable(actions);
 
         // run in high privilege to see all the projects anonymous users don't see.
         // this is safe because when we actually schedule a build, it's a build that can
@@ -344,7 +353,7 @@ public abstract class AbstractHookEvent {
     }
 
     private ArrayList<ParameterValue> getDefaultParameters(final Job<?, ?> job) {
-        ArrayList<ParameterValue> values = new ArrayList<ParameterValue>();
+        ArrayList<ParameterValue> values = new ArrayList<>();
         ParametersDefinitionProperty pdp = job.getProperty(ParametersDefinitionProperty.class);
         if (pdp != null) {
             for (ParameterDefinition pd : pdp.getParameterDefinitions()) {

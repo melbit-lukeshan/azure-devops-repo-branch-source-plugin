@@ -150,10 +150,6 @@ public class TeamPushTrigger extends Trigger<Job<?, ?>> {
                     e.printStackTrace(listener.error(failedToRecord));
                     LOGGER.log(Level.SEVERE, failedToRecord, e);
                     throw e;
-                } catch (final RuntimeException e) {
-                    e.printStackTrace(listener.error(failedToRecord));
-                    LOGGER.log(Level.SEVERE, failedToRecord, e);
-                    throw e;
                 } finally {
                     listener.close();
                 }

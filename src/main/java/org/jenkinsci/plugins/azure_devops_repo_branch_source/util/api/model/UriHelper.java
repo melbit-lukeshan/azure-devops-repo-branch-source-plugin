@@ -93,6 +93,9 @@ public class UriHelper {
     }
 
     public static boolean areSameGitRepo(final URI a, final URI b) {
+        //TODO debug - Luke
+        System.out.println("areSameGitRepo a " + a.toString());
+        System.out.println("areSameGitRepo b " + b.toString());
         if (a == null) {
             return b == null;
         }

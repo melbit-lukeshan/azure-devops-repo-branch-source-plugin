@@ -14,6 +14,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.EndpointHelper;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.gson.GsonProcessor;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
@@ -96,7 +97,8 @@ public class AzureDevOpsEventsEndpoint implements UnprotectedRootAction {
     }
 
     public static Event deserializeEvent(final String input) throws IOException {
-        final Event serviceHookEvent = EndpointHelper.MAPPER.readValue(input, Event.class);
+        //final Event serviceHookEvent = EndpointHelper.MAPPER.readValue(input, Event.class);
+        final Event serviceHookEvent = GsonProcessor.INSTANCE.instanceFromJson(input, Event.class);
         final String eventType = serviceHookEvent.getEventType();
         if (StringUtils.isEmpty(eventType)) {
             throw new IllegalArgumentException("Payload did not contain 'eventType'.");
@@ -201,10 +203,6 @@ public class AzureDevOpsEventsEndpoint implements UnprotectedRootAction {
             final StaplerRequest request,
             final StaplerResponse response,
             @StringBodyParameter @Nonnull final String body) {
-        // Send telemetry
-//        TelemetryHelper.sendEvent("team-events-git-pr-merged", new TelemetryHelper.PropertyMapBuilder()
-//                .build());
-
         dispatch(request, response, body);
     }
 
@@ -213,9 +211,6 @@ public class AzureDevOpsEventsEndpoint implements UnprotectedRootAction {
             final StaplerRequest request,
             final StaplerResponse response,
             @StringBodyParameter @Nonnull final String body) {
-        // Send telemetry
-//        TelemetryHelper.sendEvent("team-events-git-push", new TelemetryHelper.PropertyMapBuilder()
-//                .build());
         dispatch(request, response, body);
     }
 

@@ -6,7 +6,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
 /**
- * Triggers a build when we receive a TFS/Team Services Git code push event in a TFS pull request.
+ * Triggers a build when we receive a Azure DevOps Git code push event in a Azure DevOps pull request.
  */
 public class TeamPRPushTrigger extends TeamPushTrigger {
 
@@ -40,7 +40,7 @@ public class TeamPRPushTrigger extends TeamPushTrigger {
 
         @Override
         public String getDisplayName() {
-            return "Build when a change is pushed to a TFS pull request";
+            return "Build when a change is pushed to a Azure DevOps pull request";
         }
     }
 }

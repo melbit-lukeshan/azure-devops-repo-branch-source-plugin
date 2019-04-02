@@ -29,6 +29,13 @@ object GsonProcessor : JsonProcessor {
                 gson.fromJson(json, clazz.java)
             }
 
+    fun <T : Any> instanceFromJson(json: String?, clazz: Class<T>): T? =
+            if (clazz == Any::class.java || clazz == String::class.java) {
+                clazz.cast(json)
+            } else {
+                gson.fromJson(json, clazz)
+            }
+
     override fun <T : Any> instanceToJson(instance: T?): String? =
             gson.toJson(instance)
 }

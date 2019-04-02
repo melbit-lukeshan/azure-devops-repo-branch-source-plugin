@@ -1,5 +1,7 @@
 package org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model;
 
+import com.google.gson.JsonObject;
+
 import java.util.Map;
 import java.util.UUID;
 
@@ -13,7 +15,7 @@ public class Event {
     private EventScope scope;
     private FormattedEventMessage message;
     private FormattedEventMessage detailedMessage;
-    private Object resource;
+    private JsonObject resource;
     private String resourceVersion;
     private Map<String, ResourceContainer> resourceContainers;
 
@@ -69,11 +71,11 @@ public class Event {
         this.detailedMessage = detailedMessage;
     }
 
-    public Object getResource() {
+    public JsonObject getResource() {
         return resource;
     }
 
-    public void setResource(final Object resource) {
+    public void setResource(final JsonObject resource) {
         this.resource = resource;
     }
 

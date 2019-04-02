@@ -1,9 +1,11 @@
 package org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonObject;
 import hudson.model.Action;
 import hudson.plugins.git.GitStatus;
 import net.sf.json.JSONObject;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.gson.GsonProcessor;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -85,13 +87,14 @@ public class GitPullRequestMergedEvent extends GitPushEvent {
 
     @Override
     public JSONObject perform(final ObjectMapper mapper, final Event serviceHookEvent, final String message, final String detailedMessage) {
-        final Object resource = serviceHookEvent.getResource();
-        final GitPullRequest gitPullRequest = mapper.convertValue(resource, GitPullRequest.class);
+        final JsonObject resource = serviceHookEvent.getResource();
+        //final GitPullRequest gitPullRequest = mapper.convertValue(resource, GitPullRequest.class);
+        final GitPullRequest gitPullRequest = GsonProcessor.INSTANCE.instanceFromJson(resource.toString(), GitPullRequest.class);
 
         final PullRequestMergeCommitCreatedEventArgs args = decodeGitPullRequest(gitPullRequest, serviceHookEvent);
         final PullRequestParameterAction parameterAction = new PullRequestParameterAction(args);
         final Action teamPullRequestMergedDetailsAction = new TeamPullRequestMergedDetailsAction(gitPullRequest, message, detailedMessage, args.collectionUri.toString());
-        final ArrayList<Action> actions = new ArrayList<Action>();
+        final ArrayList<Action> actions = new ArrayList<>();
         actions.add(parameterAction);
         actions.add(teamPullRequestMergedDetailsAction);
         final List<GitStatus.ResponseContributor> contributors = pollOrQueueFromEvent(args, actions, true);

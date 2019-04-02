@@ -200,8 +200,7 @@ public class AzureDevOpsRepoSCMBuilder extends GitSCMBuilder<AzureDevOpsRepoSCMB
      * @return a {@link RepositoryUriResolver}
      */
     @NonNull
-    public static RepositoryUriResolver uriResolver(@CheckForNull Item context, @NonNull String apiUri,
-                                                    @CheckForNull String credentialsId) {
+    public static RepositoryUriResolver uriResolver(@CheckForNull Item context, @NonNull String apiUri, @CheckForNull String credentialsId) {
         if (credentialsId == null) {
             return HTTPS;
         } else {
