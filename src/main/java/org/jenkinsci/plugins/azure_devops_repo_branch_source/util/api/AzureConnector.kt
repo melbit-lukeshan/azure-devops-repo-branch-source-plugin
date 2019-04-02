@@ -35,7 +35,7 @@ object AzureConnector {
     private val LOGGER = Logger.getLogger(AzureConnector::class.java.name)
 
     init {
-        OkHttp2Helper.setDebugMode(true)
+        OkHttp2Helper.setDebugMode(false)
     }
 
     fun lookupCredentials(context: Item?, collectionUrl: String?, credentialsId: String?): StandardCredentials? {

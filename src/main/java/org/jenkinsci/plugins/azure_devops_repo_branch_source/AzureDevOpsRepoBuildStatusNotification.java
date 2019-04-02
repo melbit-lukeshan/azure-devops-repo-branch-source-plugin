@@ -58,6 +58,10 @@ public class AzureDevOpsRepoBuildStatusNotification {
 
     private static final Logger LOGGER = Logger.getLogger(AzureDevOpsRepoBuildStatusNotification.class.getName());
 
+    private static final String CONTEXT_GENRE = "jenkins";
+    private static final String CONTEXT_NAME_PR = "pr";
+    private static final String CONTEXT_NAME_COMMIT = "commit";
+
     private AzureDevOpsRepoBuildStatusNotification() {
     }
 
@@ -80,19 +84,27 @@ public class AzureDevOpsRepoBuildStatusNotification {
                         List<AzureDevOpsRepoNotificationRequest> details = strategy.notifications(notificationContext, listener);
                         for (AzureDevOpsRepoNotificationRequest request : details) {
                             boolean ignoreError = request.isIgnoreError();
-                            //repo.createCommitStatus(revisionToNotify, request.getState(), request.getUrl(), request.getMessage(), request.getContext());
-                            //final String instanceUrl = StringUtils.stripEnd(Jenkins.get().getRootUrl(), "/");
-                            //String projectDisplayName = build.getParent().getParent().getFullName() + "/" + build.getParent().getDisplayName();
-                            String contextName = "push";
+                            /*
+                              We don't want to force user to enter a long boring Jenkins url in Azure DevOps branch policy setup.
+                              When we update/create a new commit/pull request status, the commit id/pull request number has already identified the commit/pull request.
+                              The GitStatusContext is not for identification so it can be same for all build. - Luke
+                             */
+                            //final String contextGenre = StringUtils.stripEnd(Jenkins.get().getRootUrl(), "/") + "/" + build.getParent().getParent().getFullName() + "/" + build.getParent().getDisplayName();
+                            final String contextGenre = CONTEXT_GENRE;
+                            final String contextName;
                             if (head instanceof PullRequestSCMHead) {
-                                contextName = "pr";
+                                contextName = CONTEXT_NAME_PR;
                             } else if (head instanceof BranchSCMHead) {
                                 BranchSCMHead branchSCMHead = (BranchSCMHead) head;
                                 if (branchSCMHead.realBranchType == BranchSCMHead.RealBranchType.pr) {
-                                    contextName = "pr";
+                                    contextName = CONTEXT_NAME_PR;
+                                } else {
+                                    contextName = CONTEXT_NAME_COMMIT;
                                 }
+                            } else {
+                                contextName = CONTEXT_NAME_COMMIT;
                             }
-                            GitStatusContext context = new GitStatusContext(null, contextName);
+                            GitStatusContext context = new GitStatusContext(contextGenre, contextName);
                             GitStatusForCreation status = new GitStatusForCreation(request.getState(), request.getMessage(), request.getUrl(), context);
                             GitStatus ret = AzureConnector.INSTANCE.createCommitStatus(repo, revisionToNotify, status);
                             if (ret == null) {
@@ -228,10 +240,15 @@ public class AzureDevOpsRepoBuildStatusNotification {
                                 List<AzureDevOpsRepoNotificationRequest> details = strategy.notifications(notificationContext, null);
                                 for (AzureDevOpsRepoNotificationRequest request : details) {
                                     boolean ignoreErrors = request.isIgnoreError();
-                                    //final String instanceUrl = StringUtils.stripEnd(Jenkins.get().getRootUrl(), "/");
-                                    //String projectDisplayName = job.getParent().getFullName() + "/" + job.getDisplayName();
-                                    //GitStatusContext context = new GitStatusContext(instanceUrl, projectDisplayName);
-                                    GitStatusContext context = new GitStatusContext(null, "pr");
+                                    /*
+                                    We don't want to force user to enter a long boring Jenkins url in Azure DevOps branch policy setup.
+                                    When we update/create a new commit/pull request status, the commit id/pull request number has already identified the commit/pull request.
+                                    The GitStatusContext is not for identification so it can be same for all build. - Luke
+                                    */
+                                    //final String contextGenre = StringUtils.stripEnd(Jenkins.get().getRootUrl(), "/") + "/" + job.getParent().getFullName() + "/" + job.getDisplayName();
+                                    final String contextGenre = CONTEXT_GENRE;
+                                    final String contextName = CONTEXT_NAME_PR;
+                                    GitStatusContext context = new GitStatusContext(contextGenre, contextName);
                                     GitStatusForCreation status = new GitStatusForCreation(request.getState(), request.getMessage(), request.getUrl(), context);
                                     GitStatus ret = AzureConnector.INSTANCE.createCommitStatus(repo, hash, status);
                                     if (ret == null) {

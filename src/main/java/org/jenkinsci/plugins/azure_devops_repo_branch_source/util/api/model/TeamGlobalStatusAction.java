@@ -1,0 +1,31 @@
+package org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model;
+
+import hudson.model.Action;
+import hudson.model.InvisibleAction;
+import hudson.model.Run;
+
+import java.io.Serializable;
+import java.util.List;
+
+/**
+ * Added to the build when triggered by TFS/Team Services AND the "Enable Team Status for all jobs"
+ * option was enabled.
+ */
+public class TeamGlobalStatusAction extends InvisibleAction implements Serializable {
+
+    /**
+     * Add the passed in actions if EnableTeamStatusForAllJobs is configured.
+     */
+    public static void addIfApplicable(final List<Action> actions) {
+        actions.add(new TeamGlobalStatusAction());
+    }
+
+    /**
+     * Returns true if the run already contains a TeamGlobalStatusAction.
+     */
+    public static boolean isApplicable(final Run<?, ?> run) {
+        final TeamGlobalStatusAction action = run.getAction(TeamGlobalStatusAction.class);
+        return action != null;
+    }
+
+}
