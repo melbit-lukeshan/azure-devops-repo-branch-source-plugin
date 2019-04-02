@@ -197,19 +197,16 @@ public final class AzureDevOpsRepoNotificationContext {
         if (null != build) {
             Result result = build.getResult();
             if (Result.SUCCESS.equals(result)) {
-                //return Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatus_Good();
                 return build.getParent().getDisplayName() + "#" + build.getNumber() + ": SUCCESS";
             } else if (Result.UNSTABLE.equals(result)) {
-                return Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatus_Unstable();
+                return build.getParent().getDisplayName() + "#" + build.getNumber() + ": UNSTABLE";
             } else if (Result.FAILURE.equals(result)) {
-                //return Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatus_Failure();
                 return build.getParent().getDisplayName() + "#" + build.getNumber() + ": FAILURE";
             } else if (Result.ABORTED.equals(result)) {
-                return Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatus_Aborted();
+                return build.getParent().getDisplayName() + "#" + build.getNumber() + ": ABORTED";
             } else if (result != null) { // NOT_BUILT etc.
-                return Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatus_Other();
+                return build.getParent().getDisplayName() + "#" + build.getNumber() + ": UNKNOWN";
             } else {
-                //return Messages.AzureDevOpsRepoBuildStatusNotification_CommitStatus_Pending();
                 return build.getParent().getDisplayName() + "#" + build.getNumber() + ": PENDING";
             }
         }

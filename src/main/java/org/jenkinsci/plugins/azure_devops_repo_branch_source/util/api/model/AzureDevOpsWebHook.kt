@@ -57,7 +57,7 @@ class AzureDevOpsWebHook : UnprotectedRootAction {
     /**
      * If any wants to auto-register hook, then should call this method
      * Example code:
-     * `GitHubWebHook.get().registerHookFor(job);`
+     * `AzureDevOpsWebHook.get().registerHookFor(job);`
      *
      * @param job not null project to register hook for
      */
@@ -69,7 +69,7 @@ class AzureDevOpsWebHook : UnprotectedRootAction {
     /**
      * If any wants to auto-register hook, then should call this method
      * Example code:
-     * `GitHubWebHook.get().registerHookFor(item);`
+     * `AzureDevOpsWebHook.get().registerHookFor(item);`
      *
      * @param item not null item to register hook for
      * @since 1.25.0
@@ -149,7 +149,7 @@ class AzureDevOpsWebHook : UnprotectedRootAction {
 
     companion object {
         private val LOGGER = LoggerFactory.getLogger(AzureDevOpsWebHook::class.java)
-        val URLNAME = "github-webhook"
+        val URLNAME = "azure-devops-webhook"
 
         // headers used for testing the endpoint configuration
         val URL_VALIDATION_HEADER = "X-Jenkins-Validation"

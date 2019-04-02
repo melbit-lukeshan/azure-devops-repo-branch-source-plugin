@@ -37,7 +37,6 @@ import hudson.scm.SCMRevisionState;
 import jenkins.model.Jenkins;
 import jenkins.plugins.git.AbstractGitSCMSource.SCMRevisionImpl;
 import jenkins.scm.api.*;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.*;
 
@@ -47,7 +46,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 
 /**
  * Manages Azure DevOps Statuses.
@@ -83,20 +81,18 @@ public class AzureDevOpsRepoBuildStatusNotification {
                         for (AzureDevOpsRepoNotificationRequest request : details) {
                             boolean ignoreError = request.isIgnoreError();
                             //repo.createCommitStatus(revisionToNotify, request.getState(), request.getUrl(), request.getMessage(), request.getContext());
-                            final String instanceUrl = StringUtils.stripEnd(Jenkins.get().getRootUrl(), "/");
-                            String projectDisplayName = build.getParent().getParent().getFullName() + "/" + build.getParent().getDisplayName();
-                            //TODO debug info. Remove later. - Luke
-                            System.out.println("AzureDevOpsRepoBuildStatusNotification createBuildCommitStatus");
+                            //final String instanceUrl = StringUtils.stripEnd(Jenkins.get().getRootUrl(), "/");
+                            //String projectDisplayName = build.getParent().getParent().getFullName() + "/" + build.getParent().getDisplayName();
+                            String contextName = "push";
                             if (head instanceof PullRequestSCMHead) {
-                                projectDisplayName = build.getParent().getParent().getFullName() + "/pr-merge";
+                                contextName = "pr";
                             } else if (head instanceof BranchSCMHead) {
                                 BranchSCMHead branchSCMHead = (BranchSCMHead) head;
                                 if (branchSCMHead.realBranchType == BranchSCMHead.RealBranchType.pr) {
-                                    projectDisplayName = build.getParent().getParent().getFullName() + "/pr-merge";
+                                    contextName = "pr";
                                 }
                             }
-                            //TODO end
-                            GitStatusContext context = new GitStatusContext(instanceUrl, projectDisplayName);
+                            GitStatusContext context = new GitStatusContext(null, contextName);
                             GitStatusForCreation status = new GitStatusForCreation(request.getState(), request.getMessage(), request.getUrl(), context);
                             GitStatus ret = AzureConnector.INSTANCE.createCommitStatus(repo, revisionToNotify, status);
                             if (ret == null) {
@@ -232,13 +228,10 @@ public class AzureDevOpsRepoBuildStatusNotification {
                                 List<AzureDevOpsRepoNotificationRequest> details = strategy.notifications(notificationContext, null);
                                 for (AzureDevOpsRepoNotificationRequest request : details) {
                                     boolean ignoreErrors = request.isIgnoreError();
-                                    final String instanceUrl = StringUtils.stripEnd(Jenkins.get().getRootUrl(), "/");
-                                    String projectDisplayName = job.getParent().getFullName() + "/" + job.getDisplayName();
-                                    //TODO debug info. Remove later. - Luke
-                                    System.out.println("AzureDevOpsRepoBuildStatusNotification JobScheduledListener");
-                                    projectDisplayName = job.getParent().getFullName() + "/pr-merge";
-                                    //TODO end
-                                    GitStatusContext context = new GitStatusContext(instanceUrl, projectDisplayName);
+                                    //final String instanceUrl = StringUtils.stripEnd(Jenkins.get().getRootUrl(), "/");
+                                    //String projectDisplayName = job.getParent().getFullName() + "/" + job.getDisplayName();
+                                    //GitStatusContext context = new GitStatusContext(instanceUrl, projectDisplayName);
+                                    GitStatusContext context = new GitStatusContext(null, "pr");
                                     GitStatusForCreation status = new GitStatusForCreation(request.getState(), request.getMessage(), request.getUrl(), context);
                                     GitStatus ret = AzureConnector.INSTANCE.createCommitStatus(repo, hash, status);
                                     if (ret == null) {
