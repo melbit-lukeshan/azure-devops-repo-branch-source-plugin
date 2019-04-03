@@ -31,11 +31,22 @@ public class AaaTest {
 
     @Test
     public void aTest0() throws Exception {
-        ListAccountsRequest listAccountsRequest = new ListAccountsRequest(pat);
         OkHttp2Helper.INSTANCE.setDebugMode(true);
-        Result<Accounts, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(listAccountsRequest, Accounts.class, Object.class);
-        Accounts accounts = result.getGoodValueOrNull();
-//        assertThat(accounts.getCount(), is(1));
+        GetConnectionDataRequest getConnectionDataRequest = new GetConnectionDataRequest(pat);
+        Result<ConnectionData, Object> result0 = OkHttp2Helper.INSTANCE.executeRequest2(getConnectionDataRequest, ConnectionData.class, Object.class);
+        ConnectionData connectionData = result0.getGoodValueOrNull();
+        if (connectionData != null) {
+            System.out.println(GsonProcessor.INSTANCE.instanceToJson(connectionData));
+            ListAccountsRequest listAccountsRequest = new ListAccountsRequest(pat, connectionData.getAuthorizedUser().getId());
+            Result<Accounts, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(listAccountsRequest, Accounts.class, Object.class);
+            Accounts accounts = result.getGoodValueOrNull();
+            if (accounts != null) {
+                System.out.println(accounts.getCount());
+                for (Account account : accounts.getValue()) {
+                    System.out.println(account.getAccountId() + "->" + account.getAccountName() + "->" + account.getAccountUri());
+                }
+            }
+        }
     }
 
     @Test

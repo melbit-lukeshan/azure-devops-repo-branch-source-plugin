@@ -37,7 +37,7 @@ import java.io.IOException;
 import java.io.ObjectStreamException;
 
 /**
- * Invisible {@link AvatarMetadataAction} property that retains information about GitHub organization.
+ * Invisible {@link AvatarMetadataAction} property that retains information about Azure DevOps organization.
  *
  * @author Kohsuke Kawaguchi
  */

@@ -163,6 +163,14 @@ object AzureConnector {
         return Util.fixEmptyAndTrim(collectionUrl)
     }
 
+    private fun getConnectionDataR(pat: String): Result<ConnectionData, Any> {
+        return OkHttp2Helper.executeRequest(GetConnectionDataRequest(pat))
+    }
+
+    private fun listAccountsR(pat: String, ownerId: String): Result<Accounts, Any> {
+        return OkHttp2Helper.executeRequest(ListAccountsRequest(pat, ownerId))
+    }
+
     private fun listProjectsR(collectionUrl: String, pat: String): Result<Projects, Any> {
         return OkHttp2Helper.executeRequest(ListProjectsRequest(collectionUrl, pat))
     }
@@ -221,6 +229,18 @@ object AzureConnector {
 
     private fun createPullRequestStatusR(collectionUrl: String, pat: String, projectName: String, repositoryName: String, pullRequestId: Int, status: GitPullRequestStatusForCreation): Result<GitPullRequestStatus, Any> {
         return OkHttp2Helper.executeRequest(CreatePullRequestStatusRequest(collectionUrl, pat, projectName, repositoryName, pullRequestId, status))
+    }
+
+    fun getConnectionData(context: Item?, collectionUrl: String?, credentialsId: String?): ConnectionData? {
+        return lookupCredentials(context, collectionUrl, credentialsId)?.let { credentials ->
+            getConnectionDataR(getPat(credentials)).getGoodValueOrNull()
+        }
+    }
+
+    fun listAccounts(context: Item?, collectionUrl: String?, credentialsId: String?, ownerId: String): List<Account>? {
+        return lookupCredentials(context, collectionUrl, credentialsId)?.let { credentials ->
+            listAccountsR(getPat(credentials), ownerId).getGoodValueOrNull()?.value
+        }
     }
 
     fun getProjectNames(context: Item?, collectionUrl: String?, credentialsId: String?): List<String>? {

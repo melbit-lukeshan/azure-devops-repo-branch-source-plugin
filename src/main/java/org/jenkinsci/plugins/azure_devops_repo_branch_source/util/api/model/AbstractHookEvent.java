@@ -311,7 +311,6 @@ public abstract class AbstractHookEvent {
         return false;
     }
 
-    // TODO: it would be easiest if pollOrQueueFromEvent built a JSONObject directly
     List<GitStatus.ResponseContributor> pollOrQueueFromEvent(final GitCodePushedEventArgs gitCodePushedEventArgs, final List<Action> actions, final boolean bypassPolling) {
         List<GitStatus.ResponseContributor> result = new ArrayList<>();
         final String commit = gitCodePushedEventArgs.commit;
@@ -321,12 +320,6 @@ public abstract class AbstractHookEvent {
         }
         final URIish uri = gitCodePushedEventArgs.getRepoURIish();
 
-        //TODO we don't need this - Luke
-        //TeamGlobalStatusAction.addIfApplicable(actions);
-
-        // run in high privilege to see all the projects anonymous users don't see.
-        // this is safe because when we actually schedule a build, it's a build that can
-        // happen at some random time anyway.
         SecurityContext old = ACL.impersonate(ACL.SYSTEM);
         try {
             MatchStatus matchStatus = new MatchStatus();

@@ -75,7 +75,6 @@ import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.*;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.gson.GsonProcessor;
-import org.jenkinsci.plugins.github.config.GitHubServerConfig;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -110,7 +109,6 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     public static final String VALID_GITHUB_REPO_NAME = "^[0-9A-Za-z._-]+$";
     public static final String VALID_GITHUB_USER_NAME = "^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$";
     public static final String VALID_GIT_SHA1 = "^[a-fA-F0-9]{40}$";
-    public static final String GITHUB_URL = GitHubServerConfig.GITHUB_URL;
     private static final Logger LOGGER = Logger.getLogger(AzureDevOpsRepoSCMSource.class.getName());
     private static final String R_PULL = Constants.R_REFS + "pull/";
     /**
@@ -218,7 +216,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     private transient /*effectively final*/ Map<Integer, PullRequestSource> pullRequestSourceMap;
 
     /**
-     * Constructor, defaults to {@link #GITHUB_URL} as the end-point, and anonymous access, does not default any
+     * Constructor, anonymous access, does not default any
      * {@link SCMSourceTrait} behaviours.
      *
      * @param repository the repository name.
@@ -1212,7 +1210,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     private Set<String> updateCollaboratorNames(@NonNull TaskListener listener, @CheckForNull StandardCredentials credentials,
                                                 @NonNull GHRepository ghRepository)
             throws IOException {
-        if (credentials == null && (collectionUrl == null || GITHUB_URL.equals(collectionUrl))) {
+        if (credentials == null) {
             // anonymous access to GitHub will never get list of collaborators and will
             // burn an API call, so no point in even trying
             listener.getLogger().println("Anonymous cannot query list of collaborators, assuming none");
@@ -1458,8 +1456,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                     wrapped.unwrap();
                 } catch (HttpException e) {
                     listener.getLogger()
-                            .format("It seems %s is unreachable, assuming no trusted collaborators%n",
-                                    collectionUrl == null ? GITHUB_URL : collectionUrl);
+                            .format("It seems %s is unreachable, assuming no trusted collaborators%n", collectionUrl);
                     collaboratorNames = Collections.singleton(projectName);
                 }
             }
@@ -2394,8 +2391,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
             if (collaboratorNames != null) {
                 return collaboratorNames;
             }
-            listener.getLogger().format("Connecting to %s to obtain list of collaborators for %s/%s%n",
-                    collectionUrl == null ? GITHUB_URL : collectionUrl, projectName, repository);
+            listener.getLogger().format("Connecting to %s to obtain list of collaborators for %s/%s%n", collectionUrl, projectName, repository);
             StandardCredentials credentials = Connector.lookupScanCredentials(
                     (Item) getOwner(), collectionUrl, credentialsId
             );
@@ -2417,22 +2413,19 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                     if (credentials != null && !isCredentialValid(github)) {
                         listener.getLogger().format("Invalid scan credentials %s to connect to %s, "
                                         + "assuming no trusted collaborators%n",
-                                credentialsName, collectionUrl == null ? GITHUB_URL : collectionUrl);
+                                credentialsName, collectionUrl);
                         collaboratorNames = Collections.singleton(projectName);
                     } else {
                         if (!github.isAnonymous()) {
                             listener.getLogger()
-                                    .format("Connecting to %s using %s%n",
-                                            collectionUrl == null ? GITHUB_URL : collectionUrl,
-                                            credentialsName);
+                                    .format("Connecting to %s using %s%n", collectionUrl, credentialsName);
                         } else {
                             listener.getLogger()
-                                    .format("Connecting to %s with no credentials, anonymous access%n",
-                                            collectionUrl == null ? GITHUB_URL : collectionUrl);
+                                    .format("Connecting to %s with no credentials, anonymous access%n", collectionUrl);
                         }
 
                         // Input data validation
-                        if (repository == null || repository.isEmpty()) {
+                        if (repository.isEmpty()) {
                             collaboratorNames = Collections.singleton(projectName);
                         } else {
                             request.checkApiRateLimit();

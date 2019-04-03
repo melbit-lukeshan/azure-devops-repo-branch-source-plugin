@@ -541,7 +541,7 @@ public class Connector {
         }
         if (credentials != null && !isCredentialValid(github)) {
             String message = String.format("Invalid scan credentials %s to connect to %s, skipping",
-                    CredentialsNameProvider.name(credentials), apiUri == null ? AzureDevOpsRepoSCMSource.GITHUB_URL : apiUri);
+                    CredentialsNameProvider.name(credentials), apiUri);
             throw new AbortException(message);
         }
         if (!github.isAnonymous()) {
@@ -549,13 +549,13 @@ public class Connector {
             listener.getLogger().println(AzureDevOpsRepoConsoleNote.create(
                     System.currentTimeMillis(),
                     String.format("Connecting to %s using %s",
-                            apiUri == null ? AzureDevOpsRepoSCMSource.GITHUB_URL : apiUri,
+                            apiUri,
                             CredentialsNameProvider.name(credentials))
             ));
         } else {
             listener.getLogger().println(AzureDevOpsRepoConsoleNote.create(System.currentTimeMillis(), String.format(
                     "Connecting to %s with no credentials, anonymous access",
-                    apiUri == null ? AzureDevOpsRepoSCMSource.GITHUB_URL : apiUri
+                    apiUri
             )));
         }
     }

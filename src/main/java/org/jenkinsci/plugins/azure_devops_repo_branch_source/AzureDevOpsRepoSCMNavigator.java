@@ -34,7 +34,6 @@ import hudson.AbortException;
 import hudson.Extension;
 import hudson.RestrictedSince;
 import hudson.Util;
-import hudson.console.HyperlinkNote;
 import hudson.model.Action;
 import hudson.model.Item;
 import hudson.model.TaskListener;
@@ -43,7 +42,6 @@ import hudson.util.ListBoxModel;
 import jenkins.model.Jenkins;
 import jenkins.plugins.git.traits.GitBrowserSCMSourceTrait;
 import jenkins.scm.api.*;
-import jenkins.scm.api.metadata.ObjectMetadataAction;
 import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
 import jenkins.scm.api.trait.*;
 import jenkins.scm.impl.UncategorizedSCMSourceCategory;
@@ -59,7 +57,7 @@ import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.AzureDevOpsWebHook;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitRepositoryWithAzureContext;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -74,7 +72,6 @@ import javax.inject.Inject;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.jenkinsci.plugins.azure_devops_repo_branch_source.Connector.isCredentialValid;
@@ -858,7 +855,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
     @NonNull
     @Override
     protected String id() {
-        return StringUtils.defaultIfBlank(collectionUrl, AzureDevOpsRepoSCMSource.GITHUB_URL) + "::" + repoOwner;
+        return StringUtils.defaultIfBlank(collectionUrl, "") + "::" + repoOwner;
     }
 
     /**
@@ -1011,16 +1008,14 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
             try {
                 Connector.checkApiUrlValidity(github, credentials);
             } catch (HttpException e) {
-                String message = String.format("It seems %s is unreachable",
-                        collectionUrl == null ? AzureDevOpsRepoSCMSource.GITHUB_URL : collectionUrl);
+                String message = String.format("It seems %s is unreachable", collectionUrl);
                 throw new AbortException(message);
             }
 
             // Input data validation
             if (credentials != null && !isCredentialValid(github)) {
                 String message = String.format("Invalid scan credentials %s to connect to %s, skipping",
-                        CredentialsNameProvider.name(credentials),
-                        collectionUrl == null ? AzureDevOpsRepoSCMSource.GITHUB_URL : collectionUrl);
+                        CredentialsNameProvider.name(credentials), collectionUrl);
                 throw new AbortException(message);
             }
 
@@ -1033,8 +1028,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
 
                 if (!github.isAnonymous()) {
                     listener.getLogger()
-                            .format("Connecting to %s using %s%n", collectionUrl == null ? AzureDevOpsRepoSCMSource.GITHUB_URL : collectionUrl,
-                                    CredentialsNameProvider.name(credentials));
+                            .format("Connecting to %s using %s%n", collectionUrl, CredentialsNameProvider.name(credentials));
                     GHMyself myself;
                     try {
                         // Requires an authenticated access
@@ -1059,8 +1053,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
                         return;
                     }
                 } else {
-                    listener.getLogger().format("Connecting to %s with no credentials, anonymous access%n",
-                            collectionUrl == null ? AzureDevOpsRepoSCMSource.GITHUB_URL : collectionUrl);
+                    listener.getLogger().format("Connecting to %s with no credentials, anonymous access%n", collectionUrl);
                 }
 
                 GHOrganization org = null;
@@ -1135,24 +1128,20 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
         listener.getLogger().printf("Looking up details of %s...%n", getRepoOwner());
         List<Action> result = new ArrayList<>();
         StandardCredentials credentials = AzureConnector.INSTANCE.lookupCredentials(owner, getCollectionUrl(), credentialsId);
-        GitHub hub = Connector.connect(getCollectionUrl(), credentials);
+        //GitHub hub = Connector.connect(getCollectionUrl(), credentials);
         try {
-            Connector.checkApiRateLimit(listener, hub);
-            GHUser u = hub.getUser(getRepoOwner());
-            String objectUrl = u.getHtmlUrl() == null ? null : u.getHtmlUrl().toExternalForm();
-            result.add(new ObjectMetadataAction(
-                    Util.fixEmpty(u.getName()),
-                    null,
-                    objectUrl)
-            );
-            result.add(new AzureDevOpsRepoOrgMetadataAction(u));
-            result.add(new AzureDevOpsRepoLink("icon-github-logo", u.getHtmlUrl()));
-            if (objectUrl == null) {
-                listener.getLogger().println("Organization URL: unspecified");
-            } else {
-                listener.getLogger().printf("Organization URL: %s%n",
-                        HyperlinkNote.encodeTo(objectUrl, StringUtils.defaultIfBlank(u.getName(), objectUrl)));
-            }
+//            Connector.checkApiRateLimit(listener, hub);
+//            GHUser u = hub.getUser(getRepoOwner());
+            GitRepositoryWithAzureContext repo = AzureConnector.INSTANCE.getRepository(collectionUrl, credentials, azureProjectName, repoOwner);
+//            String objectUrl = u.getHtmlUrl() == null ? null : u.getHtmlUrl().toExternalForm();
+//            result.add(new ObjectMetadataAction(Util.fixEmpty(u.getName()), null, objectUrl));
+//            result.add(new AzureDevOpsRepoOrgMetadataAction(u));
+//            result.add(new AzureDevOpsRepoLink("icon-github-logo", u.getHtmlUrl()));
+//            if (objectUrl == null) {
+//                listener.getLogger().println("Organization URL: unspecified");
+//            } else {
+//                listener.getLogger().printf("Organization URL: %s%n", HyperlinkNote.encodeTo(objectUrl, StringUtils.defaultIfBlank(u.getName(), objectUrl)));
+//            }
             return result;
         } finally {
         }
@@ -1163,19 +1152,6 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
      */
     @Override
     public void afterSave(@NonNull SCMNavigatorOwner owner) {
-        AzureDevOpsWebHook.Companion.get().registerHookFor(owner);
-        try {
-            // FIXME MINOR HACK ALERT
-            StandardCredentials credentials = AzureConnector.INSTANCE.lookupCredentials(owner, getCollectionUrl(), credentialsId);
-            GitHub hub = Connector.connect(getCollectionUrl(), credentials);
-            try {
-                AzureDevOpsRepoOrgWebHook.register(hub, repoOwner);
-            } finally {
-                Connector.release(hub);
-            }
-        } catch (IOException e) {
-            DescriptorImpl.LOGGER.log(Level.WARNING, e.getMessage(), e);
-        }
     }
 
     @Symbol("github")
@@ -1330,7 +1306,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
         @Override
         public SCMNavigator newInstance(String name) {
             AzureDevOpsRepoSCMNavigator navigator = new AzureDevOpsRepoSCMNavigator("", "", name);
-            navigator.setTraits((List) getTraitsDefaults());
+            navigator.setTraits(getTraitsDefaults());
             return navigator;
         }
 
@@ -1360,7 +1336,6 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
         public FormValidation doCheckCredentialsId(@CheckForNull @AncestorInPath Item context,
                                                    @QueryParameter String apiUri,
                                                    @QueryParameter String credentialsId) {
-            //return Connector.checkScanCredentials(context, apiUri, credentialsId);
             return AzureConnector.INSTANCE.checkCredentials(context, apiUri, credentialsId);
         }
 
@@ -1378,11 +1353,11 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
                                                      @QueryParameter String apiUri,
                                                      @QueryParameter String credentialsId) {
             if (context == null
-                    ? !Jenkins.getActiveInstance().hasPermission(Jenkins.ADMINISTER)
+                    ? !Jenkins.get().hasPermission(Jenkins.ADMINISTER)
                     : !context.hasPermission(Item.EXTENDED_READ)) {
                 return new StandardListBoxModel().includeCurrentValue(credentialsId);
             }
-            return Connector.listScanCredentials(context, apiUri);
+            return AzureConnector.INSTANCE.listCredentials(context, apiUri);
         }
 
         /**
@@ -1396,8 +1371,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
             ListBoxModel result = new ListBoxModel();
             result.add("GitHub", "");
             for (Endpoint e : AzureDevOpsRepoConfiguration.get().getEndpoints()) {
-                result.add(e.getName() == null ? e.getApiUri() : e.getName() + " (" + e.getApiUri() + ")",
-                        e.getApiUri());
+                result.add(e.getName() == null ? e.getApiUri() : e.getName() + " (" + e.getApiUri() + ")", e.getApiUri());
             }
             return result;
         }
