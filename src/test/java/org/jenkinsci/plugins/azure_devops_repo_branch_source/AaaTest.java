@@ -76,7 +76,8 @@ public class AaaTest {
         if (refs != null) {
             System.out.println(refs.getCount());
             for (GitRef gitRef : refs.getValue()) {
-                System.out.println(gitRef.getName() + "->" + gitRef.getObjectId() + "->" + gitRef.getUrl());
+                System.out.println(GsonProcessor.INSTANCE.instanceToJson(gitRef));
+                //System.out.println(gitRef.getName() + "->" + gitRef.getObjectId() + "->" + gitRef.getUrl());
             }
         }
     }

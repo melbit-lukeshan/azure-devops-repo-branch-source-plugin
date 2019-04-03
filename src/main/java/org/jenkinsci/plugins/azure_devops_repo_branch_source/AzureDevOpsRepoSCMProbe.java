@@ -35,7 +35,6 @@ import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.*;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-
 @SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
 class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosable {
     private static final long serialVersionUID = 1L;
@@ -73,7 +72,6 @@ class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosabl
             }
             open = false;
         }
-//        Connector.release(gitHub);
     }
 
     private synchronized void checkOpen() throws IOException {
@@ -120,11 +118,8 @@ class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosabl
     @NonNull
     @Override
     public SCMProbeStat stat(@NonNull String path) throws IOException {
-        System.out.println("path -> " + path);
         checkOpen();
         int index = path.lastIndexOf('/') + 1;
-//        try {
-        //List<GHContent> directoryContent = repo.getDirectoryContent(path.substring(0, index), Constants.R_REFS + ref);
         String version = "";
         if (revision instanceof AbstractGitSCMSource.SCMRevisionImpl) {
             version = ((AbstractGitSCMSource.SCMRevisionImpl) revision).getHash();
@@ -142,54 +137,8 @@ class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosabl
                 return SCMProbeStat.fromType(SCMFile.Type.LINK);
             } else {
                 return SCMProbeStat.fromType(SCMFile.Type.REGULAR_FILE);
-                //return SCMProbeStat.fromType(SCMFile.Type.OTHER);
             }
         }
-//        } catch (GHFileNotFoundException fnf) {
-//            boolean finicky = false;
-//            if (index == 0 || index == 1) {
-//                // the revision does not exist, we should complain unless JENKINS-54126.
-//                finicky = true;
-//            } else {
-//                try {
-//                    repo.getDirectoryContent("/", Constants.R_REFS + ref);
-//                } catch (IOException e) {
-//                    // this must be an issue with the revision, so complain unless JENKINS-54126
-//                    fnf.addSuppressed(e);
-//                    finicky = true;
-//                }
-//                // means that does not exist and this is handled below this try/catch block.
-//            }
-//            if (finicky && JENKINS_54126_WORKAROUND) {
-//                LOG.log(Level.FINE, String.format("JENKINS-54126 Received finacky response from GitHub %s : %s", repo.getFullName(), ref), fnf);
-//                final Optional<List<String>> status;
-//                final Map<String, List<String>> responseHeaderFields = fnf.getResponseHeaderFields();
-//                if (responseHeaderFields != null) {
-//                    status = Optional.ofNullable(responseHeaderFields.get(null));
-//                } else {
-//                    status = Optional.empty();
-//                }
-//
-//                if (AzureDevOpsRepoSCMSource.getCacheSize() > 0
-//                        && gitHub.getConnector() instanceof Connector.ForceValidationOkHttpConnector
-//                        && status.isPresent() && status.get().stream().anyMatch((s) -> s.contains("40"))) { //Any status >= 400 is a FNF in okhttp
-//                    //JENKINS-54126 try again without cache headers
-//                    LOG.log(Level.FINE, "JENKINS-54126 Attempting the request again with workaround.");
-//                    final Connector.ForceValidationOkHttpConnector oldConnector = (Connector.ForceValidationOkHttpConnector) gitHub.getConnector();
-//                    try {
-//                        //TODO I'm not sure we are alone in using this connector so maybe concurrent modification problems
-//                        gitHub.setConnector(oldConnector.getDelegate());
-//                        return stat(path);
-//                    } finally {
-//                        gitHub.setConnector(oldConnector);
-//                    }
-//                } else if (STAT_RETHROW_API_FNF) {
-//                    throw fnf;
-//                } else {
-//                    LOG.log(Level.FINE, "JENKINS-54126 silently ignoring the problem.");
-//                }
-//            }
-//        }
         return SCMProbeStat.fromType(SCMFile.Type.NONEXISTENT);
     }
 

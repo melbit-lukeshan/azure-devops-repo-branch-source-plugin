@@ -47,12 +47,10 @@ import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * @author Stephen Connolly
- */
 public class Endpoint extends AbstractDescribableImpl<Endpoint> {
     /**
      * Common prefixes that we should remove when inferring a display name.
@@ -115,11 +113,8 @@ public class Endpoint extends AbstractDescribableImpl<Endpoint> {
 
         Endpoint endpoint = (Endpoint) o;
 
-        if (apiUri != null ? !apiUri.equals(endpoint.apiUri) : endpoint.apiUri != null) {
-            return false;
-        }
+        return Objects.equals(apiUri, endpoint.apiUri);
 
-        return true;
     }
 
     @Override
@@ -140,7 +135,7 @@ public class Endpoint extends AbstractDescribableImpl<Endpoint> {
         @RequirePOST
         @Restricted(NoExternalUse.class)
         public FormValidation doCheckApiUri(@QueryParameter String apiUri) {
-            Jenkins.getActiveInstance().checkPermission(Jenkins.ADMINISTER);
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             if (Util.fixEmptyAndTrim(apiUri) == null) {
                 return FormValidation.warning("You must specify the API URL");
             }

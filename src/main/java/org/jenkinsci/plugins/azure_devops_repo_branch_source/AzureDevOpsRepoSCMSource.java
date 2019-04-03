@@ -86,7 +86,6 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.Closeable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -102,7 +101,6 @@ import java.util.regex.Pattern;
 
 import static hudson.Functions.isWindows;
 import static hudson.model.Items.XSTREAM2;
-import static org.jenkinsci.plugins.azure_devops_repo_branch_source.Connector.isCredentialValid;
 
 public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
 
@@ -737,9 +735,6 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
             try (final AzureDevOpsRepoSCMSourceRequest request = new AzureDevOpsRepoSCMSourceContext(criteria, observer)
                     .withTraits(traits)
                     .newRequest(this, listener)) {
-                // populate the request with its data sources
-                //request.setGitHub(github);
-                //request.setRepository(ghRepository);
                 if (request.isFetchPRs()) {
                     request.setPullRequests(new LazyPullRequestsAzure(request, gitRepository));
                 }
@@ -778,23 +773,18 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                             realBranchType = BranchSCMHead.RealBranchType.tag;
                         }
 
-                        //listener.getLogger().format("%n    Checking branch %s%n", HyperlinkNote.encodeTo(repositoryUrl + "/tree/" + branchName, branchName));
                         listener.getLogger().format("%n    Checking branch %s%n", HyperlinkNote.encodeTo(repositoryUrl + "?version=GB" + branchName, branchName));
                         BranchSCMHead head = new BranchSCMHead(branchName, realBranchType);
                         if (request.process(head, new SCMRevisionImpl(head, branch.getObjectId()),
                                 new SCMSourceRequest.ProbeLambda<BranchSCMHead, SCMRevisionImpl>() {
                                     @NonNull
                                     @Override
-                                    public SCMSourceCriteria.Probe create(@NonNull BranchSCMHead head,
-                                                                          @Nullable SCMRevisionImpl revisionInfo)
-                                            throws IOException, InterruptedException {
+                                    public SCMSourceCriteria.Probe create(@NonNull BranchSCMHead head, @Nullable SCMRevisionImpl revisionInfo) {
                                         return new AzureDevOpsRepoSCMProbe(gitRepository, head, revisionInfo);
                                     }
                                 }, new CriteriaWitness(listener))) {
                             listener.getLogger().format("%n  %d branches were processed (query completed)%n", count);
                             break;
-                        } else {
-                            request.checkApiRateLimit();
                         }
                     }
                     listener.getLogger().format("%n  %d branches were processed%n", count);
@@ -807,8 +797,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                     for (final GitPullRequest pr : request.getPullRequests()) {
                         int number = pr.getPullRequestId();
                         boolean fork = (pr.getForkSource() != null);
-                        listener.getLogger().format("%n    Checking pull request %s%n",
-                                HyperlinkNote.encodeTo(pr.getRemoteUrl(), "#" + number));
+                        listener.getLogger().format("%n    Checking pull request %s%n", HyperlinkNote.encodeTo(pr.getUrl(), "#" + number));
                         if (strategies.get(fork).isEmpty()) {
                             if (fork) {
                                 listener.getLogger().format("    Submitted from fork, skipping%n%n");
@@ -830,15 +819,13 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                                     new SCMSourceRequest.ProbeLambda<PullRequestSCMHead, Void>() {
                                         @NonNull
                                         @Override
-                                        public SCMSourceCriteria.Probe create(@NonNull PullRequestSCMHead head,
-                                                                              @Nullable Void revisionInfo)
+                                        public SCMSourceCriteria.Probe create(@NonNull PullRequestSCMHead head, @Nullable Void revisionInfo)
                                                 throws IOException, InterruptedException {
                                             boolean trusted = request.isTrusted(head);
                                             if (!trusted) {
                                                 listener.getLogger().format("    (not from a trusted source)%n");
                                             }
-                                            return new AzureDevOpsRepoSCMProbe(gitRepository,
-                                                    trusted ? head : head.getTarget(), null);
+                                            return new AzureDevOpsRepoSCMProbe(gitRepository, trusted ? head : head.getTarget(), null);
                                         }
                                     },
                                     new SCMSourceRequest.LazyRevisionLambda<PullRequestSCMHead, SCMRevision, Void>() {
@@ -870,13 +857,8 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                                     new MergabilityWitness(pr, strategy, listener),
                                     new CriteriaWitness(listener)
                             )) {
-                                listener.getLogger().format(
-                                        "%n  %d pull requests were processed (query completed)%n",
-                                        count
-                                );
+                                listener.getLogger().format("%n  %d pull requests were processed (query completed)%n", count);
                                 break PRs;
-                            } else {
-                                request.checkApiRateLimit();
                             }
                         }
                     }
@@ -893,28 +875,22 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                         }
                         tagName = tagName.substring(Constants.R_TAGS.length());
                         count++;
-                        listener.getLogger().format("%n    Checking tag %s%n", HyperlinkNote
-                                .encodeTo(repositoryUrl + "/tree/" + tagName, tagName));
+                        listener.getLogger().format("%n    Checking tag %s%n", HyperlinkNote.encodeTo(repositoryUrl + "/tree/" + tagName, tagName));
                         long tagDate = 0L;
                         String sha = tag.getObject().getSha();
                         if ("tag".equalsIgnoreCase(tag.getObject().getType())) {
-                            // annotated tag object
                             try {
                                 GHTagObject tagObject = request.getRepository().getTagObject(sha);
                                 tagDate = tagObject.getTagger().getDate().getTime();
                                 // we want the sha of the tagged commit not the tag object
                                 sha = tagObject.getObject().getSha();
                             } catch (IOException e) {
-                                // ignore, if the tag doesn't exist, the probe will handle that correctly
-                                // we just need enough of a date value to allow for probing
                             }
                         } else {
                             try {
                                 GHCommit commit = request.getRepository().getCommit(sha);
                                 tagDate = commit.getCommitDate().getTime();
                             } catch (IOException e) {
-                                // ignore, if the tag doesn't exist, the probe will handle that correctly
-                                // we just need enough of a date value to allow for probing
                             }
                         }
                         AzureDevOpsRepoTagSCMHead head = new AzureDevOpsRepoTagSCMHead(tagName, tagDate);
@@ -923,13 +899,11 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                                     @NonNull
                                     @Override
                                     public SCMSourceCriteria.Probe create(@NonNull AzureDevOpsRepoTagSCMHead head,
-                                                                          @Nullable GitTagSCMRevision revisionInfo)
-                                            throws IOException, InterruptedException {
+                                                                          @Nullable GitTagSCMRevision revisionInfo) {
                                         return new AzureDevOpsRepoSCMProbe(gitRepository, head, revisionInfo);
                                     }
                                 }, new CriteriaWitness(listener))) {
-                            listener.getLogger()
-                                    .format("%n  %d tags were processed (query completed)%n", count);
+                            listener.getLogger().format("%n  %d tags were processed (query completed)%n", count);
                             break;
                         } else {
                             request.checkApiRateLimit();
@@ -1055,12 +1029,9 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         }
 
         String fullName = projectName + "/" + repository;
-        //ghRepository = github.getRepository(fullName);
         gitRepository = AzureConnector.INSTANCE.getRepository(collectionUrl, credentials, projectName, repository);
-        //final GHRepository ghRepository = this.ghRepository;
         final GitRepositoryWithAzureContext gitRepository = this.gitRepository;
-        listener.getLogger().format("Examining %s%n",
-                HyperlinkNote.encodeTo(gitRepository.getGitRepository().getRemoteUrl(), fullName));
+        listener.getLogger().format("Examining %s%n", HyperlinkNote.encodeTo(gitRepository.getGitRepository().getRemoteUrl(), fullName));
         AzureDevOpsRepoSCMSourceContext context = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none()).withTraits(traits);
         Matcher prMatcher = Pattern.compile("^PR-(\\d+)(?:-(.*))?$").matcher(headName);
         if (prMatcher.matches()) {
@@ -1158,43 +1129,44 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         }
         try {
             listener.getLogger().format("Attempting to resolve %s as a branch%n", headName);
-            GHBranch branch = ghRepository.getBranch(headName);
+            GitRef branch = AzureConnector.INSTANCE.getRef(gitRepository, "heads/" + headName);
             if (branch != null) {
-                listener.getLogger().format("Resolved %s as branch %s at revision %s%n", headName, branch.getName(), branch.getSHA1());
-                return new SCMRevisionImpl(new BranchSCMHead(headName, BranchSCMHead.RealBranchType.branch), branch.getSHA1());
+                listener.getLogger().format("Resolved %s as branch %s at revision %s%n", headName, branch.getName(), branch.getObjectId());
+                return new SCMRevisionImpl(new BranchSCMHead(headName, BranchSCMHead.RealBranchType.branch), branch.getObjectId());
             }
-        } catch (FileNotFoundException e) {
+        } catch (Exception e) {
             // maybe it's a tag
         }
         try {
             listener.getLogger().format("Attempting to resolve %s as a tag%n", headName);
-            GHRef tag = ghRepository.getRef("tags/" + headName);
+            GitRef tag = AzureConnector.INSTANCE.getRef(gitRepository, "tags/" + headName);
             if (tag != null) {
                 long tagDate = 0L;
-                String tagSha = tag.getObject().getSha();
-                if ("tag".equalsIgnoreCase(tag.getObject().getType())) {
+                String tagSha = tag.getObjectId();
+                if (tag.isTag()) {
                     // annotated tag object
                     try {
-                        GHTagObject tagObject = ghRepository.getTagObject(tagSha);
-                        tagDate = tagObject.getTagger().getDate().getTime();
-                    } catch (IOException e) {
+                        //GHTagObject tagObject = ghRepository.getTagObject(tagSha);
+                        //tagDate = tagObject.getTagger().getDate().getTime();
+                        tagDate = 0L;
+                    } catch (Exception e) {
                         // ignore, if the tag doesn't exist, the probe will handle that correctly
                         // we just need enough of a date value to allow for probing
                     }
                 } else {
                     try {
-                        GHCommit commit = ghRepository.getCommit(tagSha);
-                        tagDate = commit.getCommitDate().getTime();
-                    } catch (IOException e) {
+                        //GHCommit commit = ghRepository.getCommit(tagSha);
+                        //tagDate = commit.getCommitDate().getTime();
+                        tagDate = 0L;
+                    } catch (Exception e) {
                         // ignore, if the tag doesn't exist, the probe will handle that correctly
                         // we just need enough of a date value to allow for probing
                     }
                 }
-                listener.getLogger().format("Resolved %s as tag %s at revision %s%n", headName, headName,
-                        tagSha);
+                listener.getLogger().format("Resolved %s as tag %s at revision %s%n", headName, headName, tagSha);
                 return new GitTagSCMRevision(new AzureDevOpsRepoTagSCMHead(headName, tagDate), tagSha);
             }
-        } catch (FileNotFoundException e) {
+        } catch (Exception e) {
             // ok it doesn't exist
         }
         listener.error("Could not resolve %s", headName);
@@ -1208,7 +1180,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
 
     @NonNull
     private Set<String> updateCollaboratorNames(@NonNull TaskListener listener, @CheckForNull StandardCredentials credentials,
-                                                @NonNull GHRepository ghRepository)
+                                                @NonNull GitRepositoryWithAzureContext repo)
             throws IOException {
         if (credentials == null) {
             // anonymous access to GitHub will never get list of collaborators and will
@@ -1217,26 +1189,18 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
             return collaboratorNames = Collections.emptySet();
         } else {
             try {
-                return collaboratorNames = new HashSet<>(ghRepository.getCollaboratorNames());
-            } catch (FileNotFoundException e) {
-                // not permitted
+                //TODO Looks like we need list collaborators. TBD. - LUke
+                //return collaboratorNames = new HashSet<>(repo.getCollaboratorNames());
+                return collaboratorNames = new HashSet<>(new ArrayList<>());
+            } catch (Exception e) {
                 listener.getLogger().println("Not permitted to query list of collaborators, assuming none");
                 return collaboratorNames = Collections.emptySet();
-            } catch (HttpException e) {
-                if (e.getResponseCode() == HttpServletResponse.SC_UNAUTHORIZED
-                        || e.getResponseCode() == HttpServletResponse.SC_NOT_FOUND) {
-                    listener.getLogger().println("Not permitted to query list of collaborators, assuming none");
-                    return collaboratorNames = Collections.emptySet();
-                } else {
-                    throw e;
-                }
             }
         }
     }
 
     private void checkApiUrlValidity(StandardCredentials credentials) throws IOException {
         try {
-            //Connector.checkApiUrlValidity(github, credentials);
             AzureConnector.INSTANCE.checkConnectionValidity(collectionUrl, credentials);
         } catch (Exception e) {
             String message = String.format("It seems %s is unreachable", collectionUrl);
@@ -1840,54 +1804,6 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
 
     }
 
-    private static class LazyBranches extends LazyIterable<GHBranch> {
-        private final AzureDevOpsRepoSCMSourceRequest request;
-        private final GHRepository repo;
-
-        public LazyBranches(AzureDevOpsRepoSCMSourceRequest request, GHRepository repo) {
-            this.request = request;
-            this.repo = repo;
-        }
-
-        @Override
-        protected Iterable<GHBranch> create() {
-            try {
-                request.checkApiRateLimit();
-                Set<String> branchNames = request.getRequestedOriginBranchNames();
-                if (branchNames != null && branchNames.size() == 1) {
-                    String branchName = branchNames.iterator().next();
-                    request.listener().getLogger().format("%n  Getting remote branch %s...%n", branchName);
-                    try {
-                        GHBranch branch = repo.getBranch(branchName);
-                        return Collections.singletonList(branch);
-                    } catch (FileNotFoundException e) {
-                        // branch does not currently exist
-                        return Collections.emptyList();
-                    }
-                }
-                request.listener().getLogger().format("%n  Getting remote branches...%n");
-                // local optimization: always try the default branch first in any search
-                List<GHBranch> values = new ArrayList<>(repo.getBranches().values());
-                final String defaultBranch = StringUtils.defaultIfBlank(repo.getDefaultBranch(), "master");
-                Collections.sort(values, new Comparator<GHBranch>() {
-                    @Override
-                    public int compare(GHBranch o1, GHBranch o2) {
-                        if (defaultBranch.equals(o1.getName())) {
-                            return -1;
-                        }
-                        if (defaultBranch.equals(o2.getName())) {
-                            return 1;
-                        }
-                        return 0;
-                    }
-                });
-                return values;
-            } catch (IOException | InterruptedException e) {
-                throw new AzureDevOpsRepoSCMSource.WrappedException(e);
-            }
-        }
-    }
-
     private static class LazyBranchesAzure extends LazyIterable<GitRef> {
         private final AzureDevOpsRepoSCMSourceRequest request;
         private final GitRepositoryWithAzureContext repo;
@@ -1905,7 +1821,6 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                 if (branchNames != null && branchNames.size() == 1) {
                     String branchName = branchNames.iterator().next();
                     request.listener().getLogger().format("%n  Getting remote branch %s...%n", branchName);
-                    //GitRef branch = repo.getBranch(branchName);
                     GitRef branch = AzureConnector.INSTANCE.getRef(repo, branchName);
                     if (branch != null) {
                         return Collections.singletonList(branch);
@@ -2055,8 +1970,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         }
 
         @Override
-        public void record(@NonNull PullRequestSCMHead head,
-                           PullRequestSCMRevision revision, boolean isMatch) {
+        public void record(@NonNull PullRequestSCMHead head, PullRequestSCMRevision revision, boolean isMatch) {
             if (isMatch) {
                 Boolean mergeable;
                 //try {
@@ -2092,122 +2006,6 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                 listener.getLogger().format("    Met criteria%n");
             } else {
                 listener.getLogger().format("    Does not meet criteria%n");
-            }
-        }
-    }
-
-    private class LazyPullRequests extends LazyIterable<GHPullRequest> implements Closeable {
-        private final AzureDevOpsRepoSCMSourceRequest request;
-        private final GHRepository repo;
-        private Set<Integer> pullRequestMetadataKeys = new HashSet<>();
-        private boolean fullScanRequested = false;
-        private boolean iterationCompleted = false;
-
-        public LazyPullRequests(AzureDevOpsRepoSCMSourceRequest request, GHRepository repo) {
-            this.request = request;
-            this.repo = repo;
-        }
-
-        @Override
-        protected Iterable<GHPullRequest> create() {
-            try {
-                request.checkApiRateLimit();
-                Set<Integer> prs = request.getRequestedPullRequestNumbers();
-                if (prs != null && prs.size() == 1) {
-                    Integer number = prs.iterator().next();
-                    request.listener().getLogger().format("%n  Getting remote pull request #%d...%n", number);
-                    GHPullRequest pullRequest = repo.getPullRequest(number);
-                    if (pullRequest.getState() != GHIssueState.OPEN) {
-                        return Collections.emptyList();
-                    }
-                    return new CacheUdatingIterable(Collections.singletonList(pullRequest));
-                }
-                Set<String> branchNames = request.getRequestedOriginBranchNames();
-                if (branchNames != null && branchNames.size() == 1) { // TODO flag to check PRs are all origin PRs
-                    // if we were including multiple PRs and they are not all from the same origin branch
-                    // then branchNames would have a size > 1 therefore if the size is 1 we must only
-                    // be after PRs that come from this named branch
-                    String branchName = branchNames.iterator().next();
-                    request.listener().getLogger().format(
-                            "%n  Getting remote pull requests from branch %s...%n", branchName
-                    );
-                    return new CacheUdatingIterable(repo.queryPullRequests()
-                            .state(GHIssueState.OPEN)
-                            .head(repo.getOwnerName() + ":" + branchName)
-                            .list());
-                }
-                request.listener().getLogger().format("%n  Getting remote pull requests...%n");
-                fullScanRequested = true;
-                return new CacheUdatingIterable(LazyPullRequests.this.repo.queryPullRequests()
-                        .state(GHIssueState.OPEN)
-                        .list());
-            } catch (IOException | InterruptedException e) {
-                throw new AzureDevOpsRepoSCMSource.WrappedException(e);
-            }
-        }
-
-        @Override
-        public void close() throws IOException {
-            if (fullScanRequested && iterationCompleted) {
-                // we needed a full scan and the scan was completed, so trim the cache entries
-                pullRequestMetadataCache.keySet().retainAll(pullRequestMetadataKeys);
-                pullRequestContributorCache.keySet().retainAll(pullRequestMetadataKeys);
-                if (Jenkins.getActiveInstance().getInitLevel().compareTo(InitMilestone.JOB_LOADED) > 0) {
-                    // synchronization should be cheap as only writers would be looking for this just to
-                    // write null
-                    synchronized (pullRequestSourceMapLock) {
-                        pullRequestSourceMap = null; // all data has to have been migrated
-                    }
-                }
-            }
-        }
-
-        private class CacheUdatingIterable extends SinglePassIterable<GHPullRequest> {
-            /**
-             * A map of all fully populated {@link GHUser} entries we have fetched, keyed by {@link GHUser#getLogin()}.
-             */
-            private Map<String, GHUser> users = new HashMap<>();
-
-            CacheUdatingIterable(Iterable<GHPullRequest> delegate) {
-                super(delegate);
-            }
-
-            @Override
-            public void observe(GHPullRequest pr) {
-                int number = pr.getNumber();
-                pullRequestMetadataCache.put(number,
-                        new ObjectMetadataAction(
-                                pr.getTitle(),
-                                pr.getBody(),
-                                pr.getHtmlUrl().toExternalForm()
-                        )
-                );
-                try {
-                    GHUser user = pr.getUser();
-                    if (users.containsKey(user.getLogin())) {
-                        // looked up this user already
-                        user = users.get(user.getLogin());
-                    } else {
-                        // going to be making a request to populate the user record
-                        request.checkApiRateLimit();
-                    }
-                    pullRequestContributorCache.put(number, new ContributorMetadataAction(
-                            user.getLogin(),
-                            user.getName(),
-                            user.getEmail()
-                    ));
-                    // store the populated user record now that we have it
-                    users.put(user.getLogin(), user);
-                } catch (IOException | InterruptedException e) {
-                    throw new WrappedException(e);
-                }
-                pullRequestMetadataKeys.add(number);
-            }
-
-            @Override
-            public void completed() {
-                // we have completed a full iteration of the PRs from the delegate
-                iterationCompleted = true;
             }
         }
     }
@@ -2343,18 +2141,12 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     }
 
     private class LazyContributorNames extends LazySet<String> {
-        private final AzureDevOpsRepoSCMSourceRequest request;
         private final TaskListener listener;
-        private final GitHub github;
-        private final GHRepository repo;
+        private final GitRepositoryWithAzureContext repo;
         private final StandardCredentials credentials;
 
-        public LazyContributorNames(AzureDevOpsRepoSCMSourceRequest request,
-                                    TaskListener listener, GitHub github, GHRepository repo,
-                                    StandardCredentials credentials) {
-            this.request = request;
+        public LazyContributorNames(TaskListener listener, GitRepositoryWithAzureContext repo, StandardCredentials credentials) {
             this.listener = listener;
-            this.github = github;
             this.repo = repo;
             this.credentials = credentials;
         }
@@ -2392,54 +2184,21 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                 return collaboratorNames;
             }
             listener.getLogger().format("Connecting to %s to obtain list of collaborators for %s/%s%n", collectionUrl, projectName, repository);
-            StandardCredentials credentials = Connector.lookupScanCredentials(
-                    (Item) getOwner(), collectionUrl, credentialsId
-            );
-            // Github client and validation
+            StandardCredentials credentials = Connector.lookupScanCredentials((Item) getOwner(), collectionUrl, credentialsId);
             try {
-                GitHub github = Connector.connect(collectionUrl, credentials);
-                try {
-                    checkApiUrlValidity(credentials);
-                    Connector.checkApiRateLimit(listener, github);
-
-                    // Input data validation
-//                    Connector.checkConnectionValidity(collectionUrl, listener, credentials, github);
-                    AzureConnector.INSTANCE.checkConnectionValidity(collectionUrl, listener, credentials);
-                    // Input data validation
-                    String credentialsName =
-                            credentials == null
-                                    ? "anonymous access"
-                                    : CredentialsNameProvider.name(credentials);
-                    if (credentials != null && !isCredentialValid(github)) {
-                        listener.getLogger().format("Invalid scan credentials %s to connect to %s, "
-                                        + "assuming no trusted collaborators%n",
-                                credentialsName, collectionUrl);
-                        collaboratorNames = Collections.singleton(projectName);
-                    } else {
-                        if (!github.isAnonymous()) {
-                            listener.getLogger()
-                                    .format("Connecting to %s using %s%n", collectionUrl, credentialsName);
-                        } else {
-                            listener.getLogger()
-                                    .format("Connecting to %s with no credentials, anonymous access%n", collectionUrl);
-                        }
-
-                        // Input data validation
-                        if (repository.isEmpty()) {
-                            collaboratorNames = Collections.singleton(projectName);
-                        } else {
-                            request.checkApiRateLimit();
-                            String fullName = projectName + "/" + repository;
-                            ghRepository = github.getRepository(fullName);
-                            repositoryUrl = ghRepository.getHtmlUrl();
-                            return new LazyContributorNames(request, listener, github, ghRepository, credentials);
-                        }
-                    }
-                    return collaboratorNames;
-                } finally {
-                    Connector.release(github);
+                checkApiUrlValidity(credentials);
+                AzureConnector.INSTANCE.checkConnectionValidity(collectionUrl, listener, credentials);
+                String credentialsName = credentials == null ? "anonymous access" : CredentialsNameProvider.name(credentials);
+                listener.getLogger().format("Connecting to %s using %s%n", collectionUrl, credentialsName);
+                if (repository.isEmpty()) {
+                    collaboratorNames = Collections.singleton(projectName);
+                } else {
+                    gitRepository = AzureConnector.INSTANCE.getRepository(collectionUrl, credentials, projectName, repository);
+                    repositoryUrl = new URL(gitRepository.getGitRepository().getRemoteUrl());
+                    return new LazyContributorNames(listener, gitRepository, credentials);
                 }
-            } catch (IOException | InterruptedException e) {
+                return collaboratorNames;
+            } catch (IOException e) {
                 throw new WrappedException(e);
             }
         }

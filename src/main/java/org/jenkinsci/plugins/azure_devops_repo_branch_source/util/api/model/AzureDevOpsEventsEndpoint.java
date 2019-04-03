@@ -45,7 +45,7 @@ public class AzureDevOpsEventsEndpoint implements UnprotectedRootAction {
 
     static {
         final Map<String, AbstractHookEvent.Factory> eventMap =
-                new TreeMap<String, AbstractHookEvent.Factory>(String.CASE_INSENSITIVE_ORDER);
+                new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         eventMap.put("ping", new PingHookEvent.Factory());
         eventMap.put("gitPullRequestMerged", new GitPullRequestMergedEvent.Factory());
         eventMap.put("gitPush", new GitPushEvent.Factory());
@@ -97,13 +97,11 @@ public class AzureDevOpsEventsEndpoint implements UnprotectedRootAction {
     }
 
     public static Event deserializeEvent(final String input) throws IOException {
-        //final Event serviceHookEvent = EndpointHelper.MAPPER.readValue(input, Event.class);
         final Event serviceHookEvent = GsonProcessor.INSTANCE.instanceFromJson(input, Event.class);
         final String eventType = serviceHookEvent.getEventType();
         if (StringUtils.isEmpty(eventType)) {
             throw new IllegalArgumentException("Payload did not contain 'eventType'.");
         }
-        // TODO: assert eventType with what Factory claims to support
         final Object resource = serviceHookEvent.getResource();
         if (resource == null) {
             throw new IllegalArgumentException("Payload did not contain 'resource'.");
@@ -154,7 +152,7 @@ public class AzureDevOpsEventsEndpoint implements UnprotectedRootAction {
 
     public HttpResponse doIndex(final HttpServletRequest request) throws IOException {
         final Class<? extends AzureDevOpsEventsEndpoint> me = this.getClass();
-        final InputStream stream = me.getResourceAsStream("TeamEventsEndpoint.html");
+        final InputStream stream = me.getResourceAsStream("TeamEventsEndpointXXXX.html");
         final Jenkins instance = Jenkins.get();
         final String rootUrl = instance.getRootUrl();
         final String eventRows = describeEvents(HOOK_EVENT_FACTORIES_BY_NAME, URL_NAME);

@@ -77,5 +77,4 @@ public class AzureDevOpsRepoPullRequestFilter extends ViewJobFilter {
             return Messages.AzureDevOpsRepoPullRequestFilter_DisplayName();
         }
     }
-
 }

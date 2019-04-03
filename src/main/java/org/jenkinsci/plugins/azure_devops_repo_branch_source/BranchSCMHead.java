@@ -69,6 +69,7 @@ public class BranchSCMHead extends SCMHead {
         }
 
         @Override
+        @NonNull
         public SCMHead migrate(@NonNull AzureDevOpsRepoSCMSource source, @NonNull SCMHead head) {
             return new BranchSCMHead(head.getName(), RealBranchType.branch);
         }

@@ -38,7 +38,6 @@ import java.net.URL;
 /**
  * Link to Azure DevOps Repo
  *
- * @author Kohsuke Kawaguchi
  */
 public class AzureDevOpsRepoLink implements Action, IconSpec {
     /**

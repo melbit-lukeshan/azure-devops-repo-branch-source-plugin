@@ -29,9 +29,6 @@ import hudson.model.InvisibleAction;
 
 import java.io.Serializable;
 
-/**
- * @author Stephen Connolly
- */
 public class AzureDevOpsRepoDefaultBranch extends InvisibleAction implements Serializable {
     private static final long serialVersionUID = 1L;
     @NonNull
@@ -98,6 +95,4 @@ public class AzureDevOpsRepoDefaultBranch extends InvisibleAction implements Ser
                 ", defaultBranch='" + defaultBranch + '\'' +
                 '}';
     }
-
-
 }

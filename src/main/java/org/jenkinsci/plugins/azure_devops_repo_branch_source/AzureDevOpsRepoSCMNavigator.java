@@ -34,6 +34,7 @@ import hudson.AbortException;
 import hudson.Extension;
 import hudson.RestrictedSince;
 import hudson.Util;
+import hudson.console.HyperlinkNote;
 import hudson.model.Action;
 import hudson.model.Item;
 import hudson.model.TaskListener;
@@ -42,6 +43,7 @@ import hudson.util.ListBoxModel;
 import jenkins.model.Jenkins;
 import jenkins.plugins.git.traits.GitBrowserSCMSourceTrait;
 import jenkins.scm.api.*;
+import jenkins.scm.api.metadata.ObjectMetadataAction;
 import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
 import jenkins.scm.api.trait.*;
 import jenkins.scm.impl.UncategorizedSCMSourceCategory;
@@ -57,7 +59,8 @@ import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitRepositoryWithAzureContext;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.Account;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.ConnectionData;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -192,6 +195,10 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
      */
     @DataBoundConstructor
     public AzureDevOpsRepoSCMNavigator(String azureProjectName, String collectionUrl, String repoOwner) {
+        //TODO Debug - Luke
+        System.out.println("AzureDevOpsRepoSCMNavigator azureProjectName " + azureProjectName);
+        System.out.println("AzureDevOpsRepoSCMNavigator collectionUrl " + collectionUrl);
+        System.out.println("AzureDevOpsRepoSCMNavigator repoOwner " + repoOwner);
         this.azureProjectName = StringUtils.defaultString(azureProjectName);
         this.collectionUrl = StringUtils.defaultString(collectionUrl);
         this.repoOwner = StringUtils.defaultString(repoOwner);
@@ -881,8 +888,6 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
         // Github client and validation
         GitHub github = Connector.connect(collectionUrl, credentials);
         try {
-//            Connector.checkConnectionValidity(collectionUrl, listener, credentials, github);
-//            Connector.checkApiRateLimit(listener, github);
             AzureConnector.INSTANCE.checkConnectionValidity(collectionUrl, listener, credentials);
 
             AzureDevOpsRepoSCMNavigatorRequest request = new AzureDevOpsRepoSCMNavigatorContext()
@@ -1127,24 +1132,20 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
         // TODO when we have support for trusted events, use the details from event if event was from trusted source
         listener.getLogger().printf("Looking up details of %s...%n", getRepoOwner());
         List<Action> result = new ArrayList<>();
-        StandardCredentials credentials = AzureConnector.INSTANCE.lookupCredentials(owner, getCollectionUrl(), credentialsId);
-        //GitHub hub = Connector.connect(getCollectionUrl(), credentials);
-        try {
-//            Connector.checkApiRateLimit(listener, hub);
-//            GHUser u = hub.getUser(getRepoOwner());
-            GitRepositoryWithAzureContext repo = AzureConnector.INSTANCE.getRepository(collectionUrl, credentials, azureProjectName, repoOwner);
-//            String objectUrl = u.getHtmlUrl() == null ? null : u.getHtmlUrl().toExternalForm();
-//            result.add(new ObjectMetadataAction(Util.fixEmpty(u.getName()), null, objectUrl));
-//            result.add(new AzureDevOpsRepoOrgMetadataAction(u));
-//            result.add(new AzureDevOpsRepoLink("icon-github-logo", u.getHtmlUrl()));
-//            if (objectUrl == null) {
-//                listener.getLogger().println("Organization URL: unspecified");
-//            } else {
-//                listener.getLogger().printf("Organization URL: %s%n", HyperlinkNote.encodeTo(objectUrl, StringUtils.defaultIfBlank(u.getName(), objectUrl)));
-//            }
-            return result;
-        } finally {
+        String accountName = getRepoOwner();
+        ConnectionData connectionData = AzureConnector.INSTANCE.getConnectionData(owner, collectionUrl, credentialsId);
+        if (connectionData != null) {
+            List<Account> accounts = AzureConnector.INSTANCE.listAccounts(owner, collectionUrl, credentialsId, connectionData.getAuthorizedUser().getId());
+            if (accounts != null && !accounts.isEmpty()) {
+                accountName = accounts.get(0).getAccountName();
+            }
         }
+        String objectUrl = collectionUrl;
+        result.add(new ObjectMetadataAction(Util.fixEmpty(accountName), null, objectUrl));
+        result.add(new AzureDevOpsRepoOrgMetadataAction(collectionUrl));
+        result.add(new AzureDevOpsRepoLink("icon-github-logo", objectUrl));
+        listener.getLogger().printf("Organization URL: %s%n", HyperlinkNote.encodeTo(objectUrl, StringUtils.defaultIfBlank(accountName, objectUrl)));
+        return result;
     }
 
     /**

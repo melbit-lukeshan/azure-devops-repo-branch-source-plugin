@@ -30,10 +30,8 @@ import hudson.Util;
 import hudson.model.Hudson;
 import jenkins.scm.api.metadata.AvatarMetadataAction;
 import org.apache.commons.lang.StringUtils;
-import org.kohsuke.github.GHUser;
 import org.kohsuke.stapler.Stapler;
 
-import java.io.IOException;
 import java.io.ObjectStreamException;
 
 /**
@@ -44,10 +42,6 @@ import java.io.ObjectStreamException;
 public class AzureDevOpsRepoOrgMetadataAction extends AvatarMetadataAction {
     @CheckForNull
     private final String avatar;
-
-    public AzureDevOpsRepoOrgMetadataAction(@NonNull GHUser org) throws IOException {
-        this(org.getAvatarUrl());
-    }
 
     public AzureDevOpsRepoOrgMetadataAction(@CheckForNull String avatar) {
         this.avatar = Util.fixEmpty(avatar);
