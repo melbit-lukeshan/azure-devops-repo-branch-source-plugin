@@ -152,7 +152,7 @@ public class AzureDevOpsEventsEndpoint implements UnprotectedRootAction {
 
     public HttpResponse doIndex(final HttpServletRequest request) throws IOException {
         final Class<? extends AzureDevOpsEventsEndpoint> me = this.getClass();
-        final InputStream stream = me.getResourceAsStream("TeamEventsEndpointXXXX.html");
+        final InputStream stream = me.getResourceAsStream("TeamEventsEndpoint.html");
         final Jenkins instance = Jenkins.get();
         final String rootUrl = instance.getRootUrl();
         final String eventRows = describeEvents(HOOK_EVENT_FACTORIES_BY_NAME, URL_NAME);
