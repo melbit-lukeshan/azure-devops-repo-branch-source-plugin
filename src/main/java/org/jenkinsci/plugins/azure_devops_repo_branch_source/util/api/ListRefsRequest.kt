@@ -2,7 +2,7 @@ package org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api
 
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.Refs
 
-class ListRefsRequest(collectionUrl: String, pat: String, val projectName: String, val repository: String, val filter: String)
+class ListRefsRequest(collectionUrl: String, pat: String, val projectName: String, val repository: String, val filter: String, val peelTags: Boolean)
     : AzureBaseRequest<Refs, Any>(collectionUrl, pat) {
     override val method = Method.GET
     override val path = "/{projectName}/_apis/git/repositories/{repository}/refs"
@@ -20,5 +20,5 @@ class ListRefsRequest(collectionUrl: String, pat: String, val projectName: Strin
      * set filter to "tags/tag111" will only return TAG refs whose names starting with "refs/tags/tag111"
      * set filter to EMPTY string will return all refs
      */
-    override val parameters = "${super.parameters}&filter={filter}"
+    override val parameters = "${super.parameters}&filter={filter}&peelTags={peelTags}"
 }

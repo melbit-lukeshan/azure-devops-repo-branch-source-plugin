@@ -64,12 +64,17 @@ public class AaaTest {
         OkHttp2Helper.INSTANCE.setDebugMode(true);
         Result<Repositories, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(listRepositoriesRequest, Repositories.class, Object.class);
         Repositories repositories = result.getGoodValueOrNull();
-        assertThat(repositories.getCount(), is(3));
+        if (repositories != null) {
+            System.out.println(repositories.getCount());
+            for (GitRepository gitRepository : repositories.getValue()) {
+                System.out.println(GsonProcessor.INSTANCE.instanceToJson(gitRepository));
+            }
+        }
     }
 
     @Test
     public void aTest3() throws Exception {
-        ListRefsRequest listRefsRequest = new ListRefsRequest(collectionUrl, pat, projectName, repositoryName, "");
+        ListRefsRequest listRefsRequest = new ListRefsRequest(collectionUrl, pat, projectName, repositoryName, "tags/", true);
         OkHttp2Helper.INSTANCE.setDebugMode(true);
         Result<Refs, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(listRefsRequest, Refs.class, Object.class);
         Refs refs = result.getGoodValueOrNull();
@@ -77,7 +82,6 @@ public class AaaTest {
             System.out.println(refs.getCount());
             for (GitRef gitRef : refs.getValue()) {
                 System.out.println(GsonProcessor.INSTANCE.instanceToJson(gitRef));
-                //System.out.println(gitRef.getName() + "->" + gitRef.getObjectId() + "->" + gitRef.getUrl());
             }
         }
     }
@@ -137,7 +141,7 @@ public class AaaTest {
         Commits commits = result.getGoodValueOrNull();
         if (commits != null) {
             for (GitCommitRef commit : commits.getValue()) {
-                System.out.println(commit.getCommitId() + " -> " + commit.getComment());
+                System.out.println(GsonProcessor.INSTANCE.instanceToJson(commit));
             }
         }
     }
@@ -151,7 +155,6 @@ public class AaaTest {
         if (pullRequests != null) {
             for (GitPullRequest gitPullRequest : pullRequests.getValue()) {
                 System.out.println(GsonProcessor.INSTANCE.instanceToJson(gitPullRequest));
-                System.out.println(gitPullRequest.getPullRequestId() + " -> " + gitPullRequest.getLastMergeSourceCommit() + " -> " + gitPullRequest.getLastMergeTargetCommit() + " -> " + gitPullRequest.getLastMergeCommit());
             }
         }
     }

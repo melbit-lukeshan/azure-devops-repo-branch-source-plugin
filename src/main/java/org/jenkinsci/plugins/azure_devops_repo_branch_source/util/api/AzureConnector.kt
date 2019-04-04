@@ -183,8 +183,8 @@ object AzureConnector {
         return OkHttp2Helper.executeRequest(GetRepositoryRequest(collectionUrl, pat, projectName, repositoryName))
     }
 
-    private fun listRefsR(collectionUrl: String, pat: String, projectName: String, repositoryName: String, filter: String): Result<Refs, Any> {
-        return OkHttp2Helper.executeRequest(ListRefsRequest(collectionUrl, pat, projectName, repositoryName, filter))
+    private fun listRefsR(collectionUrl: String, pat: String, projectName: String, repositoryName: String, filter: String, peelTags: Boolean): Result<Refs, Any> {
+        return OkHttp2Helper.executeRequest(ListRefsRequest(collectionUrl, pat, projectName, repositoryName, filter, peelTags))
     }
 
     private fun listCommitsR(collectionUrl: String, pat: String, projectName: String, repositoryName: String): Result<Commits, Any> {
@@ -285,22 +285,24 @@ object AzureConnector {
         }
     }
 
-    fun listRefs(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, filter: String): List<GitRef>? {
+    fun listRefs(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, filter: String, peelTags: Boolean): List<GitRef>? {
         return listRefsR(
                 gitRepositoryWithAzureContext.collectionUrl,
                 getPat(gitRepositoryWithAzureContext.credentials),
                 gitRepositoryWithAzureContext.projectName,
                 gitRepositoryWithAzureContext.repositoryName,
-                filter).getGoodValueOrNull()?.value
+                filter,
+                peelTags).getGoodValueOrNull()?.value
     }
 
-    fun getRef(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, filter: String): GitRef? {
+    fun getRef(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext, filter: String, peelTags: Boolean): GitRef? {
         return listRefsR(
                 gitRepositoryWithAzureContext.collectionUrl,
                 getPat(gitRepositoryWithAzureContext.credentials),
                 gitRepositoryWithAzureContext.projectName,
                 gitRepositoryWithAzureContext.repositoryName,
-                filter).getGoodValueOrNull()?.value?.find { it.name == "refs/$filter" }
+                filter,
+                peelTags).getGoodValueOrNull()?.value?.find { it.name == "refs/$filter" }
     }
 
     fun listBranches(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext): List<GitRef>? {
@@ -309,7 +311,8 @@ object AzureConnector {
                 getPat(gitRepositoryWithAzureContext.credentials),
                 gitRepositoryWithAzureContext.projectName,
                 gitRepositoryWithAzureContext.repositoryName,
-                "heads/").getGoodValueOrNull()?.value
+                "heads/",
+                false).getGoodValueOrNull()?.value
     }
 
     fun listTags(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext): List<GitRef>? {
@@ -318,7 +321,8 @@ object AzureConnector {
                 getPat(gitRepositoryWithAzureContext.credentials),
                 gitRepositoryWithAzureContext.projectName,
                 gitRepositoryWithAzureContext.repositoryName,
-                "tags/").getGoodValueOrNull()?.value
+                "tags/",
+                true).getGoodValueOrNull()?.value
     }
 
     fun listPullRequestsAsRefs(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext): List<GitRef>? {
@@ -327,7 +331,8 @@ object AzureConnector {
                 getPat(gitRepositoryWithAzureContext.credentials),
                 gitRepositoryWithAzureContext.projectName,
                 gitRepositoryWithAzureContext.repositoryName,
-                "pull/").getGoodValueOrNull()?.value
+                "pull/",
+                false).getGoodValueOrNull()?.value
     }
 
     fun listCommits(gitRepositoryWithAzureContext: GitRepositoryWithAzureContext): List<GitCommitRef>? {

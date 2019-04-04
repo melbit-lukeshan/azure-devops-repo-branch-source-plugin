@@ -104,7 +104,7 @@ class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosabl
                 return commit.getPush().getDate().toInstant().toEpochMilli();
             }
         } else if (revision == null) {
-            GitRef gitRef = AzureConnector.INSTANCE.getRef(repo, ref);
+            GitRef gitRef = AzureConnector.INSTANCE.getRef(repo, ref, false);
             if (gitRef != null) {
                 GitCommit commit = AzureConnector.INSTANCE.getCommit(repo, gitRef.getObjectId());
                 if (commit != null) {
@@ -124,7 +124,7 @@ class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosabl
         if (revision instanceof AbstractGitSCMSource.SCMRevisionImpl) {
             version = ((AbstractGitSCMSource.SCMRevisionImpl) revision).getHash();
         } else if (revision == null) {
-            GitRef gitRef = AzureConnector.INSTANCE.getRef(repo, ref);
+            GitRef gitRef = AzureConnector.INSTANCE.getRef(repo, ref, false);
             if (gitRef != null) {
                 version = gitRef.getObjectId();
             }

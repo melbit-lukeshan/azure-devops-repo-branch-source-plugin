@@ -36,7 +36,6 @@ import net.jcip.annotations.GuardedBy;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.AzurePermissionType;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitPullRequest;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitRef;
-import org.kohsuke.github.GHRef;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 
@@ -105,7 +104,7 @@ public class AzureDevOpsRepoSCMSourceRequest extends SCMSourceRequest {
      * The tag details or {@code null} if not {@link #isFetchTags()}.
      */
     @CheckForNull
-    private Iterable<GHRef> tags;
+    private Iterable<GitRef> tags;
     /**
      * The repository collaborator names or {@code null} if not provided.
      */
@@ -345,23 +344,23 @@ public class AzureDevOpsRepoSCMSourceRequest extends SCMSourceRequest {
     }
 
     /**
-     * Provides the requests with the tag details.
-     *
-     * @param tags the tag details.
-     */
-    public final void setTags(@CheckForNull Iterable<GHRef> tags) {
-        this.tags = tags;
-    }
-
-    /**
      * Returns the branch details or an empty list if either the request did not specify to {@link #isFetchBranches()}
      * or if the branch details have not been provided by {@link #setBranches(Iterable)} yet.
      *
      * @return the branch details (may be empty)
      */
     @NonNull
-    public final Iterable<GHRef> getTags() {
+    public final Iterable<GitRef> getTags() {
         return Util.fixNull(tags);
+    }
+
+    /**
+     * Provides the requests with the tag details.
+     *
+     * @param tags the tag details.
+     */
+    public final void setTags(@CheckForNull Iterable<GitRef> tags) {
+        this.tags = tags;
     }
 
     // TODO Iterable<GHTag> getTags() and setTags(...)
@@ -456,7 +455,7 @@ public class AzureDevOpsRepoSCMSourceRequest extends SCMSourceRequest {
      *
      * @param username the user.
      * @return the permissions of the supplied user.
-     * @throws IOException if the permissions could not be retrieved.
+     * @throws IOException          if the permissions could not be retrieved.
      * @throws InterruptedException if interrupted while retrieving the permissions.
      */
     public AzurePermissionType getPermissions(String username) throws IOException, InterruptedException {

@@ -44,4 +44,14 @@ data class GitRef(
     fun getPullRequestName(): String {
         return name.replace("refs/pull/", "", true)
     }
+
+    fun getPullRequestNumber(): Int {
+        val prName = getPullRequestName()
+        val index = prName.indexOf("/")
+        return if (index >= 0) {
+            prName.substring(0, index).toInt()
+        } else {
+            -1
+        }
+    }
 }

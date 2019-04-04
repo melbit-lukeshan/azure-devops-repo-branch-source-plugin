@@ -321,7 +321,7 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
                 }
                 if (rev == null) {
                     //GHRef ref = repo.getRef(refName);
-                    GitRef ref = AzureConnector.INSTANCE.getRef(repo, refName);
+                    GitRef ref = AzureConnector.INSTANCE.getRef(repo, refName, true);
                     if (ref != null) {
                         if (ref.isTag()) {
                             if (head instanceof AzureDevOpsRepoTagSCMHead) {
@@ -329,6 +329,7 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
                             } else {
                                 // we should never get here, but just in case, we have the information to construct
                                 // the correct head, so let's do that
+                                //TODO What should we do about tag? Fix it.- Luke
                                 GitCommit commit = AzureConnector.INSTANCE.getCommit(repo, ref.getObjectId());
                                 if (commit != null) {
                                     rev = new GitTagSCMRevision(new AzureDevOpsRepoTagSCMHead(head.getName(), commit.getPush().getDate().toInstant().toEpochMilli()), ref.getObjectId());
