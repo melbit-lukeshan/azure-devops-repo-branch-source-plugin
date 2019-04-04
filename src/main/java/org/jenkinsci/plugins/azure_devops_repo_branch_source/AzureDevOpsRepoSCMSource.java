@@ -1036,31 +1036,13 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                     if (baseRef != null) {
                         baseSha = baseRef.getObjectId();
                     }
-                    listener.getLogger().format(
-                            "Resolved %s as pull request %d at revision %s merged onto %s %n",
-                            headName,
-                            number,
-                            pullSha,
-                            baseSha
-                    );
+                    listener.getLogger().format("Resolved %s as pull request %d at revision %s merged onto %s %n", headName, number, pullSha, baseSha);
                 } else {
-                    listener.getLogger().format(
-                            "Resolved %s as pull request %d at revision %s%n",
-                            headName,
-                            number,
-                            pullSha
-                    );
+                    listener.getLogger().format("Resolved %s as pull request %d at revision %s%n", headName, number, pullSha);
                 }
-                return new PullRequestSCMRevision(head,
-                        baseSha,
-                        pullSha,
-                        mergeSha);
+                return new PullRequestSCMRevision(head, baseSha, pullSha, mergeSha);
             } else {
-                listener.getLogger().format(
-                        "Could not resolve %s as pull request %d%n",
-                        headName,
-                        number
-                );
+                listener.getLogger().format("Could not resolve %s as pull request %d%n", headName, number);
             }
         }
         try {
@@ -1078,27 +1060,10 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
             GitRef tag = AzureConnector.INSTANCE.getRef(gitRepository, "tags/" + headName, true);
             if (tag != null) {
                 long tagDate = 0L;
-                String tagSha = tag.getObjectId();
-                if (tag.isTag()) {
-                    //TODO Fix below. How to handle tags. - Luke
-                    // annotated tag object
-                    try {
-                        //GHTagObject tagObject = ghRepository.getTagObject(tagSha);
-                        //tagDate = tagObject.getTagger().getDate().getTime();
-                        tagDate = 0L;
-                    } catch (Exception e) {
-                        // ignore, if the tag doesn't exist, the probe will handle that correctly
-                        // we just need enough of a date value to allow for probing
-                    }
-                } else {
-                    try {
-                        //GHCommit commit = ghRepository.getCommit(tagSha);
-                        //tagDate = commit.getCommitDate().getTime();
-                        tagDate = 0L;
-                    } catch (Exception e) {
-                        // ignore, if the tag doesn't exist, the probe will handle that correctly
-                        // we just need enough of a date value to allow for probing
-                    }
+                String tagSha = tag.getPeeledObjectId();
+                GitCommit commit = AzureConnector.INSTANCE.getCommit(gitRepository, tagSha);
+                if (commit != null) {
+                    tagDate = commit.getPush().getDate().toInstant().toEpochMilli();
                 }
                 listener.getLogger().format("Resolved %s as tag %s at revision %s%n", headName, headName, tagSha);
                 return new GitTagSCMRevision(new AzureDevOpsRepoTagSCMHead(headName, tagDate), tagSha);

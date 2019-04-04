@@ -157,7 +157,6 @@ public class AzureDevOpsRepoBuildStatusNotification {
         if (src instanceof AzureDevOpsRepoSCMSource) {
             AzureDevOpsRepoSCMSource source = (AzureDevOpsRepoSCMSource) src;
             if (source.getCredentialsId() != null) {
-                //return github.getRepository(source.getProjectName() + "/" + source.getRepository());
                 return AzureConnector.INSTANCE.getRepository(job, source.getCollectionUrl(), source.getCredentialsId(), source.getProjectName(), source.getRepository());
             }
         }
@@ -208,18 +207,10 @@ public class AzureDevOpsRepoBuildStatusNotification {
             if (sourceContext.notificationsDisabled()) {
                 return;
             }
-            // prevent delays in the queue when updating github
             Computer.threadPoolForRemoting.submit(new Runnable() {
                 @Override
                 public void run() {
-                    //GitHub gitHub = null;
                     try {
-                        //gitHub = lookUpGitHub(job);
-//                        PullRequestSCMRevision pullRequestSCMRevision=null;
-//                        SCMRevision scmRevision=source.fetch(head, null);
-//                        if(scmRevision instanceof PullRequestSCMRevision){
-//                            pullRequestSCMRevision= (PullRequestSCMRevision) scmRevision;
-//                        }
                         String hash = resolveHeadCommit(source.fetch(head, null));
                         GitRepositoryWithAzureContext repo = lookUpRepo(job);
                         if (repo != null) {
