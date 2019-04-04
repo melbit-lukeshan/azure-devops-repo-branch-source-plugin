@@ -110,7 +110,6 @@ public class GitPushEvent extends AbstractHookEvent {
     @Override
     public JSONObject perform(final ObjectMapper mapper, final Event serviceHookEvent, final String message, final String detailedMessage) {
         final JsonObject resource = serviceHookEvent.getResource();
-        //final GitPush gitPush = mapper.convertValue(resource, GitPush.class);
         final GitPush gitPush = GsonProcessor.INSTANCE.instanceFromJson(resource.toString(), GitPush.class);
 
         final GitCodePushedEventArgs args = decodeGitPush(gitPush, serviceHookEvent);

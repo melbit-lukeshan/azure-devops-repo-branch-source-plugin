@@ -96,7 +96,7 @@ public class AzureDevOpsEventsEndpoint implements UnprotectedRootAction {
         return hookEvent.perform(EndpointHelper.MAPPER, serviceHookEvent, message, detailedMessage);
     }
 
-    public static Event deserializeEvent(final String input) throws IOException {
+    public static Event deserializeEvent(final String input) {
         final Event serviceHookEvent = GsonProcessor.INSTANCE.instanceFromJson(input, Event.class);
         final String eventType = serviceHookEvent.getEventType();
         if (StringUtils.isEmpty(eventType)) {

@@ -1,13 +1,11 @@
 package org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model;
 
-import com.cloudbees.hudson.plugins.folder.Folder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.model.*;
 import hudson.plugins.git.BranchSpec;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.GitStatus;
 import hudson.plugins.git.UserRemoteConfig;
-import hudson.plugins.git.extensions.impl.IgnoreNotifyCommit;
 import hudson.scm.SCM;
 import hudson.security.ACL;
 import hudson.triggers.SCMTrigger;
@@ -20,7 +18,6 @@ import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.AzureDevOpsRepoSCMSource;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.ActionHelper;
@@ -114,10 +111,18 @@ public abstract class AbstractHookEvent {
 
     private void matchMultiBranchProject(final GitCodePushedEventArgs gitCodePushedEventArgs, final List<Action> actions, final boolean bypassPolling, final URIish uri, final WorkflowMultiBranchProject wmbp, final List<GitStatus.ResponseContributor> result, final MatchStatus matchStatus) {
         boolean repositoryMatches = false;
-
+        //TODO debug - Luke
+        if (gitCodePushedEventArgs instanceof PullRequestMergeCommitCreatedEventArgs) {
+            PullRequestMergeCommitCreatedEventArgs p = (PullRequestMergeCommitCreatedEventArgs) gitCodePushedEventArgs;
+            System.out.println("matchMultiBranchProject PullRequestMergeCommitCreatedEventArgs pullRequestId " + p.pullRequestId);
+            System.out.println("matchMultiBranchProject PullRequestMergeCommitCreatedEventArgs targetBranch " + p.targetBranch);
+            System.out.println("matchMultiBranchProject PullRequestMergeCommitCreatedEventArgs commit " + p.commit);
+        } else {
+            System.out.println("matchMultiBranchProject GitCodePushedEventArgs targetBranch " + gitCodePushedEventArgs.targetBranch);
+            System.out.println("matchMultiBranchProject GitCodePushedEventArgs commit " + gitCodePushedEventArgs.commit);
+        }
+        //TODO debug end - Luke
         for (SCMSource scmSource : wmbp.getSCMSources()) {
-            //TODO debug - Luke
-            System.out.println("matchMultiBranchProject scmSource " + scmSource);
             if (scmSource instanceof AzureDevOpsRepoSCMSource) {
                 AzureDevOpsRepoSCMSource gitSCMSource = (AzureDevOpsRepoSCMSource) scmSource;
                 System.out.println("matchMultiBranchProject gitSCMSource " + gitSCMSource.getRemote());
@@ -143,11 +148,10 @@ public abstract class AbstractHookEvent {
                 final SCMTriggerItem scmTriggerItem = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(workflowJob);
 
                 if (scmTriggerItem != null) {
-                    System.out.println("matchMultiBranchProject scmTriggerItem " + scmTriggerItem);
-                    System.out.println("matchMultiBranchProject gitCodePushedEventArgs " + gitCodePushedEventArgs);
                     if (gitCodePushedEventArgs instanceof PullRequestMergeCommitCreatedEventArgs) {
                         PullRequestMergeCommitCreatedEventArgs p = (PullRequestMergeCommitCreatedEventArgs) gitCodePushedEventArgs;
                         if (branchName.equalsIgnoreCase("PR-" + p.pullRequestId)) {
+                            System.out.println("matchMultiBranchProject match PR");
                             matchStatus.branchMatchFound++;
                             GitStatus.ResponseContributor triggerResult = triggerJob(p, actions, bypassPolling, workflowJob, scmTriggerItem, true, false);
                             if (triggerResult != null) {
@@ -157,6 +161,7 @@ public abstract class AbstractHookEvent {
                         }
                     } else {
                         if (branchName.equalsIgnoreCase(gitCodePushedEventArgs.targetBranch)) {
+                            System.out.println("matchMultiBranchProject match PUSH");
                             matchStatus.branchMatchFound++;
                             GitStatus.ResponseContributor triggerResult = triggerJob(gitCodePushedEventArgs, actions, bypassPolling, workflowJob, scmTriggerItem, true, true);
                             if (triggerResult != null) {
@@ -165,15 +170,15 @@ public abstract class AbstractHookEvent {
                             break;
                         }
                     }
-                } else {
-                    System.out.println("matchMultiBranchProject scmTriggerItem null");
                 }
             }
         }
     }
 
     private void matchProject(final GitCodePushedEventArgs gitCodePushedEventArgs, final List<Action> actions, final boolean bypassPolling, final URIish uri, final Item project, final List<GitStatus.ResponseContributor> result, final MatchStatus matchStatus) {
-
+        //TODO debug - Luke
+        System.out.println("matchProject project " + project);
+        System.out.println("matchProject project.getFullDisplayName() " + project.getFullDisplayName());
         final SCMTriggerItem scmTriggerItem = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(project);
 
         if (scmTriggerItem == null) {
@@ -181,71 +186,71 @@ public abstract class AbstractHookEvent {
                 WorkflowMultiBranchProject wmbp = (WorkflowMultiBranchProject) project;
                 matchMultiBranchProject(gitCodePushedEventArgs, actions, bypassPolling, uri, wmbp, result, matchStatus);
             } else {
-                if (project instanceof Folder) {
-                    for (Job job : project.getAllJobs()) {
-                        matchProject(gitCodePushedEventArgs, actions, bypassPolling, uri, job, result, matchStatus);
-                    }
-                }
+//                if (project instanceof Folder) {
+//                    for (Job job : project.getAllJobs()) {
+//                        matchProject(gitCodePushedEventArgs, actions, bypassPolling, uri, job, result, matchStatus);
+//                    }
+//                }
             }
         } else {
             // Pipeline job
-            if (scmTriggerItem.getSCMs().isEmpty()) {
-                return;
-            }
-
-            for (final SCM scm : scmTriggerItem.getSCMs()) {
-                if (!(scm instanceof GitSCM)) {
-                    continue;
-                }
-                final GitSCM git = (GitSCM) scm;
-                matchStatus.scmFound = true;
-
-                for (final RemoteConfig repository : git.getRepositories()) {
-                    boolean repositoryMatches = false;
-                    for (final URIish remoteURL : repository.getURIs()) {
-                        if (UriHelper.areSameGitRepo(uri, remoteURL)) {
-                            repositoryMatches = true;
-                            matchStatus.repoMatchFound++;
-                            break;
-                        }
-                    }
-
-                    // Jobs triggered by PR merge need to check whether its target branch matches the one specified in the parameter of PR trigger UI
-                    if (repositoryMatches && gitCodePushedEventArgs instanceof PullRequestMergeCommitCreatedEventArgs) {
-                        GitStatus.ResponseContributor triggerResult = triggerJob(gitCodePushedEventArgs, actions, bypassPolling, project, scmTriggerItem, true, false);
-                        if (triggerResult != null) {
-                            result.add(triggerResult);
-                        }
-                        break;
-                    }
-
-                    boolean branchMatches = false;
-                    // Jobs triggered by code push need to check whether its target branch matches the one in its Git parameter
-                    if (repositoryMatches) {
-                        for (final BranchSpec branch : git.getBranches()) {
-                            final String branchString = branch.toString();
-                            // Might be in the form of */master
-                            final String[] items = branchString.split("/");
-                            final String branchName = items[items.length - 1];
-                            if (branchName.equalsIgnoreCase(TRIGGER_ANY_BRANCH) || branchName.equalsIgnoreCase(gitCodePushedEventArgs.targetBranch)) {
-                                branchMatches = true;
-                                matchStatus.branchMatchFound++;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!repositoryMatches || !branchMatches || git.getExtensions().get(IgnoreNotifyCommit.class) != null) {
-                        continue;
-                    }
-
-                    GitStatus.ResponseContributor triggerResult = triggerJob(gitCodePushedEventArgs, actions, bypassPolling, project, scmTriggerItem, true, true);
-                    if (triggerResult != null) {
-                        result.add(triggerResult);
-                        break;
-                    }
-                }
-            }
+//            if (scmTriggerItem.getSCMs().isEmpty()) {
+//                return;
+//            }
+//
+//            for (final SCM scm : scmTriggerItem.getSCMs()) {
+//                if (!(scm instanceof GitSCM)) {
+//                    continue;
+//                }
+//                final GitSCM git = (GitSCM) scm;
+//                matchStatus.scmFound = true;
+//
+//                for (final RemoteConfig repository : git.getRepositories()) {
+//                    boolean repositoryMatches = false;
+//                    for (final URIish remoteURL : repository.getURIs()) {
+//                        if (UriHelper.areSameGitRepo(uri, remoteURL)) {
+//                            repositoryMatches = true;
+//                            matchStatus.repoMatchFound++;
+//                            break;
+//                        }
+//                    }
+//
+//                    // Jobs triggered by PR merge need to check whether its target branch matches the one specified in the parameter of PR trigger UI
+//                    if (repositoryMatches && gitCodePushedEventArgs instanceof PullRequestMergeCommitCreatedEventArgs) {
+//                        GitStatus.ResponseContributor triggerResult = triggerJob(gitCodePushedEventArgs, actions, bypassPolling, project, scmTriggerItem, true, false);
+//                        if (triggerResult != null) {
+//                            result.add(triggerResult);
+//                        }
+//                        break;
+//                    }
+//
+//                    boolean branchMatches = false;
+//                    // Jobs triggered by code push need to check whether its target branch matches the one in its Git parameter
+//                    if (repositoryMatches) {
+//                        for (final BranchSpec branch : git.getBranches()) {
+//                            final String branchString = branch.toString();
+//                            // Might be in the form of */master
+//                            final String[] items = branchString.split("/");
+//                            final String branchName = items[items.length - 1];
+//                            if (branchName.equalsIgnoreCase(TRIGGER_ANY_BRANCH) || branchName.equalsIgnoreCase(gitCodePushedEventArgs.targetBranch)) {
+//                                branchMatches = true;
+//                                matchStatus.branchMatchFound++;
+//                                break;
+//                            }
+//                        }
+//                    }
+//
+//                    if (!repositoryMatches || !branchMatches || git.getExtensions().get(IgnoreNotifyCommit.class) != null) {
+//                        continue;
+//                    }
+//
+//                    GitStatus.ResponseContributor triggerResult = triggerJob(gitCodePushedEventArgs, actions, bypassPolling, project, scmTriggerItem, true, true);
+//                    if (triggerResult != null) {
+//                        result.add(triggerResult);
+//                        break;
+//                    }
+//                }
+//            }
         }
     }
 
@@ -323,12 +328,7 @@ public abstract class AbstractHookEvent {
         SecurityContext old = ACL.impersonate(ACL.SYSTEM);
         try {
             MatchStatus matchStatus = new MatchStatus();
-            final Jenkins jenkins = Jenkins.getInstanceOrNull();
-            if (jenkins == null) {
-                LOGGER.severe("Jenkins.getInstance() is null");
-                return result;
-            }
-            for (final Item project : Jenkins.get().getItems()) {
+            for (final Item project : Jenkins.get().getAllItems()) {
                 matchProject(gitCodePushedEventArgs, actions, bypassPolling, uri, project, result, matchStatus);
             }
             if (!matchStatus.scmFound) {
