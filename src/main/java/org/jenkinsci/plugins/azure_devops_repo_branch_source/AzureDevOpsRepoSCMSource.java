@@ -168,7 +168,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     //////////////////////////////////////////////////////////////////////
 
     /**
-     * Cache of the official repository HTML URL as reported by {@link GitHub#getRepository(String)}.
+     * Cache of the official repository HTML URL.
      */
     @CheckForNull
     private transient URL repositoryUrl;
@@ -1507,7 +1507,6 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                     : !context.hasPermission(Item.EXTENDED_READ)) {
                 return new StandardListBoxModel().includeCurrentValue(credentialsId);
             }
-            //return Connector.listScanCredentials(context, apiUrl);
             return AzureConnector.INSTANCE.listCredentials(context, collectionUrl);
         }
 
@@ -1526,19 +1525,28 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
 
         @RequirePOST
         @Restricted(NoExternalUse.class)
-        public FormValidation doCheckScanCredentialsId(@CheckForNull @AncestorInPath Item context,
-                                                       @QueryParameter String collectionUrl,
-                                                       @QueryParameter String scanCredentialsId) {
-            return doCheckCredentialsId(context, collectionUrl, scanCredentialsId);
+        public FormValidation doCheckCredentialsId(@CheckForNull @AncestorInPath Item context,
+                                                   @QueryParameter String collectionUrl,
+                                                   @QueryParameter String value) {
+            return AzureConnector.INSTANCE.checkCredentials(context, collectionUrl, value);
         }
 
         @RequirePOST
         @Restricted(NoExternalUse.class)
-        public FormValidation doCheckCredentialsId(@CheckForNull @AncestorInPath Item context,
-                                                   @QueryParameter String collectionUrl,
-                                                   @QueryParameter String value) {
-            //return Connector.checkScanCredentials(context, apiUri, value);
-            return AzureConnector.INSTANCE.checkCredentials(context, collectionUrl, value);
+        public FormValidation doCheckProjectName(@CheckForNull @AncestorInPath Item context,
+                                                 @QueryParameter String collectionUrl,
+                                                 @QueryParameter String credentialsId,
+                                                 @QueryParameter String value) {
+            return AzureConnector.INSTANCE.checkProjectName(context, collectionUrl, credentialsId, value);
+        }
+
+        @Restricted(NoExternalUse.class)
+        public FormValidation doCheckRepository(@CheckForNull @AncestorInPath Item context,
+                                                @QueryParameter String collectionUrl,
+                                                @QueryParameter String credentialsId,
+                                                @QueryParameter String projectName,
+                                                @QueryParameter String value) {
+            return AzureConnector.INSTANCE.checkRepository(context, collectionUrl, credentialsId, projectName, value);
         }
 
         @Restricted(NoExternalUse.class)
@@ -1570,11 +1578,15 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
 
         @RequirePOST
         public ListBoxModel doFillProjectNameItems(@CheckForNull @AncestorInPath Item context, @QueryParameter String collectionUrl, @QueryParameter String credentialsId) {
+            if (credentialsId == null || credentialsId.isEmpty() || collectionUrl == null || collectionUrl.isEmpty()) {
+                return new ListBoxModel();
+            }
             ListBoxModel result = new ListBoxModel();
-            List<String> projectNameList = AzureConnector.INSTANCE.getProjectNames(context, collectionUrl, credentialsId);
+            List<String> projectNameList = AzureConnector.INSTANCE.listProjectNames(context, collectionUrl, credentialsId);
             if (projectNameList != null) {
-                for (String projectName : projectNameList) {
-                    result.add(projectName, projectName);
+                result.add("- none -", "");
+                for (String name : projectNameList) {
+                    result.add(name, name);
                 }
             }
             return result;
@@ -1600,7 +1612,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
 
         @RequirePOST
         public ListBoxModel doFillRepositoryItems(@CheckForNull @AncestorInPath Item context, @QueryParameter String collectionUrl, @QueryParameter String credentialsId, @QueryParameter String projectName) {
-            if (projectName == null || projectName.isEmpty()) {
+            if (credentialsId == null || credentialsId.isEmpty() || collectionUrl == null || collectionUrl.isEmpty() || projectName == null || projectName.isEmpty()) {
                 return new ListBoxModel();
             }
             if (context == null && !Jenkins.get().hasPermission(Jenkins.ADMINISTER) || context != null && !context.hasPermission(Item.EXTENDED_READ)) {
@@ -1610,8 +1622,9 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                 return new ListBoxModel(); // not permitted to try connecting with these credentials
             }
             ListBoxModel result = new ListBoxModel();
-            List<String> repositoryNameList = AzureConnector.INSTANCE.getRepositoryNames(context, collectionUrl, credentialsId, projectName);
+            List<String> repositoryNameList = AzureConnector.INSTANCE.listRepositoryNames(context, collectionUrl, credentialsId, projectName);
             if (repositoryNameList != null) {
+                result.add("- none -", "");
                 for (String repositoryName : repositoryNameList) {
                     result.add(repositoryName, repositoryName);
                 }

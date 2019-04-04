@@ -20,7 +20,6 @@ import hudson.security.ACL
 import hudson.util.FormValidation
 import hudson.util.ListBoxModel
 import jenkins.model.Jenkins
-import jenkins.scm.api.SCMSourceOwner
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.AzureDevOpsRepoConsoleNote
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.*
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support.OkHttp2Helper
@@ -72,19 +71,60 @@ object AzureConnector {
                 )
     }
 
-    fun checkCredentials(context: SCMSourceOwner?, collectionUrl: String, scanCredentialsId: String): FormValidation {
-        return checkCredentials(context as Item?, collectionUrl, scanCredentialsId)
+    fun checkRepository(context: Item?, collectionUrl: String?, credentialsId: String?, projectName: String?, repositoryName: String?): FormValidation {
+        if (context == null && !Jenkins.get().hasPermission(Jenkins.ADMINISTER) || context != null && !context.hasPermission(Item.EXTENDED_READ)) {
+            return FormValidation.ok()
+        }
+        val fixedCollectionUrl = fixCollectionUrl(collectionUrl)
+        return if (fixedCollectionUrl != null && !fixedCollectionUrl.isEmpty() && credentialsId != null && !credentialsId.isEmpty() && projectName != null && !projectName.isEmpty()) {
+            if (repositoryName == null || repositoryName.isEmpty()) {
+                FormValidation.warning("Please select repository")
+            } else {
+                FormValidation.ok()
+            }
+        } else {
+            FormValidation.ok()
+        }
+    }
+
+    fun checkProjectName(context: Item?, collectionUrl: String?, credentialsId: String?, projectName: String?): FormValidation {
+        if (context == null && !Jenkins.get().hasPermission(Jenkins.ADMINISTER) || context != null && !context.hasPermission(Item.EXTENDED_READ)) {
+            return FormValidation.ok()
+        }
+        val fixedCollectionUrl = fixCollectionUrl(collectionUrl)
+        return if (fixedCollectionUrl != null && !fixedCollectionUrl.isEmpty() && credentialsId != null && !credentialsId.isEmpty() && isCredentialValid(context, collectionUrl, credentialsId)) {
+            if (projectName == null || projectName.isEmpty()) {
+                FormValidation.warning("Please select project")
+            } else {
+                val repositoryList = listRepositoryNames(context, fixedCollectionUrl, credentialsId, projectName)
+                if (repositoryList != null) {
+                    if (repositoryList.isEmpty()) {
+                        FormValidation.warning("There is no repository in this project")
+                    } else {
+                        if (repositoryList.size > 1) {
+                            FormValidation.ok("${repositoryList.size} repositories found")
+                        } else {
+                            FormValidation.ok("1 repository found")
+                        }
+                    }
+                } else {
+                    FormValidation.error("Invalid project")
+                }
+            }
+        } else {
+            FormValidation.ok()
+        }
     }
 
     /**
-     * Checks the credential ID for use as scan credentials in the supplied context against the supplied API endpoint.
+     * Checks the credential ID for use as credentials in the supplied context against the supplied API endpoint.
      *
      * @param context       the context.
      * @param collectionUrl the Azure DevOps collection url.
      * @param credentialsId the credentials ID.
      * @return the [FormValidation] results.
      */
-    fun checkCredentials(context: Item?, collectionUrl: String?, credentialsId: String): FormValidation {
+    fun checkCredentials(context: Item?, collectionUrl: String?, credentialsId: String?): FormValidation {
         if (context == null && !Jenkins.get().hasPermission(Jenkins.ADMINISTER) || context != null && !context.hasPermission(Item.EXTENDED_READ)) {
             return FormValidation.ok()
         }
@@ -92,7 +132,7 @@ object AzureConnector {
         if (fixedCollectionUrl == null || fixedCollectionUrl.isEmpty()) {
             return FormValidation.error("Collection URL is empty")
         } else {
-            if (!credentialsId.isEmpty()) {
+            if (credentialsId?.isEmpty() == false) {
                 val options = listCredentials(context, collectionUrl)
                 var found = false
                 for (b in options) {
@@ -115,7 +155,11 @@ object AzureConnector {
                         val dummyResult = listProjectsR(fixedCollectionUrl, getPat(credentials))
                         val goodValue = dummyResult.getGoodValueOrNull()
                         if (goodValue != null) {
-                            FormValidation.ok("%d projects found", goodValue.count)
+                            when {
+                                goodValue.count > 1 -> FormValidation.ok("${goodValue.count} projects found")
+                                goodValue.count == 1 -> FormValidation.ok("1 project found")
+                                else -> FormValidation.warning("There is no project in this collection")
+                            }
                         } else {
                             val httpErrorStatus = dummyResult.getHttpErrorStatusOrNull()
                             if (httpErrorStatus != null) {
@@ -147,6 +191,14 @@ object AzureConnector {
     private fun azureDomainRequirements(apiUri: String?): List<DomainRequirement> {
         //return URIRequirementBuilder.fromUri(StringUtils.defaultIfEmpty(apiUri, "https://github.com")).build()
         return URIRequirementBuilder.create().build()
+    }
+
+    private fun isCredentialValid(context: Item?, collectionUrl: String?, credentialsId: String?): Boolean {
+        return fixCollectionUrl(collectionUrl)?.let { fixedCollectionUrl ->
+            lookupCredentials(context, collectionUrl, credentialsId)?.let { credentials ->
+                listProjectsR(fixedCollectionUrl, getPat(credentials)).getGoodValueOrNull() != null
+            }
+        } ?: false
     }
 
     private fun isCredentialValid(collectionUrl: String?, credentials: StandardCredentials): Boolean {
@@ -243,7 +295,7 @@ object AzureConnector {
         }
     }
 
-    fun getProjectNames(context: Item?, collectionUrl: String?, credentialsId: String?): List<String>? {
+    fun listProjectNames(context: Item?, collectionUrl: String?, credentialsId: String?): List<String>? {
         return fixCollectionUrl(collectionUrl)?.let { fixedCollectionUrl ->
             lookupCredentials(context, collectionUrl, credentialsId)?.let { credentials ->
                 listProjectsR(fixedCollectionUrl, getPat(credentials)).getGoodValueOrNull()?.let { projects ->
@@ -255,7 +307,7 @@ object AzureConnector {
         }
     }
 
-    fun getRepositoryNames(context: Item?, collectionUrl: String?, credentialsId: String?, projectName: String): List<String>? {
+    fun listRepositoryNames(context: Item?, collectionUrl: String?, credentialsId: String?, projectName: String): List<String>? {
         return fixCollectionUrl(collectionUrl)?.let { fixedCollectionUrl ->
             lookupCredentials(context, collectionUrl, credentialsId)?.let { credentials ->
                 listRepositoriesR(fixedCollectionUrl, getPat(credentials), projectName).getGoodValueOrNull()?.let { repositories ->
@@ -446,24 +498,30 @@ object AzureConnector {
 
     @Throws(IOException::class)
     fun checkConnectionValidity(collectionUrl: String?, listener: TaskListener, credentials: StandardCredentials?) {
-        assert(collectionUrl != null)
-        assert(credentials != null)
-        if (credentials != null && !isCredentialValid(collectionUrl, credentials)) {
-            val message = String.format("Invalid scan credentials %s to connect to %s, skipping", CredentialsNameProvider.name(credentials), collectionUrl)
+        if (credentials != null) {
+            listener.logger.println(AzureDevOpsRepoConsoleNote.create(
+                    System.currentTimeMillis(),
+                    String.format("Connecting to %s using %s", collectionUrl, CredentialsNameProvider.name(credentials))
+            ))
+            if (!isCredentialValid(collectionUrl, credentials)) {
+                val message = String.format("Invalid credentials %s to connect to %s, skipping", CredentialsNameProvider.name(credentials), collectionUrl)
+                throw AbortException(message)
+            }
+        } else {
+            val message = String.format("No credentials, skipping")
             throw AbortException(message)
         }
-        listener.logger.println(AzureDevOpsRepoConsoleNote.create(
-                System.currentTimeMillis(),
-                String.format("Connecting to %s using %s", collectionUrl, CredentialsNameProvider.name(credentials!!))
-        ))
     }
 
     @Throws(IOException::class)
     fun checkConnectionValidity(collectionUrl: String?, credentials: StandardCredentials?) {
-        assert(collectionUrl != null)
-        assert(credentials != null)
-        if (credentials != null && !isCredentialValid(collectionUrl, credentials)) {
-            val message = String.format("Error using credentials %s to connect to %s", CredentialsNameProvider.name(credentials), collectionUrl)
+        if (credentials != null) {
+            if (!isCredentialValid(collectionUrl, credentials)) {
+                val message = String.format("Error using credentials %s to connect to %s, skipping", CredentialsNameProvider.name(credentials), collectionUrl)
+                throw AbortException(message)
+            }
+        } else {
+            val message = String.format("No credentials, skipping")
             throw AbortException(message)
         }
     }

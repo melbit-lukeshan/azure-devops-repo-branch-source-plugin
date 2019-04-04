@@ -79,7 +79,6 @@ public class AzureDevOpsRepoBuildStatusNotification {
                     List<AbstractAzureDevOpsNotificationStrategy> strategies = new AzureDevOpsRepoSCMSourceContext(null, SCMHeadObserver.none())
                             .withTraits(((AzureDevOpsRepoSCMSource) src).getTraits()).notificationStrategies();
                     for (AbstractAzureDevOpsNotificationStrategy strategy : strategies) {
-                        // TODO allow strategies to combine/cooperate on a notification
                         AzureDevOpsRepoNotificationContext notificationContext = AzureDevOpsRepoNotificationContext.build(null, build, src, head);
                         List<AzureDevOpsRepoNotificationRequest> details = strategy.notifications(notificationContext, listener);
                         for (AzureDevOpsRepoNotificationRequest request : details) {
@@ -169,8 +168,7 @@ public class AzureDevOpsRepoBuildStatusNotification {
         if (revision instanceof SCMRevisionImpl) {
             return ((SCMRevisionImpl) revision).getHash();
         } else if (revision instanceof PullRequestSCMRevision) {
-//            return ((PullRequestSCMRevision) revision).getPullHash();
-            //TODO: We use the pr's last merge commit to notify Azure DevOps
+            //Note: We use the pr's last merge commit to notify Azure DevOps - Luke
             return ((PullRequestSCMRevision) revision).getMergeHash();
         } else {
             throw new IllegalArgumentException("did not recognize " + revision);

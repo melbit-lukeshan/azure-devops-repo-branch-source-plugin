@@ -363,8 +363,6 @@ public class AzureDevOpsRepoSCMSourceRequest extends SCMSourceRequest {
         this.tags = tags;
     }
 
-    // TODO Iterable<GHTag> getTags() and setTags(...)
-
     /**
      * Provides the request with the names of the repository collaborators.
      *
