@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A Git push event corresponding to the merge of a pull request on VSTS/TFS.
+ * A Git push event corresponding to the merge of a pull request on Azure DevOps.
  */
 public class GitPullRequestMergedEvent extends GitPushEvent {
 
@@ -54,6 +54,12 @@ public class GitPullRequestMergedEvent extends GitPushEvent {
         return result;
     }
 
+    static String determineMergeSourceCommit(final GitPullRequest gitPullRequest) {
+        final GitCommitRef lastMergeSourceCommit = gitPullRequest.getLastMergeSourceCommit();
+        final String result = lastMergeSourceCommit.getCommitId();
+        return result;
+    }
+
     static String determineTargetBranch(final GitPullRequest gitPullRequest) {
         // In the form of ref/heads/master
         final String targetRefName = gitPullRequest.getTargetRefName();
@@ -68,7 +74,10 @@ public class GitPullRequestMergedEvent extends GitPushEvent {
         final URI repoUri = URI.create(repoUriString);
         final String projectId = determineProjectId(repository);
         final String repoId = repository.getName();
-        final String commit = determineMergeCommit(gitPullRequest);
+        //TODO Note depend on change checkout strategy, we may use merge commit or source commit.
+        //For now we use source commit since it is for the default MERGE strategy.
+        //final String commit = determineMergeCommit(gitPullRequest);
+        final String commit = determineMergeSourceCommit(gitPullRequest);
         final String pushedBy = determineCreatedBy(gitPullRequest);
         final int pullRequestId = gitPullRequest.getPullRequestId();
         final String targetBranch = determineTargetBranch(gitPullRequest);

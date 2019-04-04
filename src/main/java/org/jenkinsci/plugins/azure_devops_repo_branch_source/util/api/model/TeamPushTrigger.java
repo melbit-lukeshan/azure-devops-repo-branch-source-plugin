@@ -32,7 +32,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Triggers a build when we receive a TFS/Team Services Git code push event.
+ * Triggers a build when we receive a Azure DevOps Git code push event.
  */
 public class TeamPushTrigger extends Trigger<Job<?, ?>> {
 
@@ -103,7 +103,7 @@ public class TeamPushTrigger extends Trigger<Job<?, ?>> {
 
         @Override
         public String getDisplayName() {
-            return "Build when a change is pushed to TFS/Team Services";
+            return "Build when a change is pushed to Azure DevOps";
         }
     }
 
@@ -215,7 +215,7 @@ public class TeamPushTrigger extends Trigger<Job<?, ?>> {
 
         @Override
         public String getDisplayName() {
-            return "TFS/Team Services hook log";
+            return "Azure DevOps hook log";
         }
 
         @Override
