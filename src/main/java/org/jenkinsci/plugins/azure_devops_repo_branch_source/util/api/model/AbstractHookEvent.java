@@ -2,11 +2,7 @@ package org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.model.*;
-import hudson.plugins.git.BranchSpec;
-import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.GitStatus;
-import hudson.plugins.git.UserRemoteConfig;
-import hudson.scm.SCM;
 import hudson.security.ACL;
 import hudson.triggers.SCMTrigger;
 import jenkins.model.Jenkins;
@@ -17,12 +13,9 @@ import net.sf.json.JSONObject;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.transport.URIish;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.AzureDevOpsRepoSCMSource;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.ActionHelper;
-import org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition;
-import org.jenkinsci.plugins.workflow.flow.FlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject;
 
@@ -173,144 +166,10 @@ public abstract class AbstractHookEvent {
     }
 
     private void matchProject(final GitCodePushedEventArgs gitCodePushedEventArgs, final List<Action> actions, final boolean bypassPolling, final URIish uri, final Item project, final List<GitStatus.ResponseContributor> result, final MatchStatus matchStatus) {
-        //TODO debug - Luke
-        System.out.println("matchProject project " + project);
-        System.out.println("matchProject project.getFullDisplayName() " + project.getFullDisplayName());
-        final SCMTriggerItem scmTriggerItem = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(project);
-
-        if (scmTriggerItem == null) {
-            if (project instanceof WorkflowMultiBranchProject) {
-                WorkflowMultiBranchProject wmbp = (WorkflowMultiBranchProject) project;
-                matchMultiBranchProject(gitCodePushedEventArgs, actions, bypassPolling, uri, wmbp, result, matchStatus);
-            } else {
-//                if (project instanceof Folder) {
-//                    for (Job job : project.getAllJobs()) {
-//                        matchProject(gitCodePushedEventArgs, actions, bypassPolling, uri, job, result, matchStatus);
-//                    }
-//                }
-            }
-        } else {
-            // Pipeline job
-//            if (scmTriggerItem.getSCMs().isEmpty()) {
-//                return;
-//            }
-//
-//            for (final SCM scm : scmTriggerItem.getSCMs()) {
-//                if (!(scm instanceof GitSCM)) {
-//                    continue;
-//                }
-//                final GitSCM git = (GitSCM) scm;
-//                matchStatus.scmFound = true;
-//
-//                for (final RemoteConfig repository : git.getRepositories()) {
-//                    boolean repositoryMatches = false;
-//                    for (final URIish remoteURL : repository.getURIs()) {
-//                        if (UriHelper.areSameGitRepo(uri, remoteURL)) {
-//                            repositoryMatches = true;
-//                            matchStatus.repoMatchFound++;
-//                            break;
-//                        }
-//                    }
-//
-//                    // Jobs triggered by PR merge need to check whether its target branch matches the one specified in the parameter of PR trigger UI
-//                    if (repositoryMatches && gitCodePushedEventArgs instanceof PullRequestMergeCommitCreatedEventArgs) {
-//                        GitStatus.ResponseContributor triggerResult = triggerJob(gitCodePushedEventArgs, actions, bypassPolling, project, scmTriggerItem, true, false);
-//                        if (triggerResult != null) {
-//                            result.add(triggerResult);
-//                        }
-//                        break;
-//                    }
-//
-//                    boolean branchMatches = false;
-//                    // Jobs triggered by code push need to check whether its target branch matches the one in its Git parameter
-//                    if (repositoryMatches) {
-//                        for (final BranchSpec branch : git.getBranches()) {
-//                            final String branchString = branch.toString();
-//                            // Might be in the form of */master
-//                            final String[] items = branchString.split("/");
-//                            final String branchName = items[items.length - 1];
-//                            if (branchName.equalsIgnoreCase(TRIGGER_ANY_BRANCH) || branchName.equalsIgnoreCase(gitCodePushedEventArgs.targetBranch)) {
-//                                branchMatches = true;
-//                                matchStatus.branchMatchFound++;
-//                                break;
-//                            }
-//                        }
-//                    }
-//
-//                    if (!repositoryMatches || !branchMatches || git.getExtensions().get(IgnoreNotifyCommit.class) != null) {
-//                        continue;
-//                    }
-//
-//                    GitStatus.ResponseContributor triggerResult = triggerJob(gitCodePushedEventArgs, actions, bypassPolling, project, scmTriggerItem, true, true);
-//                    if (triggerResult != null) {
-//                        result.add(triggerResult);
-//                        break;
-//                    }
-//                }
-//            }
+        if (project instanceof WorkflowMultiBranchProject) {
+            WorkflowMultiBranchProject wmbp = (WorkflowMultiBranchProject) project;
+            matchMultiBranchProject(gitCodePushedEventArgs, actions, bypassPolling, uri, wmbp, result, matchStatus);
         }
-    }
-
-    private Boolean repoMatches(final GitCodePushedEventArgs gitCodePushedEventArgs, final Job job) {
-        if (job instanceof WorkflowJob) {
-            final FlowDefinition jobDef = ((WorkflowJob) job).getDefinition();
-            if (jobDef instanceof CpsScmFlowDefinition) {
-                final SCM jobSCM = ((CpsScmFlowDefinition) jobDef).getScm();
-                if (jobSCM instanceof GitSCM) {
-                    final GitSCM gitJobSCM = (GitSCM) jobSCM;
-                    final URIish uri = gitCodePushedEventArgs.getRepoURIish();
-
-                    for (final UserRemoteConfig remoteConfig : gitJobSCM.getUserRemoteConfigs()) {
-                        final String jobRepoUrl = remoteConfig.getUrl();
-
-                        if (StringUtils.equalsIgnoreCase(jobRepoUrl, uri.toString())) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    private Boolean branchMatches(final GitCodePushedEventArgs gitCodePushedEventArgs, final Job job) {
-        // Jobs triggered by PR merge need to check whether its target branch matches the one specified in the parameter of PR trigger UI
-        if (gitCodePushedEventArgs instanceof PullRequestMergeCommitCreatedEventArgs) {
-            TeamPRPushTrigger pushTrigger = AzureDevOpsEventsEndpoint.findTrigger(job, TeamPRPushTrigger.class);
-            if (pushTrigger != null) {
-                final String targetBranches = pushTrigger.getTargetBranches();
-                if (targetBranches != null) {
-                    String[] branches = targetBranches.split(" ");
-                    if (branches != null) {
-                        for (String branchFullName : branches) {
-                            // branchFullName could be in the format of */pr_status
-                            String[] items = branchFullName.split("/");
-                            if (StringUtils.equalsIgnoreCase(items[items.length - 1], gitCodePushedEventArgs.targetBranch)) {
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-        } else { // Pipeline jobs triggered by code push need to check whether its target branch matches the one in its Git parameter
-            if (job instanceof WorkflowJob) {
-                final FlowDefinition jobDef = ((WorkflowJob) job).getDefinition();
-                if (jobDef instanceof CpsScmFlowDefinition) {
-                    final SCM jobSCM = ((CpsScmFlowDefinition) jobDef).getScm();
-                    if (jobSCM instanceof GitSCM) {
-                        final GitSCM gitJobSCM = (GitSCM) jobSCM;
-                        for (final BranchSpec branchFullName : gitJobSCM.getBranches()) {
-                            // branchFullName could be in the format of */pr_status
-                            String[] items = branchFullName.getName().split("/");
-                            if (StringUtils.equalsIgnoreCase(items[items.length - 1], gitCodePushedEventArgs.targetBranch)) {
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return false;
     }
 
     List<GitStatus.ResponseContributor> pollOrQueueFromEvent(final GitCodePushedEventArgs gitCodePushedEventArgs, final List<Action> actions, final boolean bypassPolling) {
