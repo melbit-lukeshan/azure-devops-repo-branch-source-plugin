@@ -856,22 +856,11 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                         count++;
                         listener.getLogger().format("%n    Checking tag %s%n", HyperlinkNote.encodeTo(repositoryUrl + "?version=GT" + tagName, tagName));
                         long tagDate = 0L;
-                        String sha = tag.getObjectId();
-//                        if ("tag".equalsIgnoreCase(tag.getObject().getType())) {
-//                            try {
-//                                GHTagObject tagObject = request.getRepository().getTagObject(sha);
-//                                tagDate = tagObject.getTagger().getDate().getTime();
-//                                // we want the sha of the tagged commit not the tag object
-//                                sha = tagObject.getObject().getSha();
-//                            } catch (IOException e) {
-//                            }
-//                        } else {
-//                            try {
-//                                GHCommit commit = request.getRepository().getCommit(sha);
-//                                tagDate = commit.getCommitDate().getTime();
-//                            } catch (IOException e) {
-//                            }
-//                        }
+                        String sha = tag.getPeeledObjectId();
+                        GitCommit commit = AzureConnector.INSTANCE.getCommit(gitRepository, sha);
+                        if (commit != null) {
+                            tagDate = commit.getPush().getDate().toInstant().toEpochMilli();
+                        }
                         AzureDevOpsRepoTagSCMHead head = new AzureDevOpsRepoTagSCMHead(tagName, tagDate);
                         if (request.process(head, new GitTagSCMRevision(head, sha),
                                 new SCMSourceRequest.ProbeLambda<AzureDevOpsRepoTagSCMHead, GitTagSCMRevision>() {
@@ -1207,18 +1196,13 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
             return new PullRequestSCMRevision(prhead, baseSha, pullSha, mergeSha);
         } else if (head instanceof AzureDevOpsRepoTagSCMHead) {
             AzureDevOpsRepoTagSCMHead tagHead = (AzureDevOpsRepoTagSCMHead) head;
-            //TODO change below - Luke
-            GHRef tag = ghRepository.getRef("tags/" + tagHead.getName());
-            String sha = tag.getObject().getSha();
-            if ("tag".equalsIgnoreCase(tag.getObject().getType())) {
-                // annotated tag object
-                GHTagObject tagObject = ghRepository.getTagObject(sha);
-                // we want the sha of the tagged commit not the tag object
-                sha = tagObject.getObject().getSha();
+            GitRef tag = AzureConnector.INSTANCE.getRef(gitRepository, "tags/" + tagHead.getName(), true);
+            if (tag != null) {
+                return new GitTagSCMRevision(tagHead, tag.getPeeledObjectId());
+            } else {
+                throw new IOException("Tag " + tagHead.getName() + " cannot be found.");
             }
-            return new GitTagSCMRevision(tagHead, sha);
         } else {
-            //return new SCMRevisionImpl(head, ghRepository.getRef("heads/" + head.getName()).getObject().getSha());
             BranchSCMHead branchSCMHead = (BranchSCMHead) head;
             String filter;
             switch (branchSCMHead.realBranchType) {
@@ -1232,9 +1216,13 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                     filter = "tags/" + head.getName();
                     break;
             }
-            GitRef branch = AzureConnector.INSTANCE.getRef(gitRepository, filter, false);
+            GitRef branch = AzureConnector.INSTANCE.getRef(gitRepository, filter, true);
             if (branch != null) {
-                return new SCMRevisionImpl(head, branch.getObjectId());
+                if (branchSCMHead.realBranchType == BranchSCMHead.RealBranchType.tag) {
+                    return new SCMRevisionImpl(head, branch.getPeeledObjectId());
+                } else {
+                    return new SCMRevisionImpl(head, branch.getObjectId());
+                }
             } else {
                 throw new IOException("Branch " + head.getName() + " cannot be found.");
             }
@@ -1371,7 +1359,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
     @Override
     protected List<Action> retrieveActions(@NonNull SCMHead head,
                                            @CheckForNull SCMHeadEvent event,
-                                           @NonNull TaskListener listener) throws IOException, InterruptedException {
+                                           @NonNull TaskListener listener) {
         // TODO when we have support for trusted events, use the details from event if event was from trusted source
         List<Action> result = new ArrayList<>();
         SCMSourceOwner owner = getOwner();
@@ -1379,23 +1367,25 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
             AzureDevOpsRepoLink repoLink = ((Actionable) owner).getAction(AzureDevOpsRepoLink.class);
             if (repoLink != null) {
                 String url;
-                ObjectMetadataAction metadataAction = null;
+                ObjectMetadataAction metadataAction;
                 if (head instanceof PullRequestSCMHead) {
                     // pull request to this repository
                     int number = ((PullRequestSCMHead) head).getNumber();
-                    url = repoLink.getUrl() + "/pull/" + number;
+                    url = repoLink.getUrl() + "/pullrequest/" + number;
                     metadataAction = pullRequestMetadataCache.get(number);
                     if (metadataAction == null) {
                         // best effort
                         metadataAction = new ObjectMetadataAction(null, null, url);
                     }
-                    ContributorMetadataAction contributor = pullRequestContributorCache.get(number);
-                    if (contributor != null) {
-                        result.add(contributor);
+                    if (pullRequestContributorCache != null) {
+                        ContributorMetadataAction contributor = pullRequestContributorCache.get(number);
+                        if (contributor != null) {
+                            result.add(contributor);
+                        }
                     }
                 } else {
                     // branch in this repository
-                    url = repoLink.getUrl() + "/tree/" + head.getName();
+                    url = repoLink.getUrl() + "?version=GB" + head.getName();
                     metadataAction = new ObjectMetadataAction(head.getName(), null, url);
                 }
                 result.add(new AzureDevOpsRepoLink("icon-github-branch", url));
@@ -1425,17 +1415,12 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         List<Action> result = new ArrayList<>();
         result.add(new AzureDevOpsRepoRepoMetadataAction());
         StandardCredentials credentials = AzureConnector.INSTANCE.lookupCredentials(getOwner(), collectionUrl, credentialsId);
-        //GitHub hub = Connector.connect(collectionUrl, credentials);
-        //Connector.checkConnectionValidity(collectionUrl, listener, credentials, hub);
         AzureConnector.INSTANCE.checkConnectionValidity(collectionUrl, listener, credentials);
         try {
             gitRepository = AzureConnector.INSTANCE.getRepository(collectionUrl, credentials, getProjectName(), repository);
             repositoryUrl = new URL(gitRepository.getGitRepository().getRemoteUrl());
-            //ghRepository = hub.getRepository(getProjectName() + '/' + repository);
-            //repositoryUrl = ghRepository.getHtmlUrl();
         } catch (Exception e) {
-            throw new AbortException(
-                    String.format("Invalid scan credentials when using %s to connect to %s/%s on %s", CredentialsNameProvider.name(credentials), projectName, repository, collectionUrl));
+            throw new AbortException(String.format("Invalid scan credentials when using %s to connect to %s/%s on %s", CredentialsNameProvider.name(credentials), projectName, repository, collectionUrl));
         }
         result.add(new ObjectMetadataAction(null, gitRepository.getGitRepository().getProject().getDescription(), Util.fixEmpty(gitRepository.getGitRepository().getRemoteUrl())));
         result.add(new AzureDevOpsRepoLink("icon-github-repo", gitRepository.getGitRepository().getRemoteUrl()));
@@ -1874,8 +1859,12 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         @Override
         public void close() {
             if (fullScanRequested && iterationCompleted) {
-                pullRequestMetadataCache.keySet().retainAll(pullRequestMetadataKeys);
-                pullRequestContributorCache.keySet().retainAll(pullRequestMetadataKeys);
+                if (pullRequestMetadataCache != null) {
+                    pullRequestMetadataCache.keySet().retainAll(pullRequestMetadataKeys);
+                }
+                if (pullRequestContributorCache != null) {
+                    pullRequestContributorCache.keySet().retainAll(pullRequestMetadataKeys);
+                }
                 if (Jenkins.get().getInitLevel().compareTo(InitMilestone.JOB_LOADED) > 0) {
                     synchronized (pullRequestSourceMapLock) {
                         pullRequestSourceMap = null;

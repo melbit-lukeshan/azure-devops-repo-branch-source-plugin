@@ -8,7 +8,6 @@ import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.support.Result
 import org.junit.Test;
 
 import java.io.InputStream;
-import java.time.OffsetDateTime;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -97,14 +96,12 @@ public class AaaTest {
 
     @Test
     public void aTest5() throws Exception {
-        GetCommitRequest getCommitRequest = new GetCommitRequest(collectionUrl, pat, projectName, repositoryName, branchHeadHashB3);
+        GetCommitRequest getCommitRequest = new GetCommitRequest(collectionUrl, pat, projectName, repositoryName, branchHeadHashMaster);
         OkHttp2Helper.INSTANCE.setDebugMode(true);
         Result<GitCommit, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(getCommitRequest, GitCommit.class, Object.class);
         GitCommit commit = result.getGoodValueOrNull();
         if (commit != null) {
-            GitPushRef gitPushRef = commit.getPush();
-            OffsetDateTime date = gitPushRef.getDate();
-            System.out.println(date.toString());
+            System.out.println(GsonProcessor.INSTANCE.instanceToJson(commit));
         }
     }
 
@@ -115,8 +112,7 @@ public class AaaTest {
         Result<GitItem, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(getItemRequest, GitItem.class, Object.class);
         GitItem item = result.getGoodValueOrNull();
         if (item != null) {
-            System.out.println(item.getPath());
-            System.out.println(item.getUrl());
+            System.out.println(GsonProcessor.INSTANCE.instanceToJson(item));
         }
     }
 
@@ -128,7 +124,7 @@ public class AaaTest {
         Items items = result.getGoodValueOrNull();
         if (items != null) {
             for (GitItem item : items.getValue()) {
-                System.out.println(item.getPath() + " -> " + (item.isFolder() ? "Folder" : "File"));
+                System.out.println(GsonProcessor.INSTANCE.instanceToJson(item));
             }
         }
     }
