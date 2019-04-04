@@ -140,9 +140,6 @@ public abstract class AbstractHookEvent {
 
         if (repositoryMatches) {
             for (WorkflowJob workflowJob : wmbp.getItems()) {
-                //TODO debug - Luke
-                System.out.println("matchMultiBranchProject workflowJob " + workflowJob);
-                System.out.println("matchMultiBranchProject workflowJob.getName() " + workflowJob.getName());
                 final String branchName = workflowJob.getName();
 
                 final SCMTriggerItem scmTriggerItem = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(workflowJob);
@@ -151,7 +148,7 @@ public abstract class AbstractHookEvent {
                     if (gitCodePushedEventArgs instanceof PullRequestMergeCommitCreatedEventArgs) {
                         PullRequestMergeCommitCreatedEventArgs p = (PullRequestMergeCommitCreatedEventArgs) gitCodePushedEventArgs;
                         if (branchName.equalsIgnoreCase("PR-" + p.pullRequestId)) {
-                            System.out.println("matchMultiBranchProject match PR");
+                            System.out.println("matchMultiBranchProject match PR:" + branchName);
                             matchStatus.branchMatchFound++;
                             GitStatus.ResponseContributor triggerResult = triggerJob(p, actions, bypassPolling, workflowJob, scmTriggerItem, true, false);
                             if (triggerResult != null) {
@@ -161,7 +158,7 @@ public abstract class AbstractHookEvent {
                         }
                     } else {
                         if (branchName.equalsIgnoreCase(gitCodePushedEventArgs.targetBranch)) {
-                            System.out.println("matchMultiBranchProject match PUSH");
+                            System.out.println("matchMultiBranchProject match PUSH:" + branchName);
                             matchStatus.branchMatchFound++;
                             GitStatus.ResponseContributor triggerResult = triggerJob(gitCodePushedEventArgs, actions, bypassPolling, workflowJob, scmTriggerItem, true, true);
                             if (triggerResult != null) {
@@ -328,7 +325,7 @@ public abstract class AbstractHookEvent {
         SecurityContext old = ACL.impersonate(ACL.SYSTEM);
         try {
             MatchStatus matchStatus = new MatchStatus();
-            for (final Item project : Jenkins.get().getAllItems()) {
+            for (final Item project : Jenkins.get().getAllItems(WorkflowMultiBranchProject.class)) {
                 matchProject(gitCodePushedEventArgs, actions, bypassPolling, uri, project, result, matchStatus);
             }
             if (!matchStatus.scmFound) {
