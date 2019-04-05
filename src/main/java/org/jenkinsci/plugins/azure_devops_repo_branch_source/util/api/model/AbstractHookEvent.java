@@ -71,7 +71,6 @@ public abstract class AbstractHookEvent {
         if (!(project instanceof AbstractProject && ((AbstractProject) project).isDisabled())) {
             if (project instanceof Job) {
                 final Job job = (Job) project;
-
                 final ArrayList<ParameterValue> values = getDefaultParameters(job);
                 final String vstsRefspec = getVstsRefspec(gitCodePushedEventArgs);
                 values.add(new StringParameterValue("vstsRefspec", vstsRefspec));
@@ -103,7 +102,6 @@ public abstract class AbstractHookEvent {
     }
 
     private void matchMultiBranchProject(final GitCodePushedEventArgs gitCodePushedEventArgs, final List<Action> actions, final boolean bypassPolling, final URIish uri, final WorkflowMultiBranchProject wmbp, final List<GitStatus.ResponseContributor> result, final MatchStatus matchStatus) {
-        boolean repositoryMatches = false;
         //TODO debug - Luke
         if (gitCodePushedEventArgs instanceof PullRequestMergeCommitCreatedEventArgs) {
             PullRequestMergeCommitCreatedEventArgs p = (PullRequestMergeCommitCreatedEventArgs) gitCodePushedEventArgs;
@@ -115,14 +113,15 @@ public abstract class AbstractHookEvent {
             System.out.println("matchMultiBranchProject GitCodePushedEventArgs commit " + gitCodePushedEventArgs.commit);
         }
         //TODO debug end - Luke
+        boolean repositoryMatches = false;
         for (SCMSource scmSource : wmbp.getSCMSources()) {
             if (scmSource instanceof AzureDevOpsRepoSCMSource) {
                 AzureDevOpsRepoSCMSource gitSCMSource = (AzureDevOpsRepoSCMSource) scmSource;
-                System.out.println("matchMultiBranchProject gitSCMSource " + gitSCMSource.getRemote());
                 try {
                     if (UriHelper.areSameGitRepo(uri, new URIish(gitSCMSource.getRemote()))) {
                         repositoryMatches = true;
                         matchStatus.repoMatchFound++;
+                        System.out.println("matchMultiBranchProject REPO MATCH: " + uri);
                         break;
                     }
                 } catch (Exception e) {
@@ -132,36 +131,35 @@ public abstract class AbstractHookEvent {
         }
 
         if (repositoryMatches) {
+            boolean jobFound = false;
+            String targetName;
+            if (gitCodePushedEventArgs instanceof PullRequestMergeCommitCreatedEventArgs) {
+                PullRequestMergeCommitCreatedEventArgs p = (PullRequestMergeCommitCreatedEventArgs) gitCodePushedEventArgs;
+                targetName = "PR-" + p.pullRequestId;
+            } else {
+                targetName = gitCodePushedEventArgs.targetBranch;
+            }
             for (WorkflowJob workflowJob : wmbp.getItems()) {
-                final String branchName = workflowJob.getName();
-
+                final String jobName = workflowJob.getName();
                 final SCMTriggerItem scmTriggerItem = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(workflowJob);
-
-                if (scmTriggerItem != null) {
-                    if (gitCodePushedEventArgs instanceof PullRequestMergeCommitCreatedEventArgs) {
-                        PullRequestMergeCommitCreatedEventArgs p = (PullRequestMergeCommitCreatedEventArgs) gitCodePushedEventArgs;
-                        if (branchName.equalsIgnoreCase("PR-" + p.pullRequestId)) {
-                            System.out.println("matchMultiBranchProject match PR:" + branchName);
-                            matchStatus.branchMatchFound++;
-                            GitStatus.ResponseContributor triggerResult = triggerJob(p, actions, bypassPolling, workflowJob, scmTriggerItem, true, false);
-                            if (triggerResult != null) {
-                                result.add(triggerResult);
-                            }
-                            break;
-                        }
-                    } else {
-                        if (branchName.equalsIgnoreCase(gitCodePushedEventArgs.targetBranch)) {
-                            System.out.println("matchMultiBranchProject match PUSH:" + branchName);
-                            matchStatus.branchMatchFound++;
-                            GitStatus.ResponseContributor triggerResult = triggerJob(gitCodePushedEventArgs, actions, bypassPolling, workflowJob, scmTriggerItem, true, true);
-                            if (triggerResult != null) {
-                                result.add(triggerResult);
-                            }
-                            break;
-                        }
+                if (scmTriggerItem != null && jobName.equalsIgnoreCase(targetName)) {
+                    jobFound = true;
+                    matchStatus.branchMatchFound++;
+                    System.out.println("matchMultiBranchProject JOB MATCH:" + targetName);
+                    GitStatus.ResponseContributor triggerResult = triggerJob(gitCodePushedEventArgs, actions, bypassPolling, workflowJob, scmTriggerItem, true, true);
+                    if (triggerResult != null) {
+                        result.add(triggerResult);
                     }
+                    break;
                 }
             }
+            if (!jobFound) {
+                System.out.println("matchMultiBranchProject JOB NO MATCH:" + targetName);
+                //TODO We found repo but not target job. That means we are dealing with a new branch or pull request. Thus we need to require a indexing of the repo.
+
+            }
+        } else {
+            System.out.println("matchMultiBranchProject REPO NO MATCH: " + uri);
         }
     }
 

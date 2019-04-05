@@ -73,7 +73,7 @@ public class AaaTest {
 
     @Test
     public void aTest3() throws Exception {
-        ListRefsRequest listRefsRequest = new ListRefsRequest(collectionUrl, pat, projectName, repositoryName, "tags/", true);
+        ListRefsRequest listRefsRequest = new ListRefsRequest(collectionUrl, pat, projectName, repositoryName, "pull/", true);
         OkHttp2Helper.INSTANCE.setDebugMode(true);
         Result<Refs, Object> result = OkHttp2Helper.INSTANCE.executeRequest2(listRefsRequest, Refs.class, Object.class);
         Refs refs = result.getGoodValueOrNull();

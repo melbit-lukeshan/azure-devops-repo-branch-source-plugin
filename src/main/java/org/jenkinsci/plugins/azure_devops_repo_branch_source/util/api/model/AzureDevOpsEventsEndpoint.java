@@ -84,7 +84,7 @@ public class AzureDevOpsEventsEndpoint implements UnprotectedRootAction {
         return null;
     }
 
-    static JSONObject innerDispatch(final String body, final String eventName, final Map<String, AbstractHookEvent.Factory> factoriesByName) throws IOException {
+    static JSONObject innerDispatch(final String body, final String eventName, final Map<String, AbstractHookEvent.Factory> factoriesByName) {
         if (StringUtils.isBlank(eventName) || !factoriesByName.containsKey(eventName)) {
             throw new IllegalArgumentException("Invalid event");
         }

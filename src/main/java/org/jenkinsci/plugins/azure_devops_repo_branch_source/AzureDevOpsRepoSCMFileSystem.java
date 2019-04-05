@@ -64,44 +64,37 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
      * @param repo    the {@link GitRepositoryWithAzureContext}
      * @param refName the ref name, e.g. {@code heads/branchName}, {@code tags/tagName}, {@code pull/N/head} or the SHA.
      * @param rev     the optional revision.
-     * @throws IOException if I/O errors occur.
      */
-    protected AzureDevOpsRepoSCMFileSystem(GitRepositoryWithAzureContext repo, String refName, @CheckForNull SCMRevision rev) throws IOException {
+    protected AzureDevOpsRepoSCMFileSystem(GitRepositoryWithAzureContext repo, String refName, @CheckForNull SCMRevision rev) {
         super(rev);
+        //TODO Debug - Luke
+        System.out.println("AzureDevOpsRepoSCMFileSystem refName " + refName);
+        System.out.println("AzureDevOpsRepoSCMFileSystem rev " + rev);
         this.open = true;
         this.repo = repo;
         if (rev != null) {
             if (rev.getHead() instanceof PullRequestSCMHead) {
+                System.out.println("AzureDevOpsRepoSCMFileSystem PullRequestSCMHead");
                 PullRequestSCMHead pr = (PullRequestSCMHead) rev.getHead();
-                assert !pr.isMerge(); // TODO see below
-                System.out.println("AzureDevOpsRepoSCMFileSystem 3");
                 this.ref = ((PullRequestSCMRevision) rev).getPullHash();
             } else if (rev instanceof AbstractGitSCMSource.SCMRevisionImpl) {
-                System.out.println("AzureDevOpsRepoSCMFileSystem 2");
+                System.out.println("AzureDevOpsRepoSCMFileSystem AbstractGitSCMSource.SCMRevisionImpl");
                 this.ref = ((AbstractGitSCMSource.SCMRevisionImpl) rev).getHash();
             } else {
-                System.out.println("AzureDevOpsRepoSCMFileSystem 1");
+                System.out.println("AzureDevOpsRepoSCMFileSystem other head");
                 this.ref = refName;
             }
         } else {
-            System.out.println("AzureDevOpsRepoSCMFileSystem 0");
             this.ref = refName;
         }
-        System.out.println("AzureDevOpsRepoSCMFileSystem ref is " + this.ref);
+        System.out.println("AzureDevOpsRepoSCMFileSystem ref " + ref);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void close() throws IOException {
-//        synchronized (this) {
-//            if (!open) {
-//                return;
-//            }
-//            open = false;
-//        }
-//        Connector.release(gitHub);
+    public void close() {
     }
 
     /**
@@ -116,16 +109,18 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
      * {@inheritDoc}
      */
     @Override
-    public long lastModified() throws IOException {
-//        return repo.getCommit(ref).getCommitDate().getTime();
-//        GitRef ref = AzureConnector.INSTANCE.getRef(repo, this.ref);
-        // ref should be a SHA1 string
+    public long lastModified() {
+        // Note: ref is a SHA1 string
         if (ref != null) {
             GitCommit commit = AzureConnector.INSTANCE.getCommit(repo, ref);
             if (commit != null) {
+                //TODO Debug - Luke
+                System.out.println("AzureDevOpsRepoSCMFileSystem lastModified " + commit.getPush().getDate().toInstant().toEpochMilli());
                 return commit.getPush().getDate().toInstant().toEpochMilli();
             }
         }
+        //TODO Debug - Luke
+        System.out.println("AzureDevOpsRepoSCMFileSystem lastModified 0");
         return 0L;
     }
 
@@ -133,12 +128,15 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
      * {@inheritDoc}
      */
     @Override
-    public boolean changesSince(SCMRevision revision, @NonNull OutputStream changeLogStream)
-            throws UnsupportedOperationException, IOException, InterruptedException {
+    public boolean changesSince(SCMRevision revision, @NonNull OutputStream changeLogStream) throws UnsupportedOperationException, IOException {
+        //TODO Debug - Luke
+        System.out.println("AzureDevOpsRepoSCMFileSystem changesSince revision " + revision);
+        System.out.println("AzureDevOpsRepoSCMFileSystem changesSince getRevision() " + getRevision());
         if (Objects.equals(getRevision(), revision)) {
             // special case where somebody is asking one of two stupid questions:
             // 1. what has changed between the latest and the latest
             // 2. what has changed between the current revision and the current revision
+            System.out.println("AzureDevOpsRepoSCMFileSystem changesSince revision == getRevision()");
             return false;
         }
         int count = 0;
@@ -155,13 +153,11 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
         List<GitCommitRef> commitRefList = AzureConnector.INSTANCE.listCommits(repo);
         if (commitRefList != null) {
             for (GitCommitRef commit : commitRefList) {
-//            for (GHCommit commit : repo.queryCommits().from(ref).pageSize(GitSCM.MAX_CHANGELOG).list()) {
                 if (commit.getCommitId().toLowerCase(Locale.ENGLISH).equals(endHash)) {
                     break;
                 }
                 log.setLength(0);
                 log.append("commit ").append(commit.getCommitId()).append('\n');
-//                log.append("tree ").append(commit.getTree().getSha()).append('\n');
                 log.append("tree ").append(" ").append('\n');
                 log.append("parent");
                 if (commit.getParents() != null) {
@@ -170,7 +166,6 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
                     }
                 }
                 log.append('\n');
-//                GHCommit.ShortInfo info = commit.getCommitShortInfo();
                 log.append("author ")
                         .append(commit.getAuthor().getName())
                         .append(" <")
@@ -202,7 +197,7 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
                 }
             }
         }
-
+        System.out.println("AzureDevOpsRepoSCMFileSystem changesSince count " + count);
         return count > 0;
     }
 
@@ -223,13 +218,11 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
          */
         @Override
         public boolean supports(SCM source) {
-            // TODO implement a GitHubSCM so we can work for those
             return false;
         }
 
         @Override
         protected boolean supportsDescriptor(SCMDescriptor scmDescriptor) {
-            // TODO implement a GitHubSCM so we can work for those
             return false;
         }
 
@@ -258,93 +251,57 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
          * {@inheritDoc}
          */
         @Override
-        public SCMFileSystem build(@NonNull SCMSource source, @NonNull SCMHead head, @CheckForNull SCMRevision rev)
-                throws IOException, InterruptedException {
+        public SCMFileSystem build(@NonNull SCMSource source, @NonNull SCMHead head, @CheckForNull SCMRevision rev) {
             AzureDevOpsRepoSCMSource src = (AzureDevOpsRepoSCMSource) source;
             String collectionUrl = src.getCollectionUrl();
             StandardCredentials credentials = AzureConnector.INSTANCE.lookupCredentials(src.getOwner(), collectionUrl, src.getCredentialsId());
-
-            // Github client and validation
-            //GitHub github = Connector.connect(collectionUrl, credentials);
-            try {
-                //Connector.checkApiUrlValidity(github, credentials);
-                AzureConnector.INSTANCE.checkConnectionValidity(collectionUrl, credentials);
+            GitRepositoryWithAzureContext repo = AzureConnector.INSTANCE.getRepository(collectionUrl, credentials, src.getProjectName(), src.getRepository());
+            if (repo != null) {
                 String refName;
+                //TODO Debug - Luke
+                System.out.println("SCMFileSystem BuilderImpl head " + head);
                 if (head instanceof BranchSCMHead) {
                     refName = "heads/" + head.getName();
+                    System.out.println("SCMFileSystem BuilderImpl BranchSCMHead");
                 } else if (head instanceof AzureDevOpsRepoTagSCMHead) {
                     refName = "tags/" + head.getName();
+                    System.out.println("SCMFileSystem BuilderImpl AzureDevOpsRepoTagSCMHead");
                 } else if (head instanceof PullRequestSCMHead) {
                     PullRequestSCMHead pr = (PullRequestSCMHead) head;
-                    if (!pr.isMerge() && pr.getSourceRepo() != null) {
-                        //GHUser user = github.getUser(pr.getSourceOwner());
-                        //if (user == null) {
-                        // we need to release here as we are not throwing an exception or transferring
-                        // responsibility to FS
-                        //    Connector.release(github);
-                        //    return null;
-                        //}
-                        //GHRepository repo = user.getRepository(pr.getSourceRepo());
-                        GitRepositoryWithAzureContext repo = AzureConnector.INSTANCE.getRepository(collectionUrl, credentials, src.getProjectName(), src.getRepository());
-                        if (repo == null) {
-                            // we need to release here as we are not throwing an exception or transferring
-                            // responsibility to FS
-                            //Connector.release(github);
-                            return null;
-                        }
-                        return new AzureDevOpsRepoSCMFileSystem(
-                                repo,
-                                pr.getSourceBranch(),
-                                rev);
-                    }
-                    // we need to release here as we are not throwing an exception or transferring responsibility to FS
-                    //Connector.release(github);
-                    return null; // TODO support merge revisions somehow
+                    refName = "pull/" + pr.getNumber() + "/merge";
+                    System.out.println("SCMFileSystem BuilderImpl PullRequestSCMHead");
+                    System.out.println("SCMFileSystem BuilderImpl PullRequestSCMHead getSourceBranch() " + pr.getSourceBranch());
+                    System.out.println("SCMFileSystem BuilderImpl PullRequestSCMHead getOriginName() " + pr.getOriginName());
+//                    if (!pr.isMerge() && pr.getSourceRepo() != null) {
+//                        return new AzureDevOpsRepoSCMFileSystem(repo, pr.getSourceBranch(), rev);
+//                    }
+//                    return null; // TODO support merge revisions somehow
                 } else {
-                    // we need to release here as we are not throwing an exception or transferring responsibility to FS
-                    //Connector.release(github);
+                    System.out.println("SCMFileSystem BuilderImpl return null");
                     return null;
                 }
 
-                //GHUser user = github.getUser(src.getProjectName());
-                //if (user == null) {
-                // we need to release here as we are not throwing an exception or transferring responsibility to FS
-                //Connector.release(github);
-                //    return null;
-                //}
-                //GHRepository repo = user.getRepository(src.getRepository());
-                GitRepositoryWithAzureContext repo = AzureConnector.INSTANCE.getRepository(collectionUrl, credentials, src.getProjectName(), src.getRepository());
-                if (repo == null) {
-                    // we need to release here as we are not throwing an exception or transferring responsibility to FS
-                    //Connector.release(github);
-                    return null;
-                }
+                System.out.println("SCMFileSystem BuilderImpl refName " + refName);
+
                 if (rev == null) {
-                    //GHRef ref = repo.getRef(refName);
+                    System.out.println("SCMFileSystem BuilderImpl rev is null");
                     GitRef ref = AzureConnector.INSTANCE.getRef(repo, refName, true);
                     if (ref != null) {
-                        if (ref.isTag()) {
-                            if (head instanceof AzureDevOpsRepoTagSCMHead) {
-                                rev = new GitTagSCMRevision((AzureDevOpsRepoTagSCMHead) head, ref.getObjectId());
-                            } else {
-                                // we should never get here, but just in case, we have the information to construct
-                                // the correct head, so let's do that
-                                //TODO What should we do about tag? Fix it.- Luke
-                                GitCommit commit = AzureConnector.INSTANCE.getCommit(repo, ref.getObjectId());
-                                if (commit != null) {
-                                    rev = new GitTagSCMRevision(new AzureDevOpsRepoTagSCMHead(head.getName(), commit.getPush().getDate().toInstant().toEpochMilli()), ref.getObjectId());
-                                }
-                            }
-                        } else {
+                        if (head instanceof BranchSCMHead) {
+                            rev = new AbstractGitSCMSource.SCMRevisionImpl(head, ref.getObjectId());
+                        } else if (head instanceof AzureDevOpsRepoTagSCMHead) {
+                            rev = new GitTagSCMRevision((AzureDevOpsRepoTagSCMHead) head, ref.getPeeledObjectId());
+                        } else if (head instanceof PullRequestSCMHead) {
                             rev = new AbstractGitSCMSource.SCMRevisionImpl(head, ref.getObjectId());
                         }
                     }
+                    System.out.println("SCMFileSystem BuilderImpl rev " + rev);
+                } else {
+                    System.out.println("SCMFileSystem BuilderImpl rev is not null");
                 }
                 return new AzureDevOpsRepoSCMFileSystem(repo, refName, rev);
-            } catch (IOException | RuntimeException e) {
-                //Connector.release(github);
-                throw e;
             }
+            return null;
         }
     }
 }

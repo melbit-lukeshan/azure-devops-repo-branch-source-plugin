@@ -91,24 +91,20 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
             try {
                 switch (info) {
                     case DIRECTORY_ASSUMED:
-                        //metadata = repo.getDirectoryContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
                         metadata = AzureConnector.INSTANCE.listItems(repo, getPath(), ref, GitVersionType.commit, VersionControlRecursionType.none);
                         info = TypeInfo.DIRECTORY_CONFIRMED;
                         resolved = true;
                         break;
                     case DIRECTORY_CONFIRMED:
-                        //metadata = repo.getDirectoryContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
                         metadata = AzureConnector.INSTANCE.listItems(repo, getPath(), ref, GitVersionType.commit, VersionControlRecursionType.none);
                         resolved = true;
                         break;
                     case NON_DIRECTORY_CONFIRMED:
-                        //metadata = repo.getFileContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
                         metadata = AzureConnector.INSTANCE.getItem(repo, getPath(), ref, GitVersionType.commit);
                         resolved = true;
                         break;
                     case UNRESOLVED:
                         checkOpen();
-                        //metadata = repo.getFileContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
                         metadata = AzureConnector.INSTANCE.getItem(repo, getPath(), ref, GitVersionType.commit);
                         if (metadata != null) {
                             info = TypeInfo.NON_DIRECTORY_CONFIRMED;
@@ -136,7 +132,6 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
     @Override
     public Iterable<SCMFile> children() throws IOException {
         checkOpen();
-        //List<GHContent> content = repo.getDirectoryContent(getPath(), ref.indexOf('/') == -1 ? ref : Constants.R_REFS + ref);
         String path = getPath();
         List<GitItem> content = AzureConnector.INSTANCE.listItems(repo, path, ref, GitVersionType.commit, VersionControlRecursionType.oneLevel);
         if (content != null) {
@@ -160,7 +155,7 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
 
     @NonNull
     @Override
-    protected Type type() throws IOException, InterruptedException {
+    protected Type type() throws IOException {
         Object metadata = metadata();
         if (metadata instanceof List) {
             return Type.DIRECTORY;
@@ -174,15 +169,13 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
                 return Type.DIRECTORY;
             }
             return Type.REGULAR_FILE;
-            //return Type.OTHER;
         }
         return Type.NONEXISTENT;
     }
 
     @NonNull
     @Override
-    public InputStream content() throws IOException, InterruptedException {
-        System.out.println("AzureDevOpsRepoSCMFile ref is " + this.ref + " getPath() is " + getPath());
+    public InputStream content() throws IOException {
         Object metadata = metadata();
         if (metadata instanceof List) {
             throw new IOException("Directory");
@@ -190,10 +183,7 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
         if (metadata instanceof GitItem) {
             InputStream inputStream = AzureConnector.INSTANCE.getItemStream(repo, getPath(), ref, GitVersionType.commit);
             if (inputStream != null) {
-                System.out.println("AzureDevOpsRepoSCMFile inputStream found.");
                 return inputStream;
-            } else {
-                System.out.println("AzureDevOpsRepoSCMFile inputStream NOT found.");
             }
         }
         throw new FileNotFoundException(getPath());
@@ -205,5 +195,4 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
         DIRECTORY_CONFIRMED,
         NON_DIRECTORY_CONFIRMED;
     }
-
 }
