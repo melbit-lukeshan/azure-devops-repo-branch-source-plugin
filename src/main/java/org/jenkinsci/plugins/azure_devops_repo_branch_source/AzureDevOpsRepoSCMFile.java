@@ -28,10 +28,7 @@ package org.jenkinsci.plugins.azure_devops_repo_branch_source;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.scm.api.SCMFile;
 import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.AzureConnector;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitItem;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitRepositoryWithAzureContext;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.GitVersionType;
-import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.VersionControlRecursionType;
+import org.jenkinsci.plugins.azure_devops_repo_branch_source.util.api.model.*;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -150,6 +147,18 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
     @Override
     public long lastModified() throws IOException, InterruptedException {
         // TODO see if we can find a way to implement it
+        if (ref != null) {
+            //TODO Debug - Luke
+            System.out.println("AzureDevOpsRepoSCMFile lastModified ref " + ref);
+            GitCommit commit = AzureConnector.INSTANCE.getCommit(repo, ref);
+            if (commit != null) {
+                //TODO Debug - Luke
+                System.out.println("AzureDevOpsRepoSCMFile lastModified " + commit.getPush().getDate().toInstant().toEpochMilli());
+                return commit.getPush().getDate().toInstant().toEpochMilli();
+            }
+        }
+        //TODO Debug - Luke
+        System.out.println("AzureDevOpsRepoSCMFile lastModified 0");
         return 0L;
     }
 

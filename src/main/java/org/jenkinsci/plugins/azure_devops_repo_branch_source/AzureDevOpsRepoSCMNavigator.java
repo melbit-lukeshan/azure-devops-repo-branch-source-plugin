@@ -1397,7 +1397,7 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
         @SuppressWarnings("unused") // jelly
         public List<NamedArrayList<? extends SCMTraitDescriptor<?>>> getTraitsDescriptorLists() {
             AzureDevOpsRepoSCMSource.DescriptorImpl sourceDescriptor =
-                    Jenkins.getActiveInstance().getDescriptorByType(AzureDevOpsRepoSCMSource.DescriptorImpl.class);
+                    Jenkins.get().getDescriptorByType(AzureDevOpsRepoSCMSource.DescriptorImpl.class);
             List<SCMTraitDescriptor<?>> all = new ArrayList<>();
             all.addAll(SCMNavigatorTrait._for(this, AzureDevOpsRepoSCMNavigatorContext.class, AzureDevOpsRepoSCMSourceBuilder.class));
             all.addAll(SCMSourceTrait._for(sourceDescriptor, AzureDevOpsRepoSCMSourceContext.class, null));
