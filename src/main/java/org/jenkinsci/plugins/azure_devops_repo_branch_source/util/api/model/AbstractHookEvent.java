@@ -155,7 +155,8 @@ public abstract class AbstractHookEvent {
             }
             if (!jobFound) {
                 System.out.println("matchMultiBranchProject JOB NO MATCH:" + targetName);
-                //TODO We found repo but not target job. That means we are dealing with a new branch or pull request. Thus we need to require a indexing of the repo.
+                //Note We found repo but not target job. That means we are dealing with a new branch or pull request. Thus we need to require a indexing of the repo. - Luke
+                wmbp.scheduleBuild(new Cause.RemoteCause(gitCodePushedEventArgs.getRepoURIish().getHost(), "New Branch or New Pull Request"));
 
             }
         } else {
