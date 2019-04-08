@@ -53,11 +53,13 @@ class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosabl
         this.name = head.getName();
         if (head instanceof PullRequestSCMHead) {
             //TODO we still need to make sure we are doing the right thing. What are MERGE and HEAD?
+            //For now we just use the Azure generated merged commit ref
             PullRequestSCMHead pr = (PullRequestSCMHead) head;
             if (pr.isMerge()) {
                 this.ref = "pull/" + pr.getNumber() + "/merge";
             } else {
-                this.ref = pr.getSourceBranch().replace("refs/", "");
+                this.ref = "pull/" + pr.getNumber() + "/merge";
+                //this.ref = pr.getSourceBranch().replace("refs/", "");
             }
         } else if (head instanceof AzureDevOpsRepoTagSCMHead) {
             this.ref = "tags/" + head.getName();
@@ -67,7 +69,7 @@ class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosabl
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         if (repo == null) {
             return;
         }
