@@ -68,10 +68,6 @@ public class AzureDevOpsRepoSCMBuilder extends GitSCMBuilder<AzureDevOpsRepoSCMB
      */
     static final SshRepositoryUriResolver SSH = new SshRepositoryUriResolver();
     /**
-     * The GitHub API suffix for GitHub Server.
-     */
-    private static final String API_V3 = "api/v3";
-    /**
      * The context within which credentials should be resolved.
      */
     @CheckForNull
@@ -122,17 +118,18 @@ public class AzureDevOpsRepoSCMBuilder extends GitSCMBuilder<AzureDevOpsRepoSCMB
         String repoUrl;
         if (head instanceof PullRequestSCMHead) {
             PullRequestSCMHead h = (PullRequestSCMHead) head;
-            //withRefSpec("+refs/pull/" + h.getId() + "/head:refs/remotes/@{remote}/" + head.getName());
-            //TODO experimental. Make sure this is correct - Luke
+            System.out.println("AzureDevOpsRepoSCMBuilder PullRequestSCMHead getName() " + head.getName());
             withRefSpec("+refs/pull/" + h.getId() + "/merge:refs/remotes/@{remote}/" + head.getName());
-            repoUrl = repositoryUrl(h.getSourceOwner(), h.getSourceRepo());
+            repoUrl = repositoryUrl(projectName, repository);
         } else if (head instanceof TagSCMHead) {
             withRefSpec("+refs/tags/" + head.getName() + ":refs/tags/" + head.getName());
             repoUrl = repositoryUrl(projectName, repository);
         } else {
+            System.out.println("AzureDevOpsRepoSCMBuilder BranchSCMHead getName() " + head.getName());
             withRefSpec("+refs/heads/" + head.getName() + ":refs/remotes/@{remote}/" + head.getName());
             repoUrl = repositoryUrl(projectName, repository);
         }
+        System.out.println("AzureDevOpsRepoSCMBuilder repoUrl " + repoUrl);
         // pre-configure the browser
         if (repoUrl != null) {
             withBrowser(new AzureDevOpsWeb(repoUrl));
@@ -164,7 +161,6 @@ public class AzureDevOpsRepoSCMBuilder extends GitSCMBuilder<AzureDevOpsRepoSCMB
             if (projectName.equals(project) && repository.equals(repo)) {
                 return repositoryUrl.toExternalForm();
             }
-            // hack!
             return repositoryUrl.toExternalForm().replace(projectName + "/_git/" + repository, project + "/_git/" + repo);
         }
         String apiUri = StringUtils.removeEnd(collectionUrl, "/");
