@@ -145,20 +145,13 @@ class AzureDevOpsRepoSCMFile extends SCMFile {
     }
 
     @Override
-    public long lastModified() throws IOException, InterruptedException {
-        // TODO see if we can find a way to implement it
+    public long lastModified() {
         if (ref != null) {
-            //TODO Debug - Luke
-            System.out.println("AzureDevOpsRepoSCMFile lastModified ref " + ref);
             GitCommit commit = AzureConnector.INSTANCE.getCommit(repo, ref);
             if (commit != null) {
-                //TODO Debug - Luke
-                System.out.println("AzureDevOpsRepoSCMFile lastModified " + commit.getPush().getDate().toInstant().toEpochMilli());
                 return commit.getPush().getDate().toInstant().toEpochMilli();
             }
         }
-        //TODO Debug - Luke
-        System.out.println("AzureDevOpsRepoSCMFile lastModified 0");
         return 0L;
     }
 

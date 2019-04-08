@@ -52,8 +52,13 @@ class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosabl
         this.repo = repo;
         this.name = head.getName();
         if (head instanceof PullRequestSCMHead) {
+            //TODO we still need to make sure we are doing the right thing. What are MERGE and HEAD?
             PullRequestSCMHead pr = (PullRequestSCMHead) head;
-            this.ref = "pull/" + pr.getNumber() + (pr.isMerge() ? "/merge" : "/head");
+            if (pr.isMerge()) {
+                this.ref = "pull/" + pr.getNumber() + "/merge";
+            } else {
+                this.ref = pr.getSourceBranch().replace("refs/", "");
+            }
         } else if (head instanceof AzureDevOpsRepoTagSCMHead) {
             this.ref = "tags/" + head.getName();
         } else {

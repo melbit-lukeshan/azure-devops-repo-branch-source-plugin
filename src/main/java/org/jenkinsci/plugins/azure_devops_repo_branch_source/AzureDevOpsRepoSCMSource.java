@@ -817,22 +817,17 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                                         @NonNull
                                         @Override
                                         public SCMRevision create(@NonNull PullRequestSCMHead head,
-                                                                  @Nullable Void ignored)
-                                                throws IOException, InterruptedException {
+                                                                  @Nullable Void ignored) {
                                             String baseSha = pr.getLastMergeTargetCommit().getCommitId();
                                             String pullSha = pr.getLastMergeSourceCommit().getCommitId();
                                             String mergeSha = pr.getLastMergeCommit().getCommitId();
                                             if (strategy == ChangeRequestCheckoutStrategy.MERGE) {
-                                                request.checkApiRateLimit();
                                                 GitRef baseRef = AzureConnector.INSTANCE.getRef(gitRepository, pr.getTargetRefName().replace("refs/", ""), false);
                                                 if (baseRef != null) {
                                                     baseSha = baseRef.getObjectId();
                                                 }
                                             }
-                                            return new PullRequestSCMRevision(head,
-                                                    baseSha,
-                                                    pullSha,
-                                                    mergeSha);
+                                            return new PullRequestSCMRevision(head, baseSha, pullSha, mergeSha);
                                         }
                                     },
                                     new MergabilityWitness(pr, strategy, listener),
@@ -1764,7 +1759,6 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
         public void record(@NonNull PullRequestSCMHead head, PullRequestSCMRevision revision, boolean isMatch) {
             if (isMatch) {
                 Boolean mergeable;
-                //TODO how do we know - luke.
                 mergeable = (pr.getMergeStatus() == PullRequestAsyncStatus.succeeded);
                 if (Boolean.FALSE.equals(mergeable)) {
                     if (strategy == ChangeRequestCheckoutStrategy.MERGE) {
