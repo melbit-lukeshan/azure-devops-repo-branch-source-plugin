@@ -118,18 +118,15 @@ public class AzureDevOpsRepoSCMBuilder extends GitSCMBuilder<AzureDevOpsRepoSCMB
         String repoUrl;
         if (head instanceof PullRequestSCMHead) {
             PullRequestSCMHead h = (PullRequestSCMHead) head;
-            System.out.println("AzureDevOpsRepoSCMBuilder PullRequestSCMHead getName() " + head.getName());
             withRefSpec("+refs/pull/" + h.getId() + "/merge:refs/remotes/@{remote}/" + head.getName());
             repoUrl = repositoryUrl(projectName, repository);
         } else if (head instanceof TagSCMHead) {
             withRefSpec("+refs/tags/" + head.getName() + ":refs/tags/" + head.getName());
             repoUrl = repositoryUrl(projectName, repository);
         } else {
-            System.out.println("AzureDevOpsRepoSCMBuilder BranchSCMHead getName() " + head.getName());
             withRefSpec("+refs/heads/" + head.getName() + ":refs/remotes/@{remote}/" + head.getName());
             repoUrl = repositoryUrl(projectName, repository);
         }
-        System.out.println("AzureDevOpsRepoSCMBuilder repoUrl " + repoUrl);
         // pre-configure the browser
         if (repoUrl != null) {
             withBrowser(new AzureDevOpsWeb(repoUrl));

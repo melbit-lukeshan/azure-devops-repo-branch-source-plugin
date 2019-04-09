@@ -52,8 +52,10 @@ class AzureDevOpsRepoSCMProbe extends SCMProbe implements AzureDevOpsRepoClosabl
         this.repo = repo;
         this.name = head.getName();
         if (head instanceof PullRequestSCMHead) {
-            //TODO we still need to make sure we are doing the right thing. What are MERGE and HEAD?
-            //For now we just use the Azure generated merged commit ref
+            //TODO we still need to make sure we are doing the right thing.
+            //If MERGE, how do we locate the Jenkinsfile? It could be in source branch or base branch.
+            //If HEAD, it is easy. We just need to use the one in latest merged commit.
+            //For now we just use the Azure generated latest merged commit ref
             PullRequestSCMHead pr = (PullRequestSCMHead) head;
             if (pr.isMerge()) {
                 this.ref = "pull/" + pr.getNumber() + "/merge";

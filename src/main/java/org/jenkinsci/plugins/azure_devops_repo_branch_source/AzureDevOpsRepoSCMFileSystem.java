@@ -67,27 +67,19 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
      */
     protected AzureDevOpsRepoSCMFileSystem(GitRepositoryWithAzureContext repo, String refName, @CheckForNull SCMRevision rev) {
         super(rev);
-        //TODO Debug - Luke
-        System.out.println("AzureDevOpsRepoSCMFileSystem refName " + refName);
-        System.out.println("AzureDevOpsRepoSCMFileSystem rev " + rev);
         this.open = true;
         this.repo = repo;
         if (rev != null) {
             if (rev.getHead() instanceof PullRequestSCMHead) {
-                System.out.println("AzureDevOpsRepoSCMFileSystem PullRequestSCMHead");
-                PullRequestSCMHead pr = (PullRequestSCMHead) rev.getHead();
                 this.ref = ((PullRequestSCMRevision) rev).getPullHash();
             } else if (rev instanceof AbstractGitSCMSource.SCMRevisionImpl) {
-                System.out.println("AzureDevOpsRepoSCMFileSystem AbstractGitSCMSource.SCMRevisionImpl");
                 this.ref = ((AbstractGitSCMSource.SCMRevisionImpl) rev).getHash();
             } else {
-                System.out.println("AzureDevOpsRepoSCMFileSystem other head");
                 this.ref = refName;
             }
         } else {
             this.ref = refName;
         }
-        System.out.println("AzureDevOpsRepoSCMFileSystem ref " + ref);
     }
 
     /**
@@ -114,13 +106,9 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
         if (ref != null) {
             GitCommit commit = AzureConnector.INSTANCE.getCommit(repo, ref);
             if (commit != null) {
-                //TODO Debug - Luke
-                System.out.println("AzureDevOpsRepoSCMFileSystem lastModified " + commit.getPush().getDate().toInstant().toEpochMilli());
                 return commit.getPush().getDate().toInstant().toEpochMilli();
             }
         }
-        //TODO Debug - Luke
-        System.out.println("AzureDevOpsRepoSCMFileSystem lastModified 0");
         return 0L;
     }
 
@@ -129,14 +117,10 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
      */
     @Override
     public boolean changesSince(SCMRevision revision, @NonNull OutputStream changeLogStream) throws UnsupportedOperationException, IOException {
-        //TODO Debug - Luke
-        System.out.println("AzureDevOpsRepoSCMFileSystem changesSince revision " + revision);
-        System.out.println("AzureDevOpsRepoSCMFileSystem changesSince getRevision() " + getRevision());
         if (Objects.equals(getRevision(), revision)) {
             // special case where somebody is asking one of two stupid questions:
             // 1. what has changed between the latest and the latest
             // 2. what has changed between the current revision and the current revision
-            System.out.println("AzureDevOpsRepoSCMFileSystem changesSince revision == getRevision()");
             return false;
         }
         int count = 0;
@@ -197,7 +181,6 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
                 }
             }
         }
-        System.out.println("AzureDevOpsRepoSCMFileSystem changesSince count " + count);
         return count > 0;
     }
 
@@ -258,33 +241,18 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
             GitRepositoryWithAzureContext repo = AzureConnector.INSTANCE.getRepository(collectionUrl, credentials, src.getProjectName(), src.getRepository());
             if (repo != null) {
                 String refName;
-                //TODO Debug - Luke
-                System.out.println("SCMFileSystem BuilderImpl head " + head);
                 if (head instanceof BranchSCMHead) {
                     refName = "heads/" + head.getName();
-                    System.out.println("SCMFileSystem BuilderImpl BranchSCMHead");
                 } else if (head instanceof AzureDevOpsRepoTagSCMHead) {
                     refName = "tags/" + head.getName();
-                    System.out.println("SCMFileSystem BuilderImpl AzureDevOpsRepoTagSCMHead");
                 } else if (head instanceof PullRequestSCMHead) {
                     PullRequestSCMHead pr = (PullRequestSCMHead) head;
                     refName = "pull/" + pr.getNumber() + "/merge";
-                    System.out.println("SCMFileSystem BuilderImpl PullRequestSCMHead");
-                    System.out.println("SCMFileSystem BuilderImpl PullRequestSCMHead getSourceBranch() " + pr.getSourceBranch());
-                    System.out.println("SCMFileSystem BuilderImpl PullRequestSCMHead getOriginName() " + pr.getOriginName());
-//                    if (!pr.isMerge() && pr.getSourceRepo() != null) {
-//                        return new AzureDevOpsRepoSCMFileSystem(repo, pr.getSourceBranch(), rev);
-//                    }
-//                    return null; // TODO support merge revisions somehow
                 } else {
-                    System.out.println("SCMFileSystem BuilderImpl return null");
                     return null;
                 }
 
-                System.out.println("SCMFileSystem BuilderImpl refName " + refName);
-
                 if (rev == null) {
-                    System.out.println("SCMFileSystem BuilderImpl rev is null");
                     GitRef ref = AzureConnector.INSTANCE.getRef(repo, refName, true);
                     if (ref != null) {
                         if (head instanceof BranchSCMHead) {
@@ -295,9 +263,6 @@ public class AzureDevOpsRepoSCMFileSystem extends SCMFileSystem implements Azure
                             rev = new AbstractGitSCMSource.SCMRevisionImpl(head, ref.getObjectId());
                         }
                     }
-                    System.out.println("SCMFileSystem BuilderImpl rev " + rev);
-                } else {
-                    System.out.println("SCMFileSystem BuilderImpl rev is not null");
                 }
                 return new AzureDevOpsRepoSCMFileSystem(repo, refName, rev);
             }

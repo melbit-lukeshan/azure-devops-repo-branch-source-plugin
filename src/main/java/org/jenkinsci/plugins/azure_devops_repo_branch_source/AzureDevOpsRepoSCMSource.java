@@ -730,11 +730,12 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                 if (request.isFetchTags()) {
                     request.setTags(new LazyTagsAzure(request, gitRepository));
                 }
-                //TODO uncomment below. For now we ignore permission source- Luke.
+                //TODO For now we ignore contributors - Luke.
                 //request.setCollaboratorNames(new LazyContributorNames(request, listener, github, ghRepository, credentials));
                 request.setPermissionsSource(new AzureDevOpsRepoPermissionsSource() {
                     @Override
                     public AzurePermissionType fetch(String username) throws IOException, InterruptedException {
+                        //TODO For now we ignore permission - Luke.
                         //return ghRepository.getPermission(username);
                         return AzurePermissionType.ADMIN;
                     }
@@ -1083,7 +1084,7 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
             return collaboratorNames = Collections.emptySet();
         } else {
             try {
-                //TODO Looks like we need list collaborators. TBD. - LUke
+                //TODO For now we ignore contributors - Luke
                 //return collaboratorNames = new HashSet<>(repo.getCollaboratorNames());
                 return collaboratorNames = new HashSet<>(new ArrayList<>());
             } catch (Exception e) {
@@ -1657,12 +1658,11 @@ public class AzureDevOpsRepoSCMSource extends AbstractGitSCMSource {
                 }
                 request.listener().getLogger().format("%n  Getting remote branches...%n");
                 List<GitRef> values = AzureConnector.INSTANCE.listBranches(repo);
-                //TODO We may treat PR as branch. But since we can detect PR separately we won't do that. - luke
+                //Note We may treat PR as branch. But since we can detect PR separately we won't do that. - Luke
 //                List<GitRef> values2 = AzureConnector.INSTANCE.listPullRequestsAsRefs(repo);
 //                if (values != null && values2 != null) {
 //                    values.addAll(values2);
 //                }
-                //TODO end
                 final String defaultBranch = StringUtils.defaultIfBlank(repo.getGitRepository().getDefaultBranch(), "master");
                 Collections.sort(values, new Comparator<GitRef>() {
                     @Override

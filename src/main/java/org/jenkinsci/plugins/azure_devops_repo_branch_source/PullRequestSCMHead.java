@@ -88,10 +88,10 @@ public class PullRequestSCMHead extends SCMHead implements ChangeRequestSCMHead2
         GitForkRef gitForkRef = pr.getForkSource();
         GitRepository repository = pr.getRepository();
         if (gitForkRef != null) {
-            this.sourceOwner = gitForkRef.getCreator().getUniqueName();//TODO unique name or id?
+            this.sourceOwner = gitForkRef.getCreator().getUniqueName();
             this.sourceRepo = gitForkRef.getRepository().getName();
         } else {
-            this.sourceOwner = pr.getCreatedBy().getUniqueName();//TODO unique name or id?
+            this.sourceOwner = pr.getCreatedBy().getUniqueName();
             this.sourceRepo = repository.getName();
         }
         this.sourceBranch = pr.getSourceRefName();

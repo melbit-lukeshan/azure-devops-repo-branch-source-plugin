@@ -226,7 +226,7 @@ public class BranchDiscoveryTrait extends SCMSourceTrait {
         public boolean isExcluded(@NonNull SCMSourceRequest request, @NonNull SCMHead head) {
             if (head instanceof BranchSCMHead && request instanceof AzureDevOpsRepoSCMSourceRequest) {
                 for (GitPullRequest p : ((AzureDevOpsRepoSCMSourceRequest) request).getPullRequests()) {
-                    GitRepository headRepo = p.getRepository(); //TODO we don't know how to get source repo yet. For now use target repo. - Luke
+                    GitRepository headRepo = p.getRepository();
                     if (headRepo != null // head repo can be null if the PR is from a repo that has been deleted
                             && p.getRepository().getUrl().equalsIgnoreCase(headRepo.getUrl())
                             && p.getSourceRefName().equals(head.getName())) {
@@ -249,7 +249,7 @@ public class BranchDiscoveryTrait extends SCMSourceTrait {
         public boolean isExcluded(@NonNull SCMSourceRequest request, @NonNull SCMHead head) {
             if (head instanceof BranchSCMHead && request instanceof AzureDevOpsRepoSCMSourceRequest) {
                 for (GitPullRequest p : ((AzureDevOpsRepoSCMSourceRequest) request).getPullRequests()) {
-                    GitRepository headRepo = p.getRepository(); //TODO we don't know how to get source repo yet. For now use target repo. - Luke
+                    GitRepository headRepo = p.getRepository();
                     if (headRepo != null // head repo can be null if the PR is from a repo that has been deleted
                             && p.getRepository().getUrl().equalsIgnoreCase(headRepo.getUrl())
                             && p.getSourceRefName().equals(head.getName())) {

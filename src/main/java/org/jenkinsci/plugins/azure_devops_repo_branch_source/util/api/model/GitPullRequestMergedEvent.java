@@ -74,7 +74,7 @@ public class GitPullRequestMergedEvent extends GitPushEvent {
         final URI repoUri = URI.create(repoUriString);
         final String projectId = determineProjectId(repository);
         final String repoId = repository.getName();
-        //TODO Note depend on change checkout strategy, we may use merge commit or source commit.
+        //Note depend on change checkout strategy, we may use merge commit or source commit. - Luke
         //For now we use source commit since it is for the default MERGE strategy.
         //final String commit = determineMergeCommit(gitPullRequest);
         final String commit = determineMergeSourceCommit(gitPullRequest);

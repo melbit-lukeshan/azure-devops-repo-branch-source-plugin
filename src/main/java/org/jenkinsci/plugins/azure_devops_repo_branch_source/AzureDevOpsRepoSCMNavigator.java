@@ -195,10 +195,6 @@ public class AzureDevOpsRepoSCMNavigator extends SCMNavigator {
      */
     @DataBoundConstructor
     public AzureDevOpsRepoSCMNavigator(String azureProjectName, String collectionUrl, String repoOwner) {
-        //TODO Debug - Luke
-        System.out.println("AzureDevOpsRepoSCMNavigator azureProjectName " + azureProjectName);
-        System.out.println("AzureDevOpsRepoSCMNavigator collectionUrl " + collectionUrl);
-        System.out.println("AzureDevOpsRepoSCMNavigator repoOwner " + repoOwner);
         this.azureProjectName = StringUtils.defaultString(azureProjectName);
         this.collectionUrl = StringUtils.defaultString(collectionUrl);
         this.repoOwner = StringUtils.defaultString(repoOwner);
